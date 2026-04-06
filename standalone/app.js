@@ -3576,6 +3576,69 @@ function renderSocialSchedulerApp(activeBoard) {
     }
 
     const socialBoards = boards.filter(b => b.type === 'social_scheduler');
+
+    window.openAddClientModal = function() {
+        let addModal = document.getElementById('addClientModal');
+        if (!addModal) {
+            addModal = document.createElement('div');
+            addModal.id = 'addClientModal';
+            addModal.className = 'modal-overlay';
+            addModal.innerHTML = `
+                <div class="modal-content" style="max-width: 380px;">
+                    <div class="modal-header">
+                        <h3>إضافة عميل جديد</h3>
+                        <button class="icon-btn" onclick="document.getElementById('addClientModal').classList.remove('active')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                    </div>
+                    <div class="modal-body" style="padding-top: 12px;">
+                        <input type="text" id="addClientInput" class="modal-input" placeholder="اسم العميل (مثال: Client 2)..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;">
+                    </div>
+                    <div class="modal-footer" style="padding-top: 16px; margin-top: 16px; border-top: 1px solid #edf2f7; display: flex; justify-content: flex-end; gap: 8px;">
+                        <button onclick="document.getElementById('addClientModal').classList.remove('active')" style="padding: 8px 16px; border-radius: 6px; border: none; background: #edf2f7; color: #4a5568; cursor: pointer; font-weight: 600;">إلغاء</button>
+                        <button id="addClientConfirmBtn" style="padding: 8px 16px; border-radius: 6px; border: none; background: #ea580c; color: white; cursor: pointer; font-weight: 600;">إضافة</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(addModal);
+            
+            const inputEl = document.getElementById('addClientInput');
+            if(inputEl) inputEl.addEventListener('focus', () => inputEl.style.borderColor = '#ea580c');
+            if(inputEl) inputEl.addEventListener('blur', () => inputEl.style.borderColor = '#cbd5e0');
+            
+            inputEl.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    document.getElementById('addClientConfirmBtn').click();
+                }
+            });
+        }
+        
+        const input = document.getElementById('addClientInput');
+        input.value = '';
+        
+        document.getElementById('addClientConfirmBtn').onclick = () => {
+            const title = input.value.trim() || 'Client ' + (boards.filter(b => b.type === 'social_scheduler').length + 1);
+            input.blur();
+            addModal.classList.remove('active');
+            
+            const id = 'bb_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            boards.push({
+                id: id,
+                title: title,
+                type: 'social_scheduler',
+                lists: [],
+                cards: []
+            });
+            activeBoardId = id;
+            
+            if (typeof saveState === 'function') saveState();
+            if (typeof render === 'function') render();
+        };
+        
+        addModal.classList.add('active');
+        setTimeout(() => input.focus(), 50);
+    };
+
     // Safe scoped setter for switching clients via UI
     window.switchSocialClient = function(id) {
         activeBoardId = id;
