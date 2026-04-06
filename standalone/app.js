@@ -1301,6 +1301,26 @@ window.openCreatePostModal = function(postId = null) {
                 if (post) {
                     if (textArea) textArea.value = post.fullText || post.description || '';
                     
+                    const pType = post.postType || 'image';
+                    const ptInput = document.querySelector(`input[name="smPostType"][value="${pType}"]`);
+                    if (ptInput) {
+                        ptInput.checked = true;
+                        const parent = ptInput.parentElement;
+                        parent.style.borderColor = '#f97316';
+                        parent.style.background = '#fffaf5';
+                        const span = parent.querySelector('span');
+                        if(span) span.style.color = '#c2410c';
+                        
+                        const sibling = parent.nextElementSibling || parent.previousElementSibling;
+                        if (sibling) {
+                            sibling.style.borderColor = '#cbd5e1';
+                            sibling.style.background = 'white';
+                            const sibSpan = sibling.querySelector('span');
+                            if(sibSpan) sibSpan.style.color = '#475569';
+                        }
+                    }
+
+                    
                     // Manually inject gallery items safely
                     const mediaItems = post.mediaItems || (post.mediaObj ? [post.mediaObj] : []);
                     if (mediaItems.length > 0) {
@@ -4446,6 +4466,38 @@ window.handleMediaUpload = function(input) {
     }
 };
 
+window.reindexMediaBadges = function() {
+    const gallery = document.getElementById('smMediaGallery');
+    if (!gallery) return;
+    const badges = gallery.querySelectorAll('.sm-gallery-badge');
+    badges.forEach((badge, index) => {
+        badge.textContent = index + 1;
+    });
+};
+
+window.removeMediaItem = function(elem) {
+    let wrap = elem.closest ? elem.closest('.frame-io-media') : null;
+    
+    if (!wrap && elem.parentElement && elem.parentElement.parentElement) {
+        wrap = elem.parentElement.parentElement;
+    }
+    
+    if (wrap) {
+        wrap.remove();
+        if (typeof window.reindexMediaBadges === 'function') window.reindexMediaBadges();
+        
+        const gallery = document.getElementById('smMediaGallery');
+        if (gallery && gallery.children.length === 0) {
+            const previewContainer = document.getElementById('smMediaPreviewContainer');
+            if (previewContainer) previewContainer.style.display = 'none';
+        }
+        
+        if (typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) {
+            window.saveSocialDraft(true);
+        }
+    }
+};
+
 window.clearMediaUpload = function(event) {
     if (event) event.stopPropagation();
     const input = document.getElementById('smMediaInput');
@@ -4588,12 +4640,17 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         const statusBtn = document.querySelector('.sm-toggle-btn.active');
         if (statusBtn) status = statusBtn.textContent.trim();
         
+        let postType = 'image';
+        const postTypeInput = document.querySelector('input[name="smPostType"]:checked');
+        if (postTypeInput) postType = postTypeInput.value;
+        
         const newDraft = {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
             title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
             fullText: textContent,
             dateStr: dateStr,
             status: status,
+            postType: postType,
             mediaItems: mediaItems.length > 0 ? mediaItems : null
         };
         
