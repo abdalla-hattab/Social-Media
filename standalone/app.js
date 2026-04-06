@@ -3841,6 +3841,51 @@ function renderSocialSchedulerApp(activeBoard) {
         render();
     };
 
+    window.exportDashboardData = window.exportDashboardData || function() {
+        const dataToExport = {
+            boards: typeof boards !== 'undefined' ? boards : [],
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataToExport));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "smma_dashboard_backup_" + new Date().toISOString().slice(0,10) + ".json");
+        document.body.appendChild(downloadAnchorNode); 
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    window.importDashboardData = window.importDashboardData || function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                if (importedData && importedData.boards && Array.isArray(importedData.boards)) {
+                    boards = importedData.boards;
+                    let cloudBoards = boards.filter(b => b.type === 'social_scheduler');
+                    if (typeof db !== 'undefined' && db.ref) {
+                        db.ref('ai_social_lists').set(cloudBoards).then(() => {
+                            alert("تم استيراد البيانات وتزامنها مع السحابة بنجاح!");
+                            location.reload();
+                        }).catch(err => {
+                            alert("حدث خطأ في مزامنة البيانات: " + err.message);
+                        });
+                    } else {
+                        alert("تم استيراد البيانات محلياً بنجاح!");
+                        location.reload();
+                    }
+                } else {
+                    alert("تنسيق الملف غير صحيح. يرجى التأكد من اختيار ملف تصدير صحيح.");
+                }
+            } catch(error) {
+                alert("حدث خطأ أثناء استيراد البيانات: " + error.message);
+            }
+        };
+        reader.readAsText(file);
+    };
+
     if (window.activeSocialTab === 'calendar') {
         const boardKey = `hiddenSocialEvents_${activeBoardId || 'default'}`;
         const hiddenEventsGlobal = JSON.parse(localStorage.getItem(boardKey) || '[]');
@@ -3967,7 +4012,14 @@ function renderSocialSchedulerApp(activeBoard) {
         mainContentHtml = `
             <div class="sm-full-view">
                 <div class="sm-stats-top-bar">
-                    <button class="sm-btn-primary-outline"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.45l5.08 5.08"/></svg> تحديث</button>
+                    <button class="sm-btn-primary-outline" style="margin-left: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.45l5.08 5.08"/></svg> تحديث</button>
+                    <button class="sm-btn-primary-outline" onclick="window.exportDashboardData()" style="margin-left: 8px; background: #fff7ed; color: #ea580c; border-color: #fdba74;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> تصدير النظام
+                    </button>
+                    <label class="sm-btn-primary-outline" style="margin-left: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; background: #fffaf5; color: #10b981; border-color: #6ee7b7; margin-bottom: 0;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> استيراد النظام
+                        <input type="file" accept=".json" style="display:none;" onchange="window.importDashboardData(event)">
+                    </label>
                     <div class="sm-filter-group" style="margin-right:auto;">
                         <label class="sm-checkbox-lbl"><input type="checkbox" /> مقارنة بالفترة السابقة</label>
                         <select class="sm-select"><option>كل المنصات</option></select>
