@@ -16,7 +16,53 @@ const db = firebase.database();
 let boards = [];
 let localBoards = [];
 let cloudBoards = [];
-let activeBoardId = localStorage.getItem('ai_active_board');
+const smUrlParams = new URLSearchParams(window.location.search);
+window.isClientView = smUrlParams.get('client_view') === 'true';
+if (window.isClientView) {
+    // Inject global CSS rule to ensure these elements stay hidden permanently overriding inline styles
+    const styleNode = document.createElement('style');
+    styleNode.innerHTML = `
+        .sm-upload-prompt-dashed,
+        #smUploadPrompt,
+        #frameIoLabel,
+        #frameIoContainer {
+            display: none !important;
+        }
+    `;
+    document.head.appendChild(styleNode);
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Run immediately and also in an interval just in case of race conditions
+        const enforceClientView = () => {
+            const prompt = document.getElementById("smUploadPrompt");
+            if (prompt) {
+                prompt.style.setProperty("display", "none", "important");
+                prompt.style.cssText = "display: none !important;";
+                
+                const publishSec = document.getElementById("publishSection");
+                if (publishSec) {
+                    publishSec.style.setProperty("display", "none", "important");
+                } else {
+                    document.querySelectorAll(".sm-modal-section").forEach(sec => {
+                        if (sec.innerHTML.includes("النشر") && sec.innerHTML.includes("مسودة")) {
+                            sec.style.setProperty("display", "none", "important");
+                        }
+                    });
+                }
+            }
+        };
+        enforceClientView();
+        setTimeout(enforceClientView, 500);
+        setTimeout(enforceClientView, 1500);
+    });
+}
+
+
+
+let activeBoardId = smUrlParams.get('board_id') || localStorage.getItem('ai_active_board');
+if (smUrlParams.get('board_id')) {
+    localStorage.setItem('ai_active_board', activeBoardId);
+}
 let activeCardId = null;
 let activeTargetListId = null;
 let isGlobalDragging = false;
@@ -55,6 +101,19 @@ function ensureBoardStructure() {
         }
     });
 
+    if (boards.length === 0) {
+        // Auto-create the default Social Scheduler
+        const defaultBoard = {
+            id: 'board-social-default',
+            title: 'Client 1',
+            type: 'social_scheduler',
+            lists: [],
+            cards: [],
+        };
+        boards.push(defaultBoard);
+        cloudBoards.push(defaultBoard);
+    }
+
     if (!activeBoardId && boards.length > 0) activeBoardId = boards[0].id;
 }
 
@@ -71,12 +130,14 @@ db.ref('ai_social_lists').on('value', (snapshot) => {
         if (typeof render === 'function') render();
     } else {
         // Initial Firebase migration (extract from old local database and push)
-        if (rawOldListsData && !rawPrivate) {
-            let oldBoards = JSON.parse(rawOldListsData);
-            cloudBoards = oldBoards.filter(b => b.type === 'social_scheduler');
-            if (cloudBoards.length > 0) {
-                db.ref('ai_social_lists').set(cloudBoards);
-            }
+        if (rawOldListsData) {
+            try {
+                let oldBoards = JSON.parse(rawOldListsData);
+                cloudBoards = oldBoards.filter(b => b.type === 'social_scheduler');
+                if (cloudBoards.length > 0) {
+                    db.ref('ai_social_lists').set(cloudBoards);
+                }
+            } catch(e) {}
         }
         syncBoardsArray();
         ensureBoardStructure();
@@ -1264,7 +1325,67 @@ window.openCreatePostModal = function(postId = null) {
         const publishToggles = createPostModal.querySelectorAll('.sm-toggle-btn');
         
         // Reset modal fields first
-        if (textArea) textArea.value = '';
+        if (textArea) {
+            textArea.value = '';
+            const cc = document.querySelector('.sm-char-count');
+            if (cc) cc.innerText = '0 حرف';
+        }
+        const clientEditsContainer = document.getElementById('clientEditsContainer');
+        const clientEditsInput = document.getElementById('clientEditsInput');
+        const clientEditsLabel = document.getElementById('clientEditsLabel');
+        if (clientEditsInput) clientEditsInput.value = '';
+        
+        const agencyEditsContainer = document.getElementById('agencyClientEditsContainer');
+        const agencyEditsInput = document.getElementById('agencyClientEditsInput');
+        const agencyEditsDiff = document.getElementById('agencyClientEditsDiff');
+        
+        let postForEdits = null;
+        if (postId && typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined') {
+            const activeBoard = boards.find(b => b.id === activeBoardId);
+            if (activeBoard && activeBoard.cards) {
+                postForEdits = activeBoard.cards.find(c => c.id === postId);
+            }
+        }
+        
+        const isClientModified = postForEdits ? postForEdits.clientModified : false;
+        const editsVal = postForEdits ? (postForEdits.clientEdits || '') : '';
+        
+        if (!window.isClientView) {
+            // Agency View
+            if (clientEditsContainer) clientEditsContainer.style.setProperty("display", "none", "important");
+            if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "none", "important");
+            
+            if (agencyEditsContainer && agencyEditsInput) {
+                if (window.smShowClientEditsToggle !== false && isClientModified) {
+                    agencyEditsContainer.style.display = 'block';
+                    agencyEditsInput.style.display = 'block';
+                    agencyEditsInput.value = editsVal;
+                    
+                    const btnResolve = document.getElementById('btnResolveClientEdits');
+                    if (btnResolve) btnResolve.style.display = 'block';
+                    
+                    const leftTitle = document.getElementById('leftPaneEditsTitle');
+                    if (leftTitle) leftTitle.textContent = "ملاحظات العميل";
+                    
+                    if (agencyEditsDiff) window.updateLiveDiff();
+                } else {
+                    agencyEditsContainer.style.display = 'none';
+                }
+            }
+        } else {
+            // Client View
+            if (clientEditsContainer && clientEditsInput) {
+                clientEditsContainer.style.setProperty("display", "flex", "important");
+                clientEditsContainer.style.setProperty("flex-direction", "column", "important");
+                clientEditsInput.value = editsVal;
+                if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "flex", "important");
+            }
+            
+            // Hide Agency container entirely for Client
+            if (agencyEditsContainer) {
+                agencyEditsContainer.style.setProperty("display", "none", "important");
+            }
+        }
         if (window.clearMediaUpload) window.clearMediaUpload(); // clears gallery
         publishToggles.forEach(b => b.classList.remove('active'));
         const draftBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'مسودة');
@@ -1277,7 +1398,7 @@ window.openCreatePostModal = function(postId = null) {
         const activeBoard = boards.find(b => b.id === activeBoardId);
         if (activeBoard && activeBoard.cards && targetOpt) {
             const targetDateStr = `${targetOpt.year}-${targetOpt.month}-${targetOpt.date}`;
-            const dayPosts = activeBoard.cards.filter(c => c.dateStr === targetDateStr);
+            const dayPosts = activeBoard.cards.filter(c => c.dateStr === targetDateStr && (window.smShowClientEditsToggle !== false || !c.isClientDayNote));
             
             if (postId) {
                 const idx = dayPosts.findIndex(c => c.id === postId);
@@ -1294,12 +1415,47 @@ window.openCreatePostModal = function(postId = null) {
             indicator.style.display = 'flex';
         }
         
+        const arabicOrdinals = ["", "الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"];
+        const modalTitle = document.getElementById('createPostModalTitle');
+        if (modalTitle) {
+            if (postId) {
+                const ordinalText = postNum <= 10 ? arabicOrdinals[postNum] : postNum;
+                modalTitle.textContent = `المنشور ${ordinalText}`;
+            } else {
+                modalTitle.textContent = 'إنشاء منشور';
+            }
+        }
+        
+        if (!postId) {
+            const vidInput = document.querySelector(`input[name="smPostType"][value="video"]`);
+            if (vidInput) {
+                vidInput.checked = true;
+                const parent = vidInput.parentElement;
+                parent.style.borderColor = '#f97316';
+                parent.style.background = '#fffaf5';
+                const span = parent.querySelector('span');
+                if(span) span.style.color = '#c2410c';
+                
+                const sibling = parent.nextElementSibling || parent.previousElementSibling;
+                if (sibling) {
+                    sibling.style.borderColor = '#cbd5e1';
+                    sibling.style.background = 'white';
+                    const sibSpan = sibling.querySelector('span');
+                    if(sibSpan) sibSpan.style.color = '#475569';
+                }
+            }
+        }
+        
         if (postId) {
             const activeBoard = boards.find(b => b.id === activeBoardId);
             if (activeBoard && activeBoard.cards) {
                 const post = activeBoard.cards.find(c => c.id === postId);
                 if (post) {
-                    if (textArea) textArea.value = post.fullText || post.description || '';
+                    if (textArea) {
+                        textArea.value = post.fullText || post.description || '';
+                        const cc = document.querySelector('.sm-char-count');
+                        if (cc) cc.innerText = textArea.value.length + ' حرف';
+                    }
                     
                     const pType = post.postType || 'image';
                     const ptInput = document.querySelector(`input[name="smPostType"][value="${pType}"]`);
@@ -1336,7 +1492,7 @@ window.openCreatePostModal = function(postId = null) {
                                 const wrap = document.createElement('div');
                                 wrap.style.cssText = 'flex-shrink: 0; width: 80px; height: 80px; border-radius: 8px; position: relative; background:#fff; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);';
                                 
-                                const delBtn = `<button style="position: absolute; top: 4px; right: 4px; z-index: 5; background: #ef4444; color: white; border-radius: 50%; width: 16px; height: 16px; border: none; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 1;" onclick="event.stopPropagation(); window.removeMediaItem(this)">×</button>`;
+                                const delBtn = window.isClientView ? '' : `<button style="position: absolute; top: 4px; right: 4px; z-index: 5; background: #ef4444; color: white; border-radius: 50%; width: 16px; height: 16px; border: none; font-size: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 1;" onclick="event.stopPropagation(); window.removeMediaItem(this)">×</button>`;
                                 const badge = `<div class="sm-gallery-badge" style="position: absolute; top: 6px; left: 6px; z-index: 10; background: #f97316; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">${index + 1}</div>`;
                                 // For loaded dataUrls, estimate MB from base64 length or just use placeholder
                                 const sizeMB = mi.dataUrl ? (mi.dataUrl.length * 0.75 / (1024 * 1024)).toFixed(2) : '0.10';
@@ -1357,7 +1513,8 @@ window.openCreatePostModal = function(postId = null) {
                                         visualContent = `<iframe src="${mi.url}" style="width: 100%; height: 100%; border: none; pointer-events: none; z-index:1;"></iframe>`;
                                     } else {
                                         if (mi.thumbnail) {
-                                            visualContent = `<img src="${mi.thumbnail}" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; background: ${mi.thumbnail.includes('frame.io') ? '#f8fafc' : '#000'}; z-index: 1;">`;
+                                            const fallbackHtml = `<div style="width: 100%; height: 100%; position: absolute; top:0; left:0; background: #1e293b; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:12px; z-index: 1;">لا توجد معاينة</div>`;
+                                            visualContent = `<img src="${mi.thumbnail}" onerror="this.outerHTML=this.getAttribute('data-fallback')" data-fallback="${fallbackHtml.replace(/"/g, '&quot;')}" style="width: 100%; height: 100%; object-fit: contain; position: absolute; top:0; left:0; background: ${mi.thumbnail.includes('frame.io') ? '#f8fafc' : '#000'}; z-index: 1;">`;
                                         } else {
                                             visualContent = `<div style="width: 100%; height: 100%; position: absolute; top:0; left:0; background: #1e293b; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:12px; z-index: 1;">لا توجد معاينة</div>`;
                                         }
@@ -1380,15 +1537,16 @@ window.openCreatePostModal = function(postId = null) {
                                                 }
                                             </button>
                                         </div>
-                                        <button onclick="event.stopPropagation(); window.removeMediaItem(this.closest('.frame-io-media'))" style="position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,0.95); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#e53e3e; font-weight:bold; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.2); z-index:10; line-height: 1;">×</button>
+                                        ${window.isClientView ? '' : `<button onclick="event.stopPropagation(); window.removeMediaItem(this)" style="position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,0.95); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#e53e3e; font-weight:bold; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.2); z-index:10; line-height: 1;">×</button>`}
                                     `;
                                 } else {
+                                    wrap.className = 'sm-media-item-container';
                                     wrap.style.cssText = 'position: relative; width: 100%; max-width: 160px; border-radius: 8px; overflow: hidden; border: 1px solid #edf2f7; background: #fff; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);';
                                     const mediaTypeLabel = mi.type === 'video' ? 'فيديو' : 'صورة';
                                     const mediaElem = mi.type === 'video' 
                                         ? `<video class="sm-gallery-vid" src="${mi.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1;" muted></video>`
                                         : `<img class="sm-gallery-img" src="${mi.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1;">`;
-                                    const clickHandler = mi.type === 'video' ? `window.viewMediaFull('${mi.dataUrl}', 'video')` : `window.viewMediaFull('${mi.dataUrl}', 'image')`;
+                                    const clickHandler = `window.viewMediaFull(this.closest('.sm-media-item-container').querySelector('.sm-gallery-vid, .sm-gallery-img').src, '${mi.type === 'video' ? 'video' : 'image'}', event)`;
                                     
                                     wrap.innerHTML = `
                                         <div style="width: 100%; aspect-ratio: 9/16; background: #1e293b; position: relative; overflow: hidden; cursor:pointer;" onclick="${clickHandler}">
@@ -1455,7 +1613,7 @@ window.openCreatePostModal = function(postId = null) {
             const activeBoard = boards.find(b => b.id === activeBoardId);
             if (activeBoard && activeBoard.cards) {
                 const targetDateStr = `${targetOpt.year}-${targetOpt.month}-${targetOpt.date}`;
-                let dayPosts = activeBoard.cards.filter(c => c.dateStr === targetDateStr);
+                let dayPosts = activeBoard.cards.filter(c => c.dateStr === targetDateStr && (window.smShowClientEditsToggle !== false || !c.isClientDayNote));
                 
                 if (dayPosts.length > 0 || postId) {
                     let html = `<h4 style="font-size:12px; color:#64748b; margin-bottom:8px; font-weight:600;">منشورات هذا اليوم:</h4><div id="smModalPostsList" style="display:flex; flex-direction:column; gap:6px;">`;
@@ -1467,7 +1625,8 @@ window.openCreatePostModal = function(postId = null) {
                         const textSnippet = window.smEscapeHTML(textSnippetRaw);
                         const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
                         
-                        let mediaThumb = `<div style="font-size:12px; margin-left:6px; flex-shrink:0;">📝</div>`;
+                        const defaultIcon = p.postType === 'video' ? '▶️' : '🖼️';
+                        let mediaThumb = `<div style="font-size:12px; margin-left:6px; flex-shrink:0;">${defaultIcon}</div>`;
                         if (items.length > 0) {
                             const m = items[0];
                             if (m.dataUrl && (!m.type || m.type === 'image')) {
@@ -1499,20 +1658,17 @@ window.openCreatePostModal = function(postId = null) {
 
                         return `
                         <div data-id="${p.id}" ${clickEvt} ${hoverStyle} title="${safeFullText || safeDesc || ''}" style="padding: 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; display: flex; align-items: center; transition: transform 0.1s; direction: rtl; ${pointerEvt} ${shadow}">
-                            <div class="sm-sidebar-drag-handle" style="font-weight: 800; color: #cbd5e1; font-size: 14px; margin-left: 8px; cursor: grab; display: flex; align-items: center; justify-content: center; pointer-events: auto;" onclick="event.stopPropagation();">${idx + 1}</div>
+                            <div class="sm-sidebar-drag-handle" style="font-weight: 800; color: #cbd5e1; font-size: 14px; margin-left: 8px; cursor: grab; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; pointer-events: auto;" onclick="event.stopPropagation();">${idx + 1}</div>
                             ${mediaThumb}
                             <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; font-weight: ${isActive ? '700' : '500'}; color: ${isActive ? '#1d4ed8' : '#1e293b'}; margin-left: 4px;">${textSnippet}</div>
+                            ${window.isClientView ? '' : `
                             <button onclick="event.stopPropagation(); window.deleteSocialPost('${p.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; border-radius: 4px; pointer-events: auto; display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.opacity='1'; this.style.background='#fee2e2';" onmouseout="this.style.opacity='0.7'; this.style.background='transparent';" title="حذف المنشور">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                            </button>
+                            </button>`}
                         </div>`;
                     }).join('');
                     
-                    html += `</div>
-                        <button onclick="const ta = document.querySelector('.sm-textarea'); const hi = document.getElementById('smMediaInput'); if((ta && ta.value.trim()) || (hi && hi.files.length>0) || document.getElementById('smMediaGallery').children.length > 0) window.saveSocialDraft(true); setTimeout(() => window.openCreatePostModal(null), 100);" style="width: 100%; border: dashed 1px #cbd5e1; background: #f8fafc; color: #3b82f6; padding: 6px; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: 600; transition: background 0.2s; margin-top: 4px;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='#f8fafc';">
-                            + إضافة منشور جديد
-                        </button>
-                    `;
+                    html += `</div>`;
                     
                     existingPostsArea.innerHTML = html;
                     existingPostsArea.style.display = 'block';
@@ -1556,11 +1712,153 @@ window.openCreatePostModal = function(postId = null) {
                 existingPostsArea.style.display = 'none';
             }
         }
+        const feedbackSec = document.getElementById('smClientFeedbackSection');
+        const footer = createPostModal.querySelector('.sm-modal-footer');
+        const modalBody = createPostModal.querySelector('.modal-body');
         
+        if (footer) footer.style.display = 'flex';
+        
+        if (modalBody) {
+            // Restore settings
+            const leftCol = modalBody.querySelector('.sm-modal-left-col');
+            if (leftCol) leftCol.style.display = 'flex';
+            
+            const uploadPrompt = modalBody.querySelector('.sm-upload-prompt-dashed');
+            if (uploadPrompt) uploadPrompt.style.display = 'flex';
+            
+            const charCount = modalBody.querySelector('.sm-char-count');
+            if (charCount) charCount.style.display = 'block';
+            
+            modalBody.style.gridTemplateColumns = '1fr 280px';
+            modalBody.style.maxWidth = 'none';
+            modalBody.style.margin = '0';
+            
+            const textH4 = modalBody.querySelector('.sm-textarea-header');
+            if (textH4) textH4.style.display = 'block';
+            
+            const textArea = modalBody.querySelector('.sm-textarea');
+            if (textArea) {
+                textArea.style.pointerEvents = 'auto';
+                textArea.style.background = '#ffffff';
+            }
+            
+            const deleteBtn = document.getElementById('btnDeletePost');
+            if (deleteBtn) deleteBtn.style.display = 'flex';
+            
+            // Frame.io vs Client Edits
+            const frameIoLabel = document.getElementById('frameIoLabel');
+            const frameIoContainer = document.getElementById('frameIoContainer');
+            const clientEditsLabel = document.getElementById('clientEditsLabel');
+            const clientEditsContainer = document.getElementById('clientEditsContainer');
+            const clientEditsInput = document.getElementById('clientEditsInput');
+            
+            let existingEdits = '';
+            if (postId) {
+                const activeBoard = boards.find(b => b.id === activeBoardId);
+                if (activeBoard && activeBoard.cards) {
+                    const post = activeBoard.cards.find(c => c.id === postId);
+                    if (post && post.clientEdits) existingEdits = post.clientEdits;
+                }
+            }
+            if (clientEditsInput) { 
+                const newTextArea = document.createElement('textarea');
+                newTextArea.id = 'clientEditsInput';
+                newTextArea.placeholder = clientEditsInput.placeholder;
+                newTextArea.className = clientEditsInput.className || '';
+                newTextArea.style.cssText = clientEditsInput.style.cssText;
+                newTextArea.value = existingEdits;
+                newTextArea.innerHTML = window.smEscapeHTML ? window.smEscapeHTML(existingEdits) : existingEdits;
+                newTextArea.oninput = function() {
+                    if (window.currentEditingSocialPostId && typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined') {
+                        const board = boards.find(b => b.id === activeBoardId);
+                        if (board && board.cards) {
+                            const post = board.cards.find(c => c.id === window.currentEditingSocialPostId);
+                            if (post) {
+                                post.clientEdits = this.value;
+                                if (typeof window.saveState === 'function') window.saveState();
+                                if (typeof window.saveSocialDraft === 'function') window.saveSocialDraft(true);
+                                if (typeof window.updateLiveDiff === 'function') window.updateLiveDiff();
+                            }
+                        }
+                    }
+                };
+                
+                // Copy any other attributes like dir="rtl"
+                Array.from(clientEditsInput.attributes).forEach(attr => {
+                    if (attr.name !== 'id' && attr.name !== 'style' && attr.name !== 'class' && attr.name !== 'placeholder') {
+                        newTextArea.setAttribute(attr.name, attr.value);
+                    }
+                });
+                
+                clientEditsInput.parentNode.replaceChild(newTextArea, clientEditsInput);
+            }
+            
+            if (window.isClientView) {
+                const zone = document.getElementById("smUploadZone");
+                if (zone) zone.style.setProperty("margin-bottom", "0px", "important");
+                if (zone) zone.style.setProperty("display", "block", "important"); // Keep media visible
+                
+                const prompt = document.getElementById("smUploadPrompt");
+                if (prompt) {
+                    prompt.style.setProperty("display", "none", "important");
+                    prompt.style.cssText = "display: none !important;";
+                }
+                
+                if (frameIoLabel) frameIoLabel.style.setProperty("display", "none", "important");
+                if (frameIoContainer) frameIoContainer.style.setProperty("display", "none", "important");
+                
+                const publishSec = document.getElementById("publishSection");
+                if (publishSec) {
+                    publishSec.style.setProperty("display", "none", "important");
+                } else {
+                    // Fallback if index.html is cached
+                    document.querySelectorAll(".sm-modal-section").forEach(sec => {
+                        if (sec.innerHTML.includes("النشر") && sec.innerHTML.includes("مسودة")) {
+                            sec.style.setProperty("display", "none", "important");
+                        }
+                    });
+                }
+                
+                if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "flex", "important");
+                if (clientEditsContainer) clientEditsContainer.style.setProperty("display", "flex", "important");
+                
+                // Backup creation if the user is stuck on cached index.html
+                if (!document.getElementById("clientEditsInput") && prompt) {
+                    const editsLabel = document.createElement("div");
+                    editsLabel.id = "clientEditsLabel";
+                    editsLabel.style.cssText = "color: #22c55e; font-size: 15px; font-weight: 600; align-items: center; gap: 8px; margin-bottom: 12px; width: 100%; text-align: right; display: flex;";
+                    editsLabel.innerHTML = "هل هناك تعديلات؟";
+                    prompt.appendChild(editsLabel);
+
+                    const editsContainer = document.createElement("div");
+                    editsContainer.id = "clientEditsContainer";
+                    editsContainer.style.cssText = "width: 100%; max-width: 100%; display: flex;";
+                    editsContainer.innerHTML = '<textarea id="clientEditsInput" oninput="if(window.currentEditingSocialPostId&&window.boards&&window.activeBoardId){const board=boards.find(b=>b.id===activeBoardId);if(board&&board.cards){const post=board.cards.find(c=>c.id===window.currentEditingSocialPostId);if(post){post.clientEdits=this.value;post.clientModified=this.value.trim()!==\'\';if(window.saveState)window.saveState();if(typeof window.saveSocialDraft===\'function\')setTimeout(()=>window.saveSocialDraft(true),50);if(typeof window.updateLiveDiff===\'function\')setTimeout(window.updateLiveDiff,100);}}}" placeholder="اكتب ملاحظاتك أو طلبات التعديل هنا..." style="width:100%; min-height: 80px; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 6px; padding: 12px; font-size: 13px; outline:none; resize: vertical;"></textarea>';
+                    prompt.appendChild(editsContainer);
+                    
+                    const newInputs = document.getElementById("clientEditsInput");
+                    if (newInputs) { newInputs.value = existingEdits; newInputs.innerHTML = existingEdits; }
+                }
+            } else {
+                if (frameIoLabel) frameIoLabel.style.setProperty("display", "flex", "important");
+                if (frameIoContainer) frameIoContainer.style.setProperty("display", "flex", "important");
+                
+                const publishSec = document.getElementById("publishSection");
+                if (publishSec) publishSec.style.setProperty("display", "block", "important");
+                
+                if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "none", "important");
+                if (clientEditsContainer) clientEditsContainer.style.setProperty("display", "none", "important");
+            }
+        }
+        
+
         createPostModal.classList.add('active');
     }
 };
 const closeCreatePostModal = document.getElementById('closeCreatePostModal');
+
+
+
 const pipedriveDomainInput = document.getElementById('pipedriveDomain');
 const pipedriveTokenInput = document.getElementById('pipedriveToken');
 const fetchPipedrivePipelinesBtn = document.getElementById('fetchPipedrivePipelinesBtn');
@@ -1573,48 +1871,52 @@ if (closePipedriveSettingsModal) {
 }
 
 if (closeCreatePostModal && createPostModal) {
-    const handleModalDismiss = () => {
+    window.handleModalDismiss = () => {
+        const createPostModal = document.getElementById('createPostModal');
         const textArea = document.querySelector('.sm-textarea');
-        const textContent = textArea ? textArea.value.trim() : '';
-        const gallery = document.getElementById('smMediaGallery');
-        const hasGalleryItems = gallery && gallery.children.length > 0;
-        
-        const isEmpty = !textContent && !hasGalleryItems;
-        
-        if (isEmpty) {
-            if (window.currentEditingSocialPostId) {
-                // Automatically delete the draft if it becomes completely empty
-                const board = boards.find(b => b.id === activeBoardId);
-                if (board) {
-                    const idx = board.cards.findIndex(c => c.id === window.currentEditingSocialPostId);
-                    if (idx > -1) {
-                        board.cards.splice(idx, 1);
-                        saveState();
-                        render();
+        try {
+            const textContent = textArea ? textArea.value.trim() : '';
+            const gallery = document.getElementById('smMediaGallery');
+            const hasGalleryItems = gallery && gallery.children.length > 0;
+            
+            const isEmpty = !textContent && !hasGalleryItems;
+            
+            if (isEmpty) {
+                if (window.currentEditingSocialPostId) {
+                    const board = boards.find(b => b.id === activeBoardId);
+                    if (board) {
+                        const idx = board.cards.findIndex(c => c.id === window.currentEditingSocialPostId);
+                        if (idx > -1) {
+                            board.cards.splice(idx, 1);
+                            if (typeof saveState === 'function') saveState();
+                            if (typeof render === 'function') render();
+                        }
                     }
                 }
+            } else {
+                if (typeof window.saveSocialDraft === 'function') window.saveSocialDraft(true);
             }
-        } else {
-            window.saveSocialDraft(true); // Save current state safely into draft before closing
+        } catch (e) {
+            console.error("Error during modal dismiss logic", e);
+        } finally {
+            if (createPostModal) createPostModal.classList.remove('active');
+            if (textArea) textArea.value = '';
+            if (typeof window.clearMediaUpload === 'function') window.clearMediaUpload();
         }
-        
-        createPostModal.classList.remove('active');
-        if (textArea) textArea.value = '';
-        if (window.clearMediaUpload) window.clearMediaUpload();
     };
 
-    if(closeCreatePostModal) closeCreatePostModal.onclick = handleModalDismiss;
+    if(closeCreatePostModal) closeCreatePostModal.onclick = window.handleModalDismiss;
     
     // Close modal if clicking outside the content box
     if(createPostModal) createPostModal.addEventListener('click', (e) => {
         if (e.target === createPostModal) {
-            handleModalDismiss();
+            window.handleModalDismiss();
         }
     });
 
     // Also bind Cancel button inside modal body
     const cancelBtn = createPostModal.querySelector('.sm-btn-cancel');
-    if (cancelBtn) if(cancelBtn) cancelBtn.onclick = handleModalDismiss;
+    if (cancelBtn) if(cancelBtn) cancelBtn.onclick = window.handleModalDismiss;
 
     // Bind Publish Mode toggles
     const publishToggles = createPostModal.querySelectorAll('.sm-toggle-btn');
@@ -2953,6 +3255,7 @@ window.deleteBoard = function(boardId) {
 
 window.switchBoard = function(boardId) {
     activeBoardId = boardId;
+    localStorage.setItem('ai_active_board', activeBoardId);
     saveState();
     render();
     switchBoardModal.classList.remove('active');
@@ -3247,10 +3550,18 @@ function render() {
     });
 
     appContainer.innerHTML = '';
-    const activeBoard = boards.find(b => b.id === activeBoardId);
-    if (!activeBoard) return;
+    let activeBoard = boards.find(b => b.id === activeBoardId);
+    if (!activeBoard) {
+        if (boards.length > 0) {
+            activeBoardId = boards[0].id;
+            activeBoard = boards[0];
+            localStorage.setItem('ai_active_board', activeBoardId);
+        } else {
+            return;
+        }
+    }
     
-    document.title = `${activeBoard.title} | ${activeBoard.type === 'kanban' ? 'Managing' : activeBoard.type === 'social_scheduler' ? 'Social Scheduler' : 'AI Accounts Timer'}`;
+    document.title = `Social Media Manager`;
 
     appContainer.classList.remove('managing-view');
     appContainer.classList.add('social-scheduler-view');
@@ -3514,23 +3825,24 @@ function renderSocialSchedulerApp(activeBoard) {
                     && window.activeSocialDateOptions.month === currentMonth
                     && window.activeSocialDateOptions.year === currentYear;
                 
-                const dayPosts = (activeBoard.cards || []).filter(c => c.dateStr === `${currentYear}-${currentMonth}-${dayCounter}`);
-                const postThumbnailsHtml = dayPosts.slice(0, 4).map((p, idx) => {
+                const dayPosts = (activeBoard.cards || []).filter(c => c.dateStr === `${currentYear}-${currentMonth}-${dayCounter}` && (window.smShowClientEditsToggle !== false || !c.isClientDayNote));
+                const postThumbnailsHtml = dayPosts.slice(0, 5).map((p, idx) => {
                     const safeFullText = p.fullText ? window.smEscapeHTML(p.fullText) : '';
                     const safeDesc = p.description ? window.smEscapeHTML(p.description) : '';
                     const textSnippetRaw = p.fullText ? p.fullText.substring(0, 25) + '...' : (p.description ? p.description.substring(0, 25) + '...' : 'مسودة منشور...');
                     const textSnippet = window.smEscapeHTML(textSnippetRaw);
                     const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
                     
-                    let mediaThumb = `<div style="font-size:12px; margin-left:6px; flex-shrink:0;">📝</div>`;
+                    const defaultIcon = p.postType === 'video' ? '▶️' : '🖼️';
+                    let mediaThumb = `<div style="font-size:12px; margin-left:6px; flex-shrink:0;">${defaultIcon}</div>`;
                     if (items.length > 0) {
                         const m = items[0];
                         if (m.dataUrl && (!m.type || m.type === 'image')) {
-                            mediaThumb = `<img src="${m.dataUrl}" style="width:24px; height:24px; border-radius:4px; object-fit:cover; margin-left:6px; flex-shrink:0;">`;
+                            mediaThumb = `<img class="sm-thumb-icon" src="${m.dataUrl}" style="width:24px; height:24px; border-radius:4px; object-fit:cover; margin-left:6px; flex-shrink:0;">`;
                         } else if (m.thumbnail) {
-                            mediaThumb = `<img src="${m.thumbnail}" style="width:24px; height:24px; border-radius:4px; object-fit:cover; margin-left:6px; flex-shrink:0;">`;
+                            mediaThumb = `<img class="sm-thumb-icon" src="${m.thumbnail}" style="width:24px; height:24px; border-radius:4px; object-fit:cover; margin-left:6px; flex-shrink:0;">`;
                         } else if (m.type === 'frame-io' || m.type === 'video' || (m.dataUrl && m.dataUrl.startsWith('data:video/'))) {
-                            mediaThumb = `<div style="width:24px; height:24px; border-radius:4px; background:#1e293b; color:white; display:flex; align-items:center; justify-content:center; margin-left:6px; flex-shrink:0;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
+                            mediaThumb = `<div class="sm-thumb-icon" style="width:24px; height:24px; border-radius:4px; background:#1e293b; color:white; display:flex; align-items:center; justify-content:center; margin-left:6px; flex-shrink:0;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
                         }
                     }
                     
@@ -3541,14 +3853,19 @@ function renderSocialSchedulerApp(activeBoard) {
                     if (p.status === 'فوري') { bg = '#f0fdf4'; border = '1px solid #bbf7d0'; accentColor = '#22c55e'; }
                     else if (p.status === 'جدولة') { bg = '#fffbeb'; border = '1px solid #fde68a'; accentColor = '#f59e0b'; }
                     
+                    if (window.smShowClientEditsToggle !== false && p.clientModified) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
+                    
                     return `
-                    <div onclick="event.stopPropagation(); window.openCreatePostModal('${p.id}');" title="${safeFullText || safeDesc || ''}" style="margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; cursor: pointer; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: transform 0.1s, box-shadow 0.1s; direction: rtl;" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 3px 6px rgba(0,0,0,0.1)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
-                        ${mediaThumb}
-                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; flex: 1; font-weight: 500;">${textSnippet}</div>
+                    <div class="sm-cal-draggable-post" draggable="${!window.isClientView}" ondragstart="if(!window.isClientView) window.handleCalDragStart(event, '${p.id}')" onclick="window.openCreatePostModal('${p.id}');" title="${safeFullText || safeDesc || ''}" style="--dot-color: ${accentColor}; margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; flex-wrap: wrap;" onmouseover="this.style.boxShadow='0 3px 6px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
+                        <div style="display:flex; align-items:center; width: 100%; justify-content: center;">
+                            ${mediaThumb}
+                            <div class="sm-thumb-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; padding-bottom:1px; flex:1; font-weight:500; pointer-events:none;">${textSnippet}</div>
+                        </div>
+                        ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:4px; padding:4px; background:#bbf7d0; color:#166534; border-radius:4px; font-size:10px; font-weight:700; text-align:right;">تم تعديله من العميل${p.clientEdits ? `<br><span style="font-weight:500;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
                     </div>`;
                 }).join('');
                 
-                const postBoxContainer = dayPosts.length > 0 ? `<div style="display: flex; flex-direction: column; width: 100%; margin-top: 4px;">${postThumbnailsHtml}</div>` : '';
+                const postBoxContainer = `<div class="sm-cal-dropzone" data-date="${currentYear}-${currentMonth}-${dayCounter}" style="display: flex; flex-direction: column; width: 100%; flex-grow: 1; min-height: 40px; margin-top: 4px; border-radius: 6px;" ondragenter="event.preventDefault();" ondragover="event.preventDefault(); this.style.background='rgba(59, 130, 246, 0.1)';" ondragleave="this.style.background='';" ondrop="window.handleCalDrop(event, this)">${postThumbnailsHtml}</div>`;
                 
                 const specialAwarenessDays = window.specialAwarenessDays;
                 let specialEventHtml = '';
@@ -3584,7 +3901,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             </div>
                         </div>
                         ${postBoxContainer}
-                        ${dayPosts.length > 4 ? `<div style="font-size:10px; color:#3b82f6; font-weight: bold; text-align: center; margin-top:auto; padding-top:4px; cursor:pointer;" onclick="event.stopPropagation(); window.openCreatePostModal(null, {year:${currentYear},month:${currentMonth},date:${dayCounter}});">+${dayPosts.length-4} المزيد من المنشورات</div>` : ''}
+                        ${dayPosts.length > 5 ? `<div style="font-size:10px; color:#3b82f6; font-weight: bold; text-align: center; margin-top:auto; padding-top:4px; cursor:pointer;" onclick="event.stopPropagation(); window.openCreatePostModal('${dayPosts[5].id}');">+${dayPosts.length-5} المزيد من المنشورات</div>` : ''}
                     </div>
                 `;
                 dayCounter++;
@@ -3604,7 +3921,7 @@ function renderSocialSchedulerApp(activeBoard) {
             addModal.id = 'addClientModal';
             addModal.className = 'modal-overlay';
             addModal.innerHTML = `
-                <div class="modal-content" style="max-width: 380px;">
+                <div class="modal-content" style="max-width: 380px;" dir="rtl">
                     <div class="modal-header">
                         <h3>إضافة عميل جديد</h3>
                         <button class="icon-btn" onclick="document.getElementById('addClientModal').classList.remove('active')">
@@ -3612,11 +3929,11 @@ function renderSocialSchedulerApp(activeBoard) {
                         </button>
                     </div>
                     <div class="modal-body" style="padding-top: 12px;">
-                        <input type="text" id="addClientInput" class="modal-input" placeholder="اسم العميل (مثال: Client 2)..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;">
+                        <input type="text" id="addClientInput" class="modal-input" placeholder="اسم العميل (مثال: Client 2)..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
                     </div>
                     <div class="modal-footer" style="padding-top: 16px; margin-top: 16px; border-top: 1px solid #edf2f7; display: flex; justify-content: flex-end; gap: 8px;">
-                        <button onclick="document.getElementById('addClientModal').classList.remove('active')" style="padding: 8px 16px; border-radius: 6px; border: none; background: #edf2f7; color: #4a5568; cursor: pointer; font-weight: 600;">إلغاء</button>
                         <button id="addClientConfirmBtn" style="padding: 8px 16px; border-radius: 6px; border: none; background: #ea580c; color: white; cursor: pointer; font-weight: 600;">إضافة</button>
+                        <button onclick="document.getElementById('addClientModal').classList.remove('active')" style="padding: 8px 16px; border-radius: 6px; border: none; background: #edf2f7; color: #4a5568; cursor: pointer; font-weight: 600;">إلغاء</button>
                     </div>
                 </div>
             `;
@@ -3662,6 +3979,7 @@ function renderSocialSchedulerApp(activeBoard) {
     // Safe scoped setter for switching clients via UI
     window.switchSocialClient = function(id) {
         activeBoardId = id;
+        localStorage.setItem('ai_active_board', activeBoardId);
         if (typeof saveState === 'function') saveState();
         if (typeof render === 'function') render();
     };
@@ -3677,7 +3995,7 @@ function renderSocialSchedulerApp(activeBoard) {
             rnModal.id = 'renameClientModal';
             rnModal.className = 'modal-overlay';
             rnModal.innerHTML = `
-                <div class="modal-content" style="max-width: 380px;">
+                <div class="modal-content" style="max-width: 380px;" dir="rtl">
                     <div class="modal-header">
                         <h3>تعديل اسم العميل</h3>
                         <button class="icon-btn" onclick="document.getElementById('renameClientModal').classList.remove('active')">
@@ -3685,13 +4003,13 @@ function renderSocialSchedulerApp(activeBoard) {
                         </button>
                     </div>
                     <div class="modal-body" style="padding-top: 12px;">
-                        <input type="text" id="renameClientInput" class="modal-input" placeholder="اسم العميل..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;">
+                        <input type="text" id="renameClientInput" class="modal-input" placeholder="اسم العميل..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
                     </div>
                     <div class="modal-footer" style="padding-top: 16px; margin-top: 16px; border-top: 1px solid #edf2f7; display: flex; justify-content: space-between; gap: 8px;">
                         <button id="renameClientDeleteBtn" style="padding: 8px 16px; border-radius: 6px; border: none; background: #fee2e2; color: #dc2626; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">حذف العميل</button>
                         <div style="display: flex; gap: 8px;">
-                            <button onclick="document.getElementById('renameClientModal').classList.remove('active')" style="padding: 8px 16px; border-radius: 6px; border: none; background: #edf2f7; color: #4a5568; cursor: pointer; font-weight: 600;">إلغاء</button>
                             <button id="renameClientConfirmBtn" style="padding: 8px 16px; border-radius: 6px; border: none; background: #f97316; color: white; cursor: pointer; font-weight: 600;">حفظ</button>
+                            <button onclick="document.getElementById('renameClientModal').classList.remove('active')" style="padding: 8px 16px; border-radius: 6px; border: none; background: #edf2f7; color: #4a5568; cursor: pointer; font-weight: 600;">إلغاء</button>
                         </div>
                     </div>
                 </div>
@@ -3735,8 +4053,11 @@ function renderSocialSchedulerApp(activeBoard) {
 
     const clientTabsHtml = `
         <div style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; align-items: center; flex-wrap: nowrap;">
-            ${socialBoards.map(b => `
+            <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center;">
+            ${socialBoards.map((b, idx) => `
                 <button 
+                    ${idx < 2 ? 'class="sm-non-draggable"' : ''}
+                    data-id="${b.id}"
                     onclick="window.switchSocialClient('${b.id}')" 
                     ondblclick="window.renameSocialClient(event, '${b.id}')"
                     title="انقر نقراً مزدوجاً لـتعديل اسم العميل"
@@ -3756,10 +4077,12 @@ function renderSocialSchedulerApp(activeBoard) {
                     cursor: pointer;
                     transition: all 0.2s;
                     box-shadow: ${activeBoard.id === b.id ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none'};
-                ">
+                "
+                ${idx < 2 ? '' : `onmousedown="this.style.cursor='grabbing';" onmouseup="this.style.cursor='pointer';" onmouseleave="this.style.cursor='pointer';"`}>
                     ${b.title || 'Client '}
                 </button>
             `).join('')}
+            </div>
             <button onclick="window.openAddClientModal();" style="
                 flex-shrink: 0;
                 display: flex;
@@ -3781,18 +4104,82 @@ function renderSocialSchedulerApp(activeBoard) {
             </button>
         </div>
     `;
+    if (!window.openSocialRulesModal) {
+        window.openSocialRulesModal = function() {
+            let overlay = document.getElementById('socialRulesOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'socialRulesOverlay';
+                overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); display:flex; align-items:center; justify-content:center; z-index:999999; backdrop-filter:blur(4px); opacity:0; transition:opacity 0.2s;";
+                
+                let existingRules = localStorage.getItem('sm-social-rules') || '';
+                // Migrate legacy plain text to HTML if needed
+                if (!existingRules.includes('<') && existingRules.includes('\n')) {
+                    existingRules = existingRules.replace(/\n/g, '<br>');
+                }
+                
+                overlay.innerHTML = `
+                    <div style="background:white; width:90%; max-width:850px; border-radius:12px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.1); transform:translateY(20px); transition:transform 0.2s; direction:rtl; display: flex; flex-direction: column;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                            <h3 style="margin:0; font-size:22px; color:#1e293b; font-weight:700; display:flex; align-items:center; gap:8px;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                قواعد فريق العمل
+                            </h3>
+                            <button onclick="document.getElementById('socialRulesOverlay').style.opacity='0'; document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);" style="background:none; border:none; cursor:pointer; color:#94a3b8;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                        </div>
+                        <p style="font-size:15px; color:#64748b; margin-top:0; margin-bottom:16px;">اكتب هنا القواعد والشروط المرجعية لقسم التواصل الاجتماعي. (تُحفظ تلقائياً في المتصفح).</p>
+                        
+                        <style>
+                            #socialRulesInput ul { list-style-type: disc !important; padding-inline-start: 28px !important; margin: 12px 0 !important; }
+                            #socialRulesInput ol { list-style-type: decimal !important; padding-inline-start: 28px !important; margin: 12px 0 !important; }
+                            #socialRulesInput li { margin-bottom: 6px !important; display: list-item !important; }
+                            #socialRulesInput b { font-weight: bold !important; }
+                            #socialRulesInput i { font-style: italic !important; }
+                            #socialRulesInput * { font-size: inherit !important; line-height: inherit !important; }
+                        </style>
+                        <div style="border:1px solid #cbd5e1; border-radius:8px; overflow:hidden; transition:border-color 0.2s;" id="socialRulesContainer">
+                            <div style="background:#f8fafc; border-bottom:1px solid #cbd5e1; padding:8px 12px; display:flex; gap:8px;">
+                                <button onclick="document.execCommand('bold',false,null);" title="عريض (Bold)" style="background:white; border:1px solid #cbd5e1; border-radius:4px; padding:4px 8px; cursor:pointer; font-weight:bold; color:#1e293b;">B</button>
+                                <button onclick="document.execCommand('italic',false,null);" title="مائل (Italic)" style="background:white; border:1px solid #cbd5e1; border-radius:4px; padding:4px 8px; cursor:pointer; font-style:italic; font-family:serif; color:#1e293b;">I</button>
+                                <div style="width:1px; background:#cbd5e1; margin:0 4px;"></div>
+                                <button onclick="document.execCommand('insertUnorderedList',false,null);" title="قائمة نقطية (Bullets)" style="background:white; border:1px solid #cbd5e1; border-radius:4px; padding:4px 8px; cursor:pointer; display:flex; align-items:center; color:#1e293b;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></button>
+                                <button onclick="document.execCommand('insertOrderedList',false,null);" title="قائمة رقمية (Numbered)" style="background:white; border:1px solid #cbd5e1; border-radius:4px; padding:4px 8px; cursor:pointer; display:flex; align-items:center; color:#1e293b;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 6h11"></path><path d="M10 12h11"></path><path d="M10 18h11"></path><path d="M4 6h1v4"></path><path d="M4 10h2"></path><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></button>
+                                <div style="width:1px; background:#cbd5e1; margin:0 4px;"></div>
+                                <button onclick="let el=document.getElementById('socialRulesInput'); let sz=parseInt(window.getComputedStyle(el).fontSize); el.style.fontSize=(sz+2)+'px';" title="تكبير الخط" style="background:white; border:1px solid #cbd5e1; border-radius:4px; padding:4px 8px; cursor:pointer; color:#1e293b; font-weight:bold; display:flex; align-items:center; font-size:14px;">A+</button>
+                                <button onclick="let el=document.getElementById('socialRulesInput'); let sz=parseInt(window.getComputedStyle(el).fontSize); el.style.fontSize=Math.max(10, sz-2)+'px';" title="تصغير الخط" style="background:white; border:1px solid #cbd5e1; border-radius:4px; padding:4px 8px; cursor:pointer; color:#1e293b; font-weight:bold; display:flex; align-items:center; font-size:12px;">A-</button>
+                            </div>
+                            <div id="socialRulesInput" contenteditable="true" style="width:100%; height:60vh; min-height:400px; overflow-y:auto; padding:16px; font-family:inherit; font-size:16px; line-height:1.6; color:#1e293b; outline:none;" onfocus="document.getElementById('socialRulesContainer').style.borderColor='#f97316'" onblur="document.getElementById('socialRulesContainer').style.borderColor='#cbd5e1'"></div>
+                        </div>
+                        
+                        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+                            <button onclick="document.getElementById('socialRulesOverlay').style.opacity='0'; document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);" style="background:#f1f5f9; color:#475569; border:none; padding:12px 24px; border-radius:8px; font-weight:700; cursor:pointer; font-size:15px; transition:background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">إلغاء</button>
+                            <button onclick="localStorage.setItem('sm-social-rules', document.getElementById('socialRulesInput').innerHTML); document.getElementById('socialRulesOverlay').style.opacity='0'; document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);" style="background:#ea580c; color:white; border:none; padding:12px 32px; border-radius:8px; font-weight:700; cursor:pointer; font-size:15px; transition:background 0.2s;" onmouseover="this.style.background='#c2410c'" onmouseout="this.style.background='#ea580c'">حفظ القواعد</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                
+                document.getElementById('socialRulesInput').innerHTML = existingRules;
+                
+                requestAnimationFrame(() => {
+                    overlay.style.opacity = '1';
+                    overlay.firstElementChild.style.transform = 'translateY(0)';
+                });
+            }
+        };
+    }
 
     const topRowHtml = `
         <div class="sm-header-banner" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: flex-start; gap: 24px;">
             <!-- Title & Icon -->
-            <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+            <button onclick="window.openSocialRulesModal()" title="انقر لضبط وتعديل قواعد النشر" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0; background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 8px; transition: background 0.2s; outline: none; box-shadow: none;" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'">
                 <div class="sm-title-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
                 </div>
-                <div class="sm-title-text">
+                <div class="sm-title-text" style="display: flex; align-items: center; gap: 8px;">
                     <h2 style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0;">النشر على وسائل التواصل</h2>
                 </div>
-            </div>
+            </button>
 
             <!-- Client Tabs injected directly to the left of the title -->
             ${clientTabsHtml}
@@ -3817,6 +4204,163 @@ function renderSocialSchedulerApp(activeBoard) {
         `;
     });
     tabsHtml += '</div>';
+
+    window.smShowClientEditsToggle = typeof window.smShowClientEditsToggle === 'boolean' ? window.smShowClientEditsToggle : true;
+    window.toggleClientEditsVisibility = function() {
+        window.smShowClientEditsToggle = !window.smShowClientEditsToggle;
+        if (typeof render === 'function') {
+            render();
+        }
+    };
+    window.getDiffHtml = function(oldText, newText) {
+        if (!oldText) oldText = '';
+        if (!newText) newText = '';
+        const esc = str => str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        const oldW = oldText.match(/\\S+|\\s+/g) || [];
+        const newW = newText.match(/\\S+|\\s+/g) || [];
+        if (oldW.length > 500 || newW.length > 500) {
+            if (oldText !== newText) return `<span style="color:#166534;">${esc(newText)}</span>`;
+            return esc(newText);
+        }
+        const dp = Array(oldW.length + 1).fill(null).map(() => Array(newW.length + 1).fill(0));
+        for (let i = 1; i <= oldW.length; i++) {
+            for (let j = 1; j <= newW.length; j++) {
+                if (oldW[i-1] === newW[j-1]) dp[i][j] = dp[i-1][j-1] + 1;
+                else dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
+            }
+        }
+        let i = oldW.length, j = newW.length;
+        const path = [];
+        while (i > 0 || j > 0) {
+            if (i > 0 && j > 0 && oldW[i-1] === newW[j-1]) { path.push({t: 'eq', v: oldW[i-1]}); i--; j--; }
+            else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) { path.push({t: 'add', v: newW[j-1]}); j--; }
+            else { path.push({t: 'del', v: oldW[i-1]}); i--; }
+        }
+        path.reverse();
+        let res = '';
+        path.forEach(p => {
+            if (p.t === 'eq') res += esc(p.v);
+            else if (p.t === 'add') res += `<span style="color:#dc2626; font-weight:bold;">${esc(p.v)}</span>`;
+            else if (p.t === 'del' && p.v.trim().length > 0) res += `<del style="color:#ef4444; opacity:0.6; padding:0 2px;">${esc(p.v)}</del>`;
+        });
+        return res.replace(/\\n/g, '<br>');
+    };
+    
+    window.updateLiveDiff = function() {
+        if (!window.currentEditingSocialPostId || !window.boards || !window.activeBoardId) return;
+        const activeBoard = window.boards.find(b => b.id === window.activeBoardId);
+        if (!activeBoard || !activeBoard.cards) return;
+        const post = activeBoard.cards.find(c => c.id === window.currentEditingSocialPostId);
+        if (!post) return;
+        
+        const agencyEditsDiff = document.getElementById('agencyClientEditsDiff');
+        if (!agencyEditsDiff) return;
+        
+        const textArea = document.querySelector('.sm-textarea');
+        const postTypeInput = document.querySelector('input[name="smPostType"]:checked');
+        const clientEditsInput = document.getElementById('clientEditsInput');
+        
+        const currentText = textArea ? textArea.value : (post.fullText || '');
+        const currentType = postTypeInput ? postTypeInput.value : (post.postType || 'image');
+        const currentClientEdits = clientEditsInput ? clientEditsInput.value : (post.clientEdits || '');
+        
+        let diffHtml = '';
+        
+        const formatTime = (ts) => {
+            if (!ts) return '';
+            const d = new Date(ts);
+            return `<div style="font-size: 10px; color: #94a3b8; font-weight: normal; margin-bottom: 4px;">🕒 ${d.toLocaleDateString('ar-EG')} ${d.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</div>`;
+        };
+        const tsHtml = post.clientModifiedAt ? formatTime(post.clientModifiedAt) : formatTime(Date.now());
+
+        if (post.isClientDayNote) {
+            // It's a completely brand new note generated by the calendar double click.
+            diffHtml += `<div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                ${tsHtml}
+                <div style="font-weight: 700; margin-bottom: 4px; color: #0ea5e9;">ملاحظة يومية جديدة</div>
+                <div style="line-height: 1.6; color: #334155; font-size: 13px;">${currentText ? window.smEscapeHTML(currentText).replace(/\\n/g, '<br>') : ''}</div>
+            </div>`;
+        } else if (post.originalState || (currentClientEdits && currentClientEdits.trim() !== '')) {
+            let changes = '';
+            if (post.originalState && post.originalState.postType !== currentType) {
+                changes += `<div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
+                    ${tsHtml}
+                    <div style="font-weight: 700; margin-bottom: 4px; color: #eab308;">تعديل نوع المنشور</div>
+                    <div style="color: #334155;">من <strong>${post.originalState.postType === 'video' ? 'فيديو' : 'صورة'}</strong> <span style="margin: 0 4px;">&larr;</span> إلى <strong style="color: #ef4444">${currentType === 'video' ? 'فيديو' : 'صورة'}</strong></div>
+                </div>`;
+            }
+            if (post.originalState && post.originalState.fullText !== currentText) {
+                changes += `<div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
+                    ${tsHtml}
+                    <div style="font-weight: 700; margin-bottom: 4px; color: #0ea5e9;">تعديل المحتوى</div>
+                    <div style="line-height: 1.6; font-size: 13px; color: #334155;">${window.getDiffHtml(post.originalState.fullText, currentText)}</div>
+                </div>`;
+            }
+            if (currentClientEdits && currentClientEdits.trim() !== '') {
+                changes += `<div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    ${tsHtml}
+                    <div style="font-weight: 700; margin-bottom: 4px; color: #16a34a;">ملاحظات وتعديلات مقترحة</div>
+                    <div style="line-height: 1.6; font-size: 13px; color: #334155;">${window.smEscapeHTML(currentClientEdits).replace(/\\n/g, '<br>')}</div>
+                </div>`;
+            }
+            if (changes) diffHtml += changes;
+        }
+        
+        if (diffHtml) {
+            agencyEditsDiff.innerHTML = diffHtml;
+            agencyEditsDiff.style.display = 'block';
+            agencyEditsDiff.style.background = 'transparent';
+            agencyEditsDiff.style.border = 'none';
+            agencyEditsDiff.style.padding = '0';
+            
+            // CRITICAL: Force the parent container to show if there's actual diff content
+            const agencyEditsContainer = document.getElementById('agencyClientEditsContainer');
+            if (agencyEditsContainer) agencyEditsContainer.style.setProperty('display', 'block', 'important');
+        } else {
+            agencyEditsDiff.style.display = 'none';
+        }
+    };
+    
+    window.clearClientModifications = function() {
+        if (window.currentEditingSocialPostId && window.boards && window.activeBoardId) {
+            const board = window.boards.find(b => b.id === window.activeBoardId);
+            if (board && board.cards) {
+                const post = board.cards.find(c => c.id === window.currentEditingSocialPostId);
+                if (post) {
+                    post.clientModified = false;
+                    post.clientEdits = '';
+                    delete post.originalState;
+                    if (window.saveState) window.saveState();
+                    
+                    const agencyEditsContainer = document.getElementById('agencyClientEditsContainer');
+                    if (agencyEditsContainer) agencyEditsContainer.style.display = 'none';
+                    if (typeof render === 'function') render();
+                }
+            }
+        }
+    };
+
+    const headerPadding = (window.activeSocialTab === 'calendar' && !window.isClientView) ? '0 0 24px 0' : '24px 32px 24px 32px';
+    const universalHeaderHtml = `
+        <div style="padding: ${headerPadding}; flex-shrink: 0;">
+            <!-- Top Row: Title + Clients -->
+            <div style="margin-bottom: 24px;">
+                ${topRowHtml}
+            </div>
+            
+            <!-- Bottom Row: New Post Button + Tabs -->
+            <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: center;">
+                <button class="sm-primary-btn" style="padding: 10px 20px;" onclick="window.openCreatePostModal()">+ منشور جديد</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="sm-action-btn" title="مشاركة رابط العميل" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.open(window.location.href.split('?')[0] + '?client_view=true&board_id=' + activeBoardId, '_blank');">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        مشاركة العميل
+                    </button>
+                </div>
+                ${tabsHtml}
+            </div>
+        </div>
+    `;
 
     let mainContentHtml = '';
 
@@ -3926,28 +4470,41 @@ function renderSocialSchedulerApp(activeBoard) {
             </div>
         ` : '';
 
-        const calHeaderHtml = `
-            <!-- Top Row: Title + Clients -->
-            <div style="margin-bottom: 24px;">
-                ${topRowHtml}
-            </div>
-            
-            <!-- Bottom Row: New Post Button + Tabs -->
-            <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: center; margin-bottom: 24px;">
-                <button class="sm-primary-btn" style="padding: 10px 20px;" onclick="window.openCreatePostModal()">+ منشور جديد</button>
-                ${tabsHtml}
-            </div>
-        `;
+        let currentMonthPosts = 0;
+        let currentMonthImages = 0;
+        let currentMonthVideos = 0;
+        
+        if (activeBoard.cards) {
+            activeBoard.cards.forEach(c => {
+                if (c.dateStr && c.dateStr.startsWith(`${currentYear}-${currentMonth}-`)) {
+                    currentMonthPosts++;
+                    if (c.postType === 'video') currentMonthVideos++;
+                    else currentMonthImages++;
+                }
+            });
+        }
+        
+        const monthStatsHtml = `<span style="font-size: 13px; font-weight: 600; color: #64748b; margin-right: 12px; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa;"><span>المنشورات: <strong style="color: #ea580c;">${currentMonthPosts}</strong></span><span style="color: #fed7aa;">|</span><span>🖼️ صور: <strong style="color: #ea580c;">${currentMonthImages}</strong></span><span style="color: #fed7aa;">|</span><span>▶️ فيديو: <strong style="color: #ea580c;">${currentMonthVideos}</strong></span></span>`;
 
         mainContentHtml = `
             <div class="sm-main-content" style="padding: 24px 32px 16px 32px;">
                 <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
-                    ${calHeaderHtml}
+                    ${window.isClientView ? '' : universalHeaderHtml}
                     <div class="sm-calendar-wrap" style="flex: 1; overflow: auto; margin-bottom: 0;">
-                        <div class="sm-calendar-header">
-                            <h3 class="sm-cal-month-title">${monthNamesArabic[currentMonth]} ${currentYear}</h3>
+                        <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 12px;">
+                            <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title} ${monthStatsHtml}</h3>
                             <div class="sm-cal-nav">
+                                <button class="sm-mobile-toggle-sidebar" onclick="document.querySelector('.sm-sidebar').classList.add('active')" style="background: #ea580c; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; align-items: center; gap: 6px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                                    معلومات وتفاصيل اليوم
+                                </button>
+                                ${window.isClientView ? '' : `
                                 ${(currentMonth !== today.getMonth() || currentYear !== today.getFullYear()) ? `<button class="sm-icon-btn" onclick="window.resetSocialMonthToToday()" style="width:auto; padding: 0 12px; font-weight: 600; font-family: inherit; font-size: 13px;">اليوم</button>` : ''}
+                                
+                                <button class="sm-icon-btn" onclick="window.toggleClientEditsVisibility()" title="${window.smShowClientEditsToggle !== false ? 'إخفاء تعديلات العميل' : 'إظهار تعديلات العميل'}" style="margin-left: 4px; border: none; color:${window.smShowClientEditsToggle !== false ? '#16a34a' : '#64748b'};" onmouseover="this.style.background='${window.smShowClientEditsToggle !== false ? '#f0fdf4' : '#f1f5f9'}';" onmouseout="this.style.background='transparent';">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${window.smShowClientEditsToggle !== false ? '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"></path>' : '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'}</svg>
+                                </button>
+                                
                                 <button class="sm-icon-btn" onclick="window.hideAllMonthEvents(${currentMonth})" title="إخفاء جميع المناسبات في هذا الشهر" style="margin-left: 4px; border: none; color:#ef4444;" onmouseover="this.style.background='#fef2f2';" onmouseout="this.style.background='transparent';">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                                 </button>
@@ -3956,6 +4513,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                 </button>
                                 <button class="sm-icon-btn" onclick="window.navigateSocialMonth(-1)" style="margin-left: 4px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
                                 <button class="sm-icon-btn" onclick="window.navigateSocialMonth(1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                                `}
                             </div>
                         </div>
                         
@@ -3969,9 +4527,11 @@ function renderSocialSchedulerApp(activeBoard) {
                         ${legendHtml}
                     </div>
                 </div>
+                <div class="sm-mobile-overlay" onclick="document.querySelector('.sm-sidebar').classList.remove('active')"></div>
 
                 <div class="sm-sidebar" style="height: 100%;">
                     <div class="sm-sidebar-header" style="display:flex; align-items:flex-start; justify-content:space-between; border-bottom:2px solid #f1f5f9; padding-bottom:20px; margin-bottom:20px;">
+                        <button class="sm-close-sidebar" onclick="document.querySelector('.sm-sidebar').classList.remove('active')" style="background: none; border: none; color: #475569; font-size: 24px; cursor: pointer; padding: 0 0 12px 12px; margin-left: auto;">&times;</button>
                         <div class="sm-selected-date-text" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start; text-align:right;">
                             <h3 style="margin:0; font-size:22px; font-weight:800; color:#0f172a;">${dayNamesArabic[defaultSelectedDate.getDay()]}</h3>
                             <p style="margin:0; font-size:15px; font-weight:600; color:#64748b;">${defaultSelectedDate.getDate()} ${monthNamesArabic[currentMonth]}</p>
@@ -4000,17 +4560,17 @@ function renderSocialSchedulerApp(activeBoard) {
                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </div>
                         <p class="sm-empty-text" style="font-size:14px; color:#64748b; margin-bottom:20px; font-weight:500;">لا توجد منشورات لهذا اليوم</p>
-                        <button onclick="window.openCreatePostModal()" style="width:100%; background:#ea580c; color:white; border:none; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; transition:background 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseover="this.style.background='#c2410c';" onmouseout="this.style.background='#ea580c';">
+                        ${window.isClientView ? '' : `<button onclick="window.openCreatePostModal()" style="width:100%; background:#ea580c; color:white; border:none; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; transition:background 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseover="this.style.background='#c2410c';" onmouseout="this.style.background='#ea580c';">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             إضافة منشور
-                        </button>
+                        </button>`}
                     </div>
                 </div>
             </div>
         `;
     } else if (window.activeSocialTab === 'stats') {
         mainContentHtml = `
-            <div class="sm-full-view">
+            <div class="sm-full-view" style="padding-top: 0; min-height: 0;">
                 <div class="sm-stats-top-bar">
                     <button class="sm-btn-primary-outline" style="margin-left: 8px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-10.45l5.08 5.08"/></svg> تحديث</button>
                     <button class="sm-btn-primary-outline" onclick="window.exportDashboardData()" style="margin-left: 8px; background: #fff7ed; color: #ea580c; border-color: #fdba74;">
@@ -4072,6 +4632,7 @@ function renderSocialSchedulerApp(activeBoard) {
             { id: 'twitter', name: 'تويتر', icon: '<path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>', color: '#1da1f2' },
             { id: 'instagram', name: 'إنستغرام', icon: '<rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>', color: '#E1306C' },
             { id: 'facebook', name: 'فيسبوك', icon: '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>', color: '#1877F2' },
+            { id: 'snapchat', name: 'سناب شات', icon: '<path d="M16.882 7.842a4.882 4.882 0 1 0 -9.764 0c0 4.288 -.348 7.023 -2.618 7.023c-.314 0 -1.5 .5 -1.5 1.25c0 .64 .324 1.135 1.704 1.135c.421 0 1.956 -.093 3.654 .231c.365 .07 .666 .273 .97 .702c1.472 2.062 4.093 1.849 5.342 0c.304 -.429 .605 -.632 .97 -.702c1.7 -.324 3.233 -.231 3.654 -.231c1.38 0 1.704 -.494 1.704 -1.135c0 -.75 -1.186 -1.25 -1.5 -1.25c-2.27 0 -2.618 -2.735 -2.618 -7.023z"></path>', color: '#eab308' },
             { id: 'youtube', name: 'يوتيوب', icon: '<path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33 2.78 2.78 0 0 0 1.94 2c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.33 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>', color: '#FF0000' },
             { id: 'tiktok', name: 'تيك توك', icon: '<path d="M9 12a4 4 0 1 0 4 4V0h5v5a6 6 0 0 1-6 6v5a2 2 0 1 1-2-2z"></path>', color: '#000000' },
             { id: 'linkedin', name: 'لينكد إن', icon: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle>', color: '#0A66C2' }
@@ -4094,7 +4655,7 @@ function renderSocialSchedulerApp(activeBoard) {
         `).join('');
 
         mainContentHtml = `
-            <div class="sm-full-view">
+            <div class="sm-full-view" style="padding-top: 0; min-height: 0;">
                 <div class="sm-accounts-banner">
                     <div class="sm-acc-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></div>
                     <div class="sm-acc-text">
@@ -4109,7 +4670,7 @@ function renderSocialSchedulerApp(activeBoard) {
         `;
     } else if (window.activeSocialTab === 'history') {
         mainContentHtml = `
-            <div class="sm-full-view">
+            <div class="sm-full-view" style="padding-top: 0; min-height: 0;">
                 <div class="sm-history-top-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                     <div class="sm-filter-group" style="display:flex; gap:12px;">
                         <select class="sm-select"><option>كل الأحداث</option></select>
@@ -4156,11 +4717,58 @@ function renderSocialSchedulerApp(activeBoard) {
 
     const html = `
         <div class="sm-app-wrapper" style="display:flex; flex-direction:column; width:100%; height:100%; overflow:hidden; background:#f4f5f7; direction:rtl;">
+            ${(window.isClientView || window.activeSocialTab === 'calendar') ? '' : universalHeaderHtml}
             ${mainContentHtml}
         </div>
     `;
 
     appContainer.innerHTML = html;
+
+    const socialClientTabsEl = document.getElementById('socialClientTabs');
+    if (socialClientTabsEl && window.Sortable && !window.isClientView) {
+        // Add ghost styles dynamically if they don't exist
+        if (!document.getElementById('sortableGhostStyles')) {
+            const style = document.createElement('style');
+            style.id = 'sortableGhostStyles';
+            style.innerHTML = `
+                .sortable-ghost { opacity: 0.4; }
+                .sortable-fallback { cursor: grabbing !important; z-index: 99999 !important; }
+            `;
+            document.head.appendChild(style);
+        }
+
+        new window.Sortable(socialClientTabsEl, {
+            animation: 150,
+            direction: 'horizontal',
+            forceFallback: true, // Fixes HTML5 drag issues with RTL horizontal flex containers
+            fallbackClass: "sortable-fallback",
+            ghostClass: "sortable-ghost",
+            fallbackTolerance: 5, // Prevent accidental drags when just clicking
+            filter: ".sm-non-draggable",
+            onMove: function (evt) {
+                if (evt.related.classList.contains('sm-non-draggable')) {
+                    return false;
+                }
+            },
+            onEnd: function(evt) {
+                const oldIndex = evt.oldIndex;
+                const newIndex = evt.newIndex;
+                if (oldIndex === newIndex) return;
+
+                const draggedBoardId = evt.item.getAttribute('data-id');
+                
+                let currentSocials = boards.filter(b => b.type === 'social_scheduler');
+                const draggedBoard = currentSocials.find(b => b.id === draggedBoardId);
+                currentSocials = currentSocials.filter(b => b.id !== draggedBoardId);
+                currentSocials.splice(newIndex, 0, draggedBoard);
+                
+                const otherBoards = boards.filter(b => b.type !== 'social_scheduler');
+                boards = [...otherBoards, ...currentSocials];
+                
+                if (typeof saveState === 'function') saveState();
+            }
+        });
+    }
 
     const tabs = appContainer.querySelectorAll('.sm-tab');
     tabs.forEach(tab => {
@@ -4190,7 +4798,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 sidebarDateFull.textContent = `${dateNum} ${monthNamesArabic[currentMonth]}`;
                 
                 // Render the day's posts into the sidebar
-                const todayPosts = (activeBoard.cards || []).filter(c => c.dateStr === `${currentYear}-${currentMonth}-${dateNum}`);
+                const todayPosts = (activeBoard.cards || []).filter(c => c.dateStr === `${currentYear}-${currentMonth}-${dateNum}` && (window.smShowClientEditsToggle !== false || !c.isClientDayNote));
                 const postCountEl = appContainer.querySelector('.sm-post-count');
                 const sidebarBody = appContainer.querySelector('.sm-sidebar-body');
                 
@@ -4204,6 +4812,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                            (p.mediaItems && p.mediaItems.length > 0 && p.mediaItems[0].type === 'frame-io') ||
                                            (p.mediaObj && p.mediaObj.dataUrl && p.mediaObj.dataUrl !== 'undefined') ||
                                            (p.cover && (p.cover.scaled || typeof p.cover === 'string'));
+                            if (window.smShowClientEditsToggle === false && p.isClientDayNote) return false;
                             return hasMedia || p.title;
                         });
                         allBoardPosts.sort((a, b) => {
@@ -4256,7 +4865,60 @@ function renderSocialSchedulerApp(activeBoard) {
                         }
                     }
 
+                    let currentPlatformStr = 'عامة';
+                    let editBg = '#f0fdf4';
+                    let editBorder = '#bbf7d0';
+                    let editText = '#16a34a';
+                    let editFocus = 'rgba(34,197,94,0.2)';
+                    
+                    if (window.activePreviewPlatform === 'instagram') {
+                        currentPlatformStr = 'على الانستغرام';
+                        editBg = '#fcf5f8'; 
+                        editBorder = '#fbcfe8'; 
+                        editText = '#db2777'; 
+                        editFocus = 'rgba(219,39,119,0.2)';
+                    } else if (window.activePreviewPlatform === 'tiktok') {
+                        currentPlatformStr = 'على التيك توك';
+                        editBg = '#f8fafc';
+                        editBorder = '#e2e8f0';
+                        editText = '#334155';
+                        editFocus = 'rgba(51,65,85,0.2)';
+                    } else if (window.activePreviewPlatform === 'facebook') {
+                        currentPlatformStr = 'على الفيسبوك';
+                        editBg = '#eff6ff';
+                        editBorder = '#bfdbfe';
+                        editText = '#1d4ed8';
+                        editFocus = 'rgba(29,78,216,0.2)';
+                    } else if (window.activePreviewPlatform === 'linkedin') {
+                        currentPlatformStr = 'على لينكد إن';
+                        editBg = '#eff6ff';
+                        editBorder = '#bae6fd';
+                        editText = '#0284c7';
+                        editFocus = 'rgba(2,132,199,0.2)';
+                    } else if (window.activePreviewPlatform === 'twitter') {
+                        currentPlatformStr = 'على منصة X';
+                        editBg = '#f8fafc';
+                        editBorder = '#cbd5e1';
+                        editText = '#0f172a';
+                        editFocus = 'rgba(15,23,42,0.2)';
+                    }
+
+                    const boardEditsHtml = window.isClientView 
+                        ? `
+                        <div style="width: 100%; max-width: 315px; margin: -40px auto 16px auto; text-align: right;" dir="rtl">
+                            <label style="display:block; color: ${editText}; font-size: 15px; font-weight: 700; margin-bottom: 8px;">هل هناك تعديلات ${currentPlatformStr}؟</label>
+                            <textarea dir="rtl" onblur="this.style.boxShadow='none'; if(typeof activeBoard !== 'undefined'){ activeBoard.clientBoardEdits = this.value; if(typeof saveState === 'function') saveState(); }" onfocus="this.style.boxShadow='0 0 0 3px ${editFocus}'" placeholder="اكتب ملاحظاتك هنا..." style="width:100%; min-height: 85px; border: 1px solid ${editBorder}; background: ${editBg}; border-radius: 12px; padding: 12px; font-size: 13px; outline:none; resize: vertical; box-sizing: border-box; transition: all 0.2s; color: ${editText};">${activeBoard.clientBoardEdits || ''}</textarea>
+                        </div>
+                        ` 
+                        : (activeBoard.clientBoardEdits ? `
+                        <div style="width: 100%; max-width: 315px; margin: -40px auto 16px auto; background:${editBg}; border:1px solid ${editBorder}; border-radius:12px; padding:12px; text-align: right;" dir="rtl">
+                            <label style="display:block; color: ${editText}; font-size: 13px; font-weight: 700; margin-bottom: 6px;">تعديلات ${currentPlatformStr} من العميل:</label>
+                            <div style="font-size: 13px; color: ${editText}; white-space: pre-wrap; line-height: 1.5;">${window.smEscapeHTML ? window.smEscapeHTML(activeBoard.clientBoardEdits) : activeBoard.clientBoardEdits}</div>
+                        </div>
+                        ` : '');
+
                     sidebarBody.innerHTML = `
+                        ${boardEditsHtml}
                         <div style="display:flex; justify-content:center; padding:0; transform: scale(0.92); transform-origin: top center; margin-top: -15px;">
                             <div style="width:340px; height:700px; border:14px solid #111; border-radius:36px; overflow:hidden; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); background:#fff; flex-shrink:0;">
                                 <!-- Front Camera -->
@@ -4365,42 +5027,56 @@ function renderSocialSchedulerApp(activeBoard) {
                         sidebarBody.innerHTML = todayPosts.map(p => {
                             const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
                             let mediaHtmlStr = '';
-                            if (items.length > 0 && items[0].dataUrl) {
+                            if (items.length > 0) {
                                 mediaHtmlStr = `<div style="display:flex; gap:4px; max-width:80px; flex-wrap:wrap; flex-shrink:0;">`;
                                 items.slice(0,4).forEach((it, idx) => {
+                                    let contentHtml = '';
+                                    if (it.dataUrl && (!it.type || it.type === 'image')) {
+                                        contentHtml = `<img src="${it.dataUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+                                    } else if (it.thumbnail) {
+                                        contentHtml = `<img src="${it.thumbnail}" style="width:100%; height:100%; object-fit:cover;">`;
+                                    } else if (it.type === 'frame-io' || it.type === 'video' || (it.dataUrl && it.dataUrl.startsWith('data:video/'))) {
+                                        contentHtml = `<div style="width:100%; height:100%; background:#1e293b; color:white; display:flex; align-items:center; justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
+                                    } else {
+                                        contentHtml = `<div style="width:100%; height:100%; background:#f8fafc; display:flex; align-items:center; justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>`;
+                                    }
                                     mediaHtmlStr += `<div style="position:relative; width:${items.length === 1 ? '56px' : '26px'}; height:${items.length === 1 ? '56px' : '26px'}; border-radius:8px; overflow:hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.06);">
-                                        <img src="${it.dataUrl}" style="width:100%; height:100%; object-fit:cover;">
+                                        ${contentHtml}
                                         ${idx === 3 && items.length > 4 ? `<div style="position:absolute; top:0; right:0; width:100%; height:100%; background:rgba(0,0,0,0.6); color:white; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">+${items.length-4}</div>` : ''}
                                     </div>`;
                                 });
                                 mediaHtmlStr += `</div>`;
                             } else {
-                                mediaHtmlStr = `<div style="width:56px; height:56px; border-radius:8px; background:#f8fafc; border: 1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>`;
+                                if (p.postType === 'video') {
+                                    mediaHtmlStr = `<div style="width:56px; height:56px; border-radius:8px; background:#1e293b; color:white; border: 1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
+                                } else {
+                                    mediaHtmlStr = `<div style="width:56px; height:56px; border-radius:8px; background:#f8fafc; border: 1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>`;
+                                }
                             }
 
                             return `
-                            <div onclick="window.openCreatePostModal('${p.id}')" style="cursor:pointer; background:white; border-radius:12px; padding:14px; margin-bottom:14px; border:1px solid #f1f5f9; box-shadow:0 3px 6px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04); display:flex; gap:14px; align-items:center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(0);" onmouseover="this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 3px 6px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04)'; this.style.transform='translateY(0)';">
+                            <div onclick="${window.isClientView ? '' : `window.openCreatePostModal('${p.id}')`}" style="${window.isClientView ? '' : 'cursor:pointer;'} background:white; border-radius:12px; padding:14px; margin-bottom:14px; border:1px solid #f1f5f9; box-shadow:0 3px 6px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04); display:flex; gap:14px; align-items:center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(0);" onmouseover="${window.isClientView ? '' : `this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04)'; this.style.transform='translateY(-2px)';`}" onmouseout="${window.isClientView ? '' : `this.style.boxShadow='0 3px 6px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04)'; this.style.transform='translateY(0)';`}">
                                 ${mediaHtmlStr}
                                 <div style="flex-grow:1; overflow:hidden; display:flex; flex-direction:column; gap:6px;">
-                                    <p style="font-size:15px; font-weight:700; color:#0f172a; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.title || 'منشور بدون نص'}</p>
+                                    <p style="font-size:15px; font-weight:700; color:#0f172a; margin:0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${p.title || 'منشور بدون نص'}</p>
                                     <span style="font-size:12px; background:#f3e8ff; color:#7e22ce; padding:4px 10px; border-radius:6px; font-weight:600; align-self:flex-start;">${p.status || 'مسودة'}</span>
                                 </div>
                             </div>`;
-                        }).join('') + `
+                        }).join('') + (window.isClientView ? '' : `
                         <button onclick="window.openCreatePostModal()" style="width:100%; background:transparent; color:#ea580c; border:2px dashed #fdba74; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; transition:all 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;" onmouseover="this.style.background='#fff7ed'; this.style.borderColor='#ea580c';" onmouseout="this.style.background='transparent'; this.style.borderColor='#fdba74';">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                             إضافة منشور آخر
-                        </button>`;
+                        </button>`);
                     } else {
                         sidebarBody.innerHTML = `
                             <div class="sm-empty-icon" style="margin-bottom:12px; opacity: 0.6;">
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                             </div>
                             <p class="sm-empty-text" style="font-size:14px; color:#64748b; margin-bottom:20px; font-weight:500;">لا توجد منشورات لهذا اليوم</p>
-                            <button onclick="window.openCreatePostModal()" style="width:100%; background:#ea580c; color:white; border:none; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; transition:background 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseover="this.style.background='#c2410c';" onmouseout="this.style.background='#ea580c';">
+                            ${window.isClientView ? '' : `<button onclick="window.openCreatePostModal()" style="width:100%; background:#ea580c; color:white; border:none; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; transition:background 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseover="this.style.background='#c2410c';" onmouseout="this.style.background='#ea580c';">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                                 إضافة منشور
-                            </button>
+                            </button>`}
                         `;
                     }
                 }
@@ -4410,6 +5086,69 @@ function renderSocialSchedulerApp(activeBoard) {
                 if (!cell.classList.contains('selected')) {
                     cell.click();
                 }
+                if (window.isClientView) {
+                    if (window.activeSocialDateOptions) {
+                        if (!window.openClientDayNoteModal) {
+                            window.openClientDayNoteModal = function(year, month, date) {
+                                let overlay = document.getElementById('clientDayNoteOverlay');
+                                if (!overlay) {
+                                    overlay = document.createElement('div');
+                                    overlay.id = 'clientDayNoteOverlay';
+                                    overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); display:flex; align-items:center; justify-content:center; z-index:99999; backdrop-filter:blur(4px); opacity:0; transition:opacity 0.2s;";
+                                    
+                                    overlay.innerHTML = `
+                                        <div style="background:white; width:90%; max-width:400px; border-radius:12px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.1); transform:translateY(20px); transition:transform 0.2s; direction:rtl;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                                <h3 style="margin:0; font-size:18px; color:#1e293b; font-weight:700;">هل هناك ملاحظات في هذا اليوم؟</h3>
+                                                <button onclick="document.getElementById('clientDayNoteOverlay').style.opacity='0'; document.getElementById('clientDayNoteOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('clientDayNoteOverlay').remove(), 200);" style="background:none; border:none; cursor:pointer; color:#94a3b8;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                                            </div>
+                                            <textarea id="clientDayNoteText" placeholder="اكتب ملاحظاتك أو طلباتك هنا..." style="width:100%; min-height:100px; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-family:inherit; font-size:14px; outline:none; resize:vertical; box-sizing:border-box; margin-bottom:16px;"></textarea>
+                                            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                                                <button onclick="document.getElementById('clientDayNoteOverlay').style.opacity='0'; document.getElementById('clientDayNoteOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('clientDayNoteOverlay').remove(), 200);" style="padding:8px 16px; border:1px solid #cbd5e1; background:white; color:#64748b; font-weight:600; border-radius:6px; cursor:pointer;">إلغاء</button>
+                                                <button id="btnSaveClientNote" style="padding:8px 16px; border:none; background:#ea580c; color:white; font-weight:600; border-radius:6px; cursor:pointer;">إرسال الملاحظة</button>
+                                            </div>
+                                        </div>
+                                    `;
+                                    document.body.appendChild(overlay);
+                                    
+                                    document.getElementById('btnSaveClientNote').onclick = function() {
+                                        const noteText = document.getElementById('clientDayNoteText').value.trim();
+                                        if(!noteText) return;
+                                        
+                                        const board = typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined' ? boards.find(b=>b.id===activeBoardId) : null;
+                                        if(board) {
+                                            if(!board.cards) board.cards = [];
+                                            board.cards.push({
+                                                id: 'post-' + Date.now(),
+                                                title: noteText.substring(0, 50) + (noteText.length > 50 ? '...' : ''),
+                                                fullText: noteText,
+                                                dateStr: `${year}-${month}-${date}`,
+                                                status: 'مسودة',
+                                                clientModified: true,
+                                                isClientDayNote: true
+                                            });
+                                            if(typeof saveState === 'function') saveState();
+                                            if(typeof renderSocialSchedulerApp === 'function') renderSocialSchedulerApp(board);
+                                        }
+                                        
+                                        document.getElementById('clientDayNoteOverlay').style.opacity='0'; 
+                                        document.getElementById('clientDayNoteOverlay').firstElementChild.style.transform='translateY(20px)'; 
+                                        setTimeout(()=>document.getElementById('clientDayNoteOverlay').remove(), 200);
+                                    };
+                                }
+                                
+                                requestAnimationFrame(() => {
+                                    overlay.style.opacity = '1';
+                                    overlay.firstElementChild.style.transform = 'translateY(0)';
+                                    document.getElementById('clientDayNoteText').focus();
+                                });
+                            };
+                        }
+                        window.openClientDayNoteModal(window.activeSocialDateOptions.year, window.activeSocialDateOptions.month, window.activeSocialDateOptions.date);
+                    }
+                    return;
+                }
+                
                 if (typeof window.openCreatePostModal === 'function') {
                     window.openCreatePostModal();
                 }
@@ -4471,6 +5210,65 @@ window.showConfirmModal = function(callback, titleText, descText) {
     };
 };
 
+window.handleCalDragStart = function(event, postId) {
+    if (event.dataTransfer) {
+        event.dataTransfer.setData('text/plain', postId);
+        event.dataTransfer.effectAllowed = 'move';
+        const target = event.target;
+        setTimeout(() => { if (target) target.style.opacity = '0.4'; }, 0);
+    }
+};
+
+window.handleCalDrop = function(event, dropzone) {
+    event.preventDefault();
+    dropzone.style.background = '';
+    
+    if (event.dataTransfer) {
+        const postId = event.dataTransfer.getData('text/plain');
+        const newDateStrRaw = dropzone.getAttribute('data-date');
+        
+        let targetBoard = null;
+        try { targetBoard = boards.find(b => b.id === activeBoardId); } catch(e) {}
+        
+        if (postId && newDateStrRaw && targetBoard && targetBoard.cards) {
+            const cardIndex = targetBoard.cards.findIndex(c => c.id === postId);
+            if (cardIndex === -1) return;
+            
+            // Remove the card from its current position
+            const [draggedCard] = targetBoard.cards.splice(cardIndex, 1);
+            draggedCard.dateStr = newDateStrRaw;
+            
+            // Determine visual drop index based on mouse Y coordinate
+            const postsInZone = Array.from(dropzone.querySelectorAll('.sm-cal-draggable-post')).filter(el => el.getAttribute('data-post-id') !== postId);
+            let dropRelativeIndex = postsInZone.length; // Default to end of day
+            
+            for (let i = 0; i < postsInZone.length; i++) {
+                const rect = postsInZone[i].getBoundingClientRect();
+                if (event.clientY < rect.top + (rect.height / 2)) {
+                    dropRelativeIndex = i;
+                    break;
+                }
+            }
+            
+            const dayCards = targetBoard.cards.filter(c => c.dateStr === newDateStrRaw && (window.smShowClientEditsToggle !== false || !c.isClientDayNote));
+            if (dayCards.length === 0 || dropRelativeIndex >= dayCards.length) {
+                // Add to the very end of the global list (which renders at the end of the day)
+                targetBoard.cards.push(draggedCard);
+            } else {
+                // Find the global index of the card we want to insert 'before'
+                const targetCardToInsertBefore = dayCards[dropRelativeIndex];
+                const actualGlobalDropIndex = targetBoard.cards.findIndex(c => c.id === targetCardToInsertBefore.id);
+                targetBoard.cards.splice(actualGlobalDropIndex !== -1 ? actualGlobalDropIndex : targetBoard.cards.length, 0, draggedCard);
+            }
+            
+            if (typeof saveState === 'function') saveState();
+            if (typeof render === 'function') render();
+        } else {
+            if (typeof render === 'function') render();
+        }
+    }
+};
+
 window.handleMediaUpload = function(input) {
     if (input.files && input.files.length > 0) {
         const previewContainer = document.getElementById('smMediaPreviewContainer');
@@ -4481,9 +5279,10 @@ window.handleMediaUpload = function(input) {
         Array.from(input.files).forEach((file) => {
             const fileUrl = URL.createObjectURL(file);
             const wrap = document.createElement('div');
+            wrap.className = 'sm-media-item-container';
             wrap.style.cssText = 'position: relative; width: 100%; max-width: 160px; border-radius: 8px; overflow: hidden; border: 1px solid #edf2f7; background: #fff; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);';
             
-            const delBtn = `<button style="position: absolute; top: 6px; right: 6px; z-index: 10; background: rgba(255,255,255,0.95); color: #e53e3e; border-radius: 50%; width: 22px; height: 22px; border: none; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" onclick="event.stopPropagation(); window.removeMediaItem(this)">×</button>`;
+            const delBtn = window.isClientView ? '' : `<button style="position: absolute; top: 6px; right: 6px; z-index: 10; background: rgba(255,255,255,0.95); color: #e53e3e; border-radius: 50%; width: 22px; height: 22px; border: none; font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; line-height: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.2);" onclick="event.stopPropagation(); window.removeMediaItem(this)">×</button>`;
             const badge = `<div class="sm-gallery-badge" style="position: absolute; top: 6px; left: 6px; z-index: 10; background: #f97316; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></div>`;
             const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
             const sizeBadge = `<div style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 10; background: rgba(0,0,0,0.65); color: white; border-radius: 4px; padding: 3px 6px; font-size: 10px; font-weight: 500; white-space: nowrap;">MB ${sizeMB}</div>`;
@@ -4493,7 +5292,7 @@ window.handleMediaUpload = function(input) {
             const mediaElem = isVideo 
                 ? `<video class="sm-gallery-vid" src="${fileUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1;" muted></video>`
                 : `<img class="sm-gallery-img" src="${fileUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1;">`;
-            const clickHandler = isVideo ? `window.viewMediaFull('${fileUrl}', 'video')` : `window.viewMediaFull('${fileUrl}', 'image')`;
+            const clickHandler = `window.viewMediaFull(this.closest('.sm-media-item-container').querySelector('.sm-gallery-vid, .sm-gallery-img').src, '${isVideo ? 'video' : 'image'}', event)`;
             
             wrap.innerHTML = `
                 <div style="width: 100%; aspect-ratio: 9/16; background: #1e293b; position: relative; overflow: hidden; cursor:pointer;" onclick="${clickHandler}">
@@ -4527,26 +5326,63 @@ window.reindexMediaBadges = function() {
     });
 };
 
+window.showFrameIoVideo = window.showFrameIoVideo || function(btn, videoUrl, pId) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.95); z-index: 999999; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;";
+    
+    const closeBtn = document.createElement('div');
+    closeBtn.innerHTML = "×";
+    closeBtn.style.cssText = "position: absolute; top: 24px; right: 32px; color: white; font-size: 40px; cursor: pointer; z-index: 1000000; font-weight: 300;";
+    closeBtn.onclick = function() { overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 300); };
+    
+    const iframe = document.createElement('iframe');
+    iframe.src = videoUrl;
+    iframe.style.cssText = "width: 90%; height: 90%; border: none; opacity: 0; transform: scale(0.98); transition: opacity 0.4s ease, transform 0.4s ease;";
+    iframe.onload = () => { iframe.style.opacity = '1'; iframe.style.transform = 'scale(1)'; };
+    iframe.setAttribute('allowfullscreen', 'true');
+    
+    overlay.appendChild(closeBtn);
+    overlay.appendChild(iframe);
+    document.body.appendChild(overlay);
+    
+    setTimeout(() => overlay.style.opacity = '1', 10);
+};
+
 window.removeMediaItem = function(elem) {
-    let wrap = elem.closest ? elem.closest('.frame-io-media') : null;
-    
-    if (!wrap && elem.parentElement && elem.parentElement.parentElement) {
-        wrap = elem.parentElement.parentElement;
-    }
-    
-    if (wrap) {
-        wrap.remove();
-        if (typeof window.reindexMediaBadges === 'function') window.reindexMediaBadges();
+    try {
+        if (!elem) return;
         
-        const gallery = document.getElementById('smMediaGallery');
-        if (gallery && gallery.children.length === 0) {
-            const previewContainer = document.getElementById('smMediaPreviewContainer');
-            if (previewContainer) previewContainer.style.display = 'none';
+        // Also support if elem is already the wrapper, or inside it
+        let wrap = elem.closest ? (elem.closest('.frame-io-media') || elem.closest('.sm-media-item')) : null;
+        
+        if (!wrap && elem.parentElement && elem.parentElement.parentElement) {
+            wrap = elem.parentElement.parentElement;
         }
         
-        if (typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) {
-            window.saveSocialDraft(true);
+        // Final fallback: if elem is a wrapper itself
+        if (!wrap && (elem.classList && (elem.classList.contains('frame-io-media') || elem.classList.contains('sm-media-item')))) {
+            wrap = elem;
         }
+        
+        if (wrap) {
+            wrap.remove();
+            if (typeof window.reindexMediaBadges === 'function') window.reindexMediaBadges();
+            
+            const gallery = document.getElementById('smMediaGallery');
+            if (gallery && gallery.children.length === 0) {
+                const previewContainer = document.getElementById('smMediaPreviewContainer');
+                if (previewContainer) previewContainer.style.display = 'none';
+            }
+            
+            if (typeof window.saveSocialDraft === 'function') {
+                window.saveSocialDraft(true);
+            }
+        } else {
+            console.warn("Could not find wrap element to remove", elem);
+            elem.remove(); // Just blindly remove the clicked element as a desperate fallback
+        }
+    } catch (e) {
+        console.error("Error removing media item:", e);
     }
 };
 
@@ -4656,8 +5492,28 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         
         if (!textContent && mediaItems.length === 0) {
             if (!isAutoSave) {
-                alert('يرجى إضافة نص أو وسائط');
-                return;
+                const textareaWrap = document.querySelector('.sm-textarea-wrap');
+                if (textareaWrap) {
+                    textareaWrap.style.boxShadow = '0 0 0 2px #ef4444, 0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                    setTimeout(() => { if (textareaWrap) textareaWrap.style.boxShadow = ''; }, 2000);
+                }
+                if (typeof showToast === 'function') {
+                    showToast('⚠️ يرجى إضافة نص أو وسائط قبل الحفظ');
+                } else {
+                    alert('يرجى إضافة نص أو وسائط');
+                }
+                
+                // Ensure we get the status here so we can safely check it
+                let currentStatus = 'مسودة';
+                const statusBtnSnapshot = document.querySelector('.sm-toggle-btn.active');
+                if (statusBtnSnapshot) currentStatus = statusBtnSnapshot.textContent.trim();
+                
+                // CRITICAL FIX: Allow the user to force-save it as a draft even if empty or missing UI
+                if (currentStatus === 'مسودة') {
+                    console.log("Allowed empty draft save.");
+                } else {
+                    return;
+                }
             } else {
                 // If the post is auto-saving but has become completely empty, we brutally delete it
                 if (window.currentEditingSocialPostId) {
@@ -4696,6 +5552,30 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         const postTypeInput = document.querySelector('input[name="smPostType"]:checked');
         if (postTypeInput) postType = postTypeInput.value;
         
+        const existingPost = window.currentEditingSocialPostId ? activeBoard.cards.find(c => c.id === window.currentEditingSocialPostId) : null;
+        let originalState = existingPost ? existingPost.originalState : undefined;
+        let clientEdits = existingPost ? (existingPost.clientEdits || '') : '';
+        const agencyEditsInput = document.getElementById('agencyClientEditsInput');
+        const agencyEditsContainer = document.getElementById('agencyClientEditsContainer');
+        const clientEditsInput = document.getElementById('clientEditsInput');
+        
+        if (window.isClientView && clientEditsInput) {
+            clientEdits = clientEditsInput.value.trim();
+        } else if (!window.isClientView && agencyEditsInput && agencyEditsContainer && agencyEditsContainer.style.display !== 'none') {
+            clientEdits = agencyEditsInput.value.trim();
+        }
+        
+        const isClientModified = window.isClientView 
+            ? (clientEdits !== '' || (existingPost && existingPost.fullText !== textContent) || (existingPost && existingPost.postType !== postType) || (existingPost && typeof existingPost.clientModified !== 'undefined' ? existingPost.clientModified : false))
+            : (existingPost ? !!existingPost.clientModified : false);
+
+        if (window.isClientView && isClientModified && existingPost && !originalState) {
+            originalState = {
+                fullText: existingPost.fullText,
+                postType: existingPost.postType
+            };
+        }
+        
         const newDraft = {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
             title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
@@ -4703,8 +5583,21 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             dateStr: dateStr,
             status: status,
             postType: postType,
-            mediaItems: mediaItems.length > 0 ? mediaItems : null
+            mediaItems: mediaItems.length > 0 ? mediaItems : null,
+            clientEdits: clientEdits,
+            clientModified: isClientModified
         };
+        
+        if (existingPost && existingPost.isClientDayNote) newDraft.isClientDayNote = true;
+        if (isClientModified) {
+            newDraft.clientModifiedAt = window.isClientView ? Date.now() : (existingPost ? existingPost.clientModifiedAt : Date.now());
+        }
+        
+        if (originalState) newDraft.originalState = originalState;
+        
+        // Anchor the UI explicitly to this new post ID so further auto-saves 
+        // properly update this exact post record and it's visible upon reload
+        window.currentEditingSocialPostId = newDraft.id;
         
         activeBoard.cards = activeBoard.cards || [];
         
@@ -4737,7 +5630,8 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             if (listEl) {
                 const activeSidebarItem = listEl.querySelector(`div[data-id="${newDraft.id}"]`);
                 if (activeSidebarItem && activeSidebarItem.children.length >= 3) {
-                    let mediaThumbHtml = `<div style="font-size:12px; margin-left:6px; flex-shrink:0;">📝</div>`;
+                    const defaultIcon = newDraft.postType === 'video' ? '▶️' : '🖼️';
+                    let mediaThumbHtml = `<div style="font-size:12px; margin-left:6px; flex-shrink:0;">${defaultIcon}</div>`;
                     if (newDraft.mediaItems && newDraft.mediaItems.length > 0) {
                         const m = newDraft.mediaItems[0];
                         if (m.dataUrl && (!m.type || m.type === 'image')) {

@@ -1113,6 +1113,10 @@ input[type=number] {
 }
 
 /* Left Sidebar */
+.sm-mobile-toggle-sidebar, .sm-close-sidebar {
+    display: none;
+}
+
 .sm-sidebar {
     width: 300px;
     background: white;
@@ -1122,6 +1126,136 @@ input[type=number] {
     flex-direction: column;
     overflow: hidden;
     flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sm-mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+    backdrop-filter: blur(2px);
+    transition: opacity 0.3s;
+}
+
+@media (max-width: 900px) {
+    .sm-main-content {
+        padding: 12px !important;
+        flex-direction: column;
+        overflow-x: hidden;
+    }
+    .sm-calendar-wrap {
+        width: 100%;
+        overflow-x: hidden;
+        padding: 12px;
+    }
+    .sm-cal-grid {
+        min-width: 0; /* Allow infinite shrinking for phones */
+        gap: 2px;
+    }
+    .sm-cal-days-header {
+        font-size: 9px;
+        gap: 2px;
+    }
+    .sm-cal-cell {
+        padding: 2px;
+        min-height: 50px;
+    }
+    .sm-cal-row {
+        gap: 2px;
+    }
+    .sm-cal-date {
+        font-size: 11px;
+        width: 18px;
+        height: 18px;
+        margin-bottom: 2px !important;
+    }
+    
+    /* Transform the post div into an icon button */
+    .sm-cal-draggable-post {
+        width: 100% !important;
+        height: 28px !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        margin: 2px 0 !important;
+        border-radius: 6px !important;
+        background: transparent !important;
+        border: 1px solid var(--dot-color, #cbd5e1) !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        flex-direction: column !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+    }
+
+    .sm-cal-draggable-post > div:first-child {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Hide the text container and client edit container on mobile */
+    .sm-thumb-text, .sm-thumb-edit {
+        display: none !important;
+    }
+
+    /* Keep the icon centered and properly sized */
+    .sm-thumb-icon {
+        margin: 0 auto !important;
+        border-radius: 4px !important;
+        width: 18px !important;
+        height: 18px !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
+    /* The dropzone container for dots */
+    .sm-cal-dropzone {
+        flex-direction: column !important;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 4px;
+        min-height: 20px !important;
+    }
+
+    .sm-indicator {
+        font-size: 9px;
+        padding: 2px 4px;
+    }
+    .sm-mobile-toggle-sidebar {
+        display: flex !important;
+        margin-bottom: 0px;
+    }
+    .sm-close-sidebar {
+        display: block !important;
+    }
+    .sm-sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0; /* Changed from left: -320px to right: -320px since RTL */
+        width: 300px;
+        height: 100vh !important;
+        z-index: 999;
+        transform: translateX(110%);
+        border-radius: 12px 0 0 12px;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+        border: none;
+        border-left: 1px solid #edf2f7;
+    }
+    .sm-sidebar.active {
+        transform: translateX(0);
+    }
+    .sm-sidebar.active ~ .sm-mobile-overlay {
+        display: block;
+    }
 }
 
 .sm-sidebar-header {
@@ -1163,14 +1297,15 @@ input[type=number] {
 }
 
 .sm-sidebar-body {
-    padding: 40px 24px;
+    padding: 20px 24px 40px; /* adjusted padding */
     display: flex;
     flex-direction: column;
     align-items: center;
-    text-align: center;
     background: white;
     flex: 1;
-    justify-content: center;
+    justify-content: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .sm-empty-icon {
@@ -1344,6 +1479,9 @@ input[type=number] {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: 95vh;
 }
 
 .sm-modal-head {
@@ -1385,8 +1523,10 @@ input[type=number] {
     grid-template-columns: 1fr 280px; /* Content (Right in RTL), Settings (Left in RTL) */
     gap: 32px;
     padding: 32px;
-    max-height: 70vh;
-    overflow-y: scroll;
+    flex: 1;
+    overflow-y: auto;
+    max-height: none;
+    min-height: 0; /* Important for flex-child scrolling */
 }
 
 /* Content Column (Visually Right in RTL) */
@@ -2176,4 +2316,52 @@ input[type=number] {
     margin: 0;
     font-size: 13px;
     color: #3b82f6;
+}
+
+@media (max-width: 900px) {
+    .sm-modal-body {
+        display: flex !important;
+        flex-direction: column;
+        padding: 16px !important;
+        gap: 24px !important;
+    }
+    
+    .sm-modal-left-col {
+        display: contents;
+    }
+
+    #smPlatformsSection {
+        order: 1;
+        margin-bottom: 16px;
+        border-bottom: 1px dashed #edf2f7;
+        padding-bottom: 16px;
+    }
+    
+    #smModalExistingPostsArea {
+        order: 2;
+    }
+
+    .sm-modal-right-col {
+        order: 3;
+    }
+    
+    #publishSection {
+        order: 4;
+        margin-top: 16px;
+    }
+    
+    #sm-optional-fields-wrapper {
+        order: 5;
+    }
+    
+    #clientEditsContainer {
+        order: 6;
+    }
+    
+    #agencyClientEditsContainer {
+        order: 7;
+        margin-top: 16px !important;
+        border-top: 1px dashed #edf2f7;
+        padding-top: 16px;
+    }
 }
