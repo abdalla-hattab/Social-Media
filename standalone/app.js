@@ -92,13 +92,16 @@ if (superShortId) {
 const shortC = smUrlParams.get('c');
 if (shortC) {
     window.isClientView = true;
-    const parts = shortC.split('-');
-    if (parts.length >= 1) {
+    let parts = shortC.split('-');
+    if (parts.length >= 3) {
+        window.shortClientYear = parts.pop();
+        window.shortClientMonth = parts.pop();
+        activeBoardId = parts.join('-');
+        localStorage.setItem('ai_active_board', activeBoardId);
+    } else if (parts.length >= 1) {
         activeBoardId = parts[0];
         localStorage.setItem('ai_active_board', activeBoardId);
     }
-    if (parts.length >= 2) window.shortClientMonth = parts[1];
-    if (parts.length >= 3) window.shortClientYear = parts[2];
 }
 
 if (window.isClientView) {
