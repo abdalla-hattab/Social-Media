@@ -6,13 +6,11 @@
 }
 
 html {
-    background-color: #1e1b4b; /* Safest absolute fallback */
+    background-color: #fbfbfb;
 }
 
 body {
-    background: linear-gradient(135deg, #1e1b4b, #6b21a8, #9d174d);
-    background-size: cover;
-    background-attachment: fixed; /* Glues the gradient exactly to the screen size */
+    background: #fbfbfb;
     margin: 0;
     height: 100vh;
     display: flex;
