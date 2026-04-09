@@ -21,12 +21,51 @@ const smUrlParams = new URLSearchParams(window.location.search);
 window.isClientView = smUrlParams.get('client_view') === 'true';
 window.shortClientMonth = null;
 window.shortClientYear = null;
+window.isResolvingShortLink = false;
+
+let activeBoardId = smUrlParams.get('board_id') || localStorage.getItem('ai_active_board');
+let activeCardId = null;
+let activeTargetListId = null;
+let isGlobalDragging = false;
+let isApplyingFirebaseSync = false;
+
+const superShortId = smUrlParams.get('id');
+if (superShortId) {
+    window.isClientView = true;
+    window.isResolvingShortLink = true;
+    db.ref('sm_short_links/' + superShortId).once('value').then(snap => {
+        const fullC = snap.val();
+        if (fullC) {
+            const parts = fullC.split('-');
+            if (parts.length >= 1) {
+                activeBoardId = parts[0];
+                localStorage.setItem('ai_active_board', activeBoardId);
+            }
+            if (parts.length >= 2) window.shortClientMonth = parts[1];
+            if (parts.length >= 3) window.shortClientYear = parts[2];
+            
+            if (window.shortClientMonth && window.shortClientYear) {
+                window.activeSocialMonthView = { year: parseInt(window.shortClientYear, 10), month: parseInt(window.shortClientMonth, 10) };
+                window.activeSocialDateOptions = { year: parseInt(window.shortClientYear, 10), month: parseInt(window.shortClientMonth, 10), date: 1 };
+            }
+        }
+        window.isResolvingShortLink = false;
+        if (typeof render === 'function') render();
+    }).catch(e => {
+        console.error("Failed to resolve short link", e);
+        window.isResolvingShortLink = false;
+        if (typeof render === 'function') render();
+    });
+}
 
 const shortC = smUrlParams.get('c');
 if (shortC) {
     window.isClientView = true;
     const parts = shortC.split('-');
-    if (parts.length >= 1) smUrlParams.set('board_id', parts[0]);
+    if (parts.length >= 1) {
+        activeBoardId = parts[0];
+        localStorage.setItem('ai_active_board', activeBoardId);
+    }
     if (parts.length >= 2) window.shortClientMonth = parts[1];
     if (parts.length >= 3) window.shortClientYear = parts[2];
 }
@@ -72,14 +111,6 @@ if (window.isClientView) {
 
 
 
-let activeBoardId = smUrlParams.get('board_id') || localStorage.getItem('ai_active_board');
-if (smUrlParams.get('board_id') || shortC) {
-    localStorage.setItem('ai_active_board', activeBoardId);
-}
-let activeCardId = null;
-let activeTargetListId = null;
-let isGlobalDragging = false;
-let isApplyingFirebaseSync = false;
 
 let rawOldListsData = localStorage.getItem('ai_accounts_lists');
 
@@ -3535,6 +3566,7 @@ if(confirmAddBoardBtn) confirmAddBoardBtn.onclick = () => {
 newBoardTitle.onkeydown = (e) => { if (e.key === 'Enter') confirmAddBoardBtn.click(); };
 
 function render() {
+    if (window.isResolvingShortLink) return;
     if (isGlobalDragging) return;
     const activeEl = document.activeElement;
     if (activeEl) {
@@ -4379,7 +4411,7 @@ function renderSocialSchedulerApp(activeBoard) {
             <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: center;">
                 <button class="sm-primary-btn" style="padding: 10px 20px;" onclick="window.openCreatePostModal()">+ منشور جديد</button>
                 <div style="display: flex; gap: 8px;">
-                    <button class="sm-action-btn" title="مشاركة رابط العميل" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.open(window.location.href.split('?')[0] + '?c=' + activeBoardId + '-' + (window.activeSocialMonthView ? window.activeSocialMonthView.month : '') + '-' + (window.activeSocialMonthView ? window.activeSocialMonthView.year : ''), '_blank');">
+                    <button class="sm-action-btn" title="مشاركة رابط العميل" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="const shortCode = Math.random().toString(36).substr(2,4).toUpperCase(); const shareData = activeBoardId + '-' + (window.activeSocialMonthView ? window.activeSocialMonthView.month : '') + '-' + (window.activeSocialMonthView ? window.activeSocialMonthView.year : ''); firebase.database().ref('sm_short_links/' + shortCode).set(shareData).catch(e=>console.log(e)); window.open(window.location.href.split('?')[0] + '?id=' + shortCode, '_blank');">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                         مشاركة العميل
                     </button>
