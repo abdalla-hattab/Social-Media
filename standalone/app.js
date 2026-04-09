@@ -4236,7 +4236,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 }
 
                 return `
-                <div style="display:flex; align-items:center; background: ${bg}; border: ${border}; border-radius: ${btnRadius}; box-shadow: ${shadow}; transition: all 0.2s; position:relative; padding-left: ${!isAgency ? '4px' : '0'};">
+                <div style="display:flex; align-items:center; background: ${bg}; border: ${border}; border-radius: ${btnRadius}; box-shadow: ${shadow}; transition: all 0.2s; position:relative;">
                     <button 
                         ${isAgency ? 'class="sm-non-draggable"' : ''}
                         data-id="${b.id}"
@@ -4248,7 +4248,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         display: flex;
                         align-items: center;
                         gap: 6px;
-                        padding: 6px ${!isAgency ? '10px' : '16px'} 6px 16px; 
+                        padding: 6px 16px; 
                         background: transparent; 
                         color: ${color}; 
                         border: none;
@@ -4261,11 +4261,6 @@ function renderSocialSchedulerApp(activeBoard) {
                     ${isAgency ? '' : `onmousedown="this.parentElement.style.cursor='grabbing'; this.style.cursor='grabbing';" onmouseup="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';" onmouseleave="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';"`}>
                         ${b.title || 'Client '}
                     </button>
-                    ${!isAgency ? `
-                    <button onclick="window.generateDirectShareLink('${b.id}', this, event)" title="نسخ رابط مباشر لمشاركة هذا العميل (${b.id})" style="background:transparent; border:none; cursor:pointer; padding: 4px; border-radius: 4px; display:flex; align-items:center; color:${isActive ? '#ea580c' : '#94a3b8'}; transition:all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.05)'; this.style.color='#f97316'" onmouseout="this.style.background='transparent'; this.style.color='${isActive ? '#ea580c' : '#94a3b8'}'">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                    </button>
-                    ` : ''}
                 </div>
                 `;
             }).join('')}
