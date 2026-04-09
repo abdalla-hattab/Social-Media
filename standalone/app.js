@@ -182,8 +182,9 @@ window.verifyAgencyAuth = function() {
         if (input === realPassword) {
             localStorage.setItem('agency_auth_token', 'verified');
             window.agencyAuthPassed = true;
+            if (document.activeElement) document.activeElement.blur();
             document.getElementById('agencyAuthOverlay').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'block';
+            document.getElementById('appContainer').style.display = '';
             if (typeof render === 'function') render();
         } else {
             errorEl.style.display = 'block';
