@@ -36,7 +36,22 @@ if (superShortId) {
     db.ref('sm_short_links/' + superShortId).once('value').then(snap => {
         const fullC = snap.val();
         if (fullC) {
-            const parts = fullC.split('-');
+            let parts;
+            if (fullC.includes('|')) {
+                parts = fullC.split('|');
+            } else {
+                // Fallback for old links with hyphens
+                let tempParts = fullC.split('-');
+                if (tempParts.length >= 3) {
+                    let yr = tempParts.pop();
+                    let mo = tempParts.pop();
+                    let bId = tempParts.join('-');
+                    parts = [bId, mo, yr];
+                } else {
+                    parts = tempParts;
+                }
+            }
+
             if (parts.length >= 1) {
                 activeBoardId = parts[0];
                 localStorage.setItem('ai_active_board', activeBoardId);
@@ -4484,7 +4499,7 @@ function renderSocialSchedulerApp(activeBoard) {
             <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: center;">
                 <button class="sm-primary-btn" style="padding: 10px 20px;" onclick="window.openCreatePostModal()">+ منشور جديد</button>
                 <div style="display: flex; gap: 8px;">
-                    <button class="sm-action-btn" title="مشاركة رابط العميل" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="const shortCode = Math.random().toString(36).substr(2,4).toUpperCase(); const shareData = '${activeBoard.id}-${currentMonth}-${currentYear}'; firebase.database().ref('sm_short_links/' + shortCode).set(shareData).catch(e=>console.log(e)); window.open(window.location.href.split('?')[0] + '?id=' + shortCode, '_blank');">
+                    <button class="sm-action-btn" title="مشاركة رابط العميل" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="const shortCode = Math.random().toString(36).substr(2,4).toUpperCase(); const shareData = '${activeBoard.id}|${currentMonth}|${currentYear}'; firebase.database().ref('sm_short_links/' + shortCode).set(shareData).catch(e=>console.log(e)); window.open(window.location.href.split('?')[0] + '?id=' + shortCode, '_blank');">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                         مشاركة العميل
                     </button>
