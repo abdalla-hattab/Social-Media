@@ -3709,8 +3709,9 @@ function render() {
             return;
         }
     }
-    
-    document.title = `Social Media Manager`;
+    if (!window.isClientView) {
+        document.title = `Social Media Manager`;
+    }
 
     appContainer.classList.remove('managing-view');
     appContainer.classList.add('social-scheduler-view');
@@ -3968,6 +3969,10 @@ function renderSocialSchedulerApp(activeBoard) {
     
     const monthNamesArabic = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
     const dayNamesArabic = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+
+    if (window.isClientView && activeBoard) {
+        document.title = `${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}`;
+    }
     
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
