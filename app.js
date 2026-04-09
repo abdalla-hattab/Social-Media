@@ -110,7 +110,59 @@ if (window.isClientView) {
 }
 
 
+window.agencyAuthPassed = false;
+if (!window.isClientView) {
+    if (localStorage.getItem('agency_auth_token') === 'verified') {
+        window.agencyAuthPassed = true;
+    } else {
+        document.addEventListener("DOMContentLoaded", () => {
+            const overlay = document.getElementById('agencyAuthOverlay');
+            const mainContainer = document.getElementById('appContainer');
+            if (overlay && mainContainer) {
+                overlay.style.display = 'flex';
+                mainContainer.style.display = 'none';
+            }
+        });
+    }
+} else {
+    window.agencyAuthPassed = true;
+}
 
+window.verifyAgencyAuth = function() {
+    const input = document.getElementById('agencyAuthInput').value;
+    const errorEl = document.getElementById('agencyAuthError');
+    const btn = document.getElementById('agencyAuthBtn');
+    
+    if (!input) return;
+    btn.innerText = "جاري التحقق...";
+    btn.style.opacity = '0.7';
+    
+    db.ref('agency_settings/password').once('value').then(snap => {
+        let realPassword = snap.val();
+        if (!realPassword) {
+            // Uninitialized password, default to admin123
+            realPassword = 'admin123';
+            db.ref('agency_settings/password').set(realPassword);
+        }
+        
+        if (input === realPassword) {
+            localStorage.setItem('agency_auth_token', 'verified');
+            window.agencyAuthPassed = true;
+            document.getElementById('agencyAuthOverlay').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            if (typeof render === 'function') render();
+        } else {
+            errorEl.style.display = 'block';
+            btn.innerText = "الدخول للوحة التحكم";
+            btn.style.opacity = '1';
+        }
+    }).catch(e => {
+        errorEl.innerText = "حدث خطأ في الاتصال بالسيرفر";
+        errorEl.style.display = 'block';
+        btn.innerText = "الدخول للوحة التحكم";
+        btn.style.opacity = '1';
+    });
+};
 
 let rawOldListsData = localStorage.getItem('ai_accounts_lists');
 
@@ -3567,6 +3619,7 @@ newBoardTitle.onkeydown = (e) => { if (e.key === 'Enter') confirmAddBoardBtn.cli
 
 function render() {
     if (window.isResolvingShortLink) return;
+    if (!window.agencyAuthPassed) return;
     if (isGlobalDragging) return;
     const activeEl = document.activeElement;
     if (activeEl) {
