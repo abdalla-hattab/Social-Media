@@ -4166,34 +4166,52 @@ function renderSocialSchedulerApp(activeBoard) {
     const clientTabsHtml = `
         <div style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; align-items: center; flex-wrap: nowrap;">
             <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center;">
-            ${socialBoards.map((b, idx) => `
+            ${socialBoards.map((b, idx) => {
+                const isAgency = idx < 2;
+                const isActive = activeBoard.id === b.id;
+                
+                let bg = isActive ? 'white' : 'transparent';
+                let color = '#1a202c';
+                let border = isActive ? '2px solid #f97316' : '2px solid #cbd5e0';
+                let shadow = isActive ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none';
+                
+                // Agency specific premium styling
+                if (isAgency) {
+                    bg = isActive ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' : '#fff7ed';
+                    color = isActive ? 'white' : '#c2410c';
+                    border = isActive ? '2px solid transparent' : '2px dashed #fdba74';
+                    shadow = isActive ? '0 4px 12px rgba(249, 115, 22, 0.25)' : 'none';
+                }
+
+                return `
                 <button 
-                    ${idx < 2 ? 'class="sm-non-draggable"' : ''}
+                    ${isAgency ? 'class="sm-non-draggable"' : ''}
                     data-id="${b.id}"
                     onclick="window.switchSocialClient('${b.id}')" 
                     ondblclick="window.renameSocialClient(event, '${b.id}')"
-                    title="انقر نقراً مزدوجاً لـتعديل اسم العميل"
+                    title="${isAgency ? 'هذه مساحة خاصة داخليّة بالوكالة' : 'انقر نقراً مزدوجاً لـتعديل اسم العميل'}"
                     style="
                     flex-shrink: 0;
                     display: flex;
                     align-items: center;
                     gap: 6px;
                     padding: 6px 16px; 
-                    background: ${activeBoard.id === b.id ? 'white' : 'transparent'}; 
-                    color: #1a202c; 
-                    border: 2px solid ${activeBoard.id === b.id ? '#f97316' : '#cbd5e0'}; 
+                    background: ${bg}; 
+                    color: ${color}; 
+                    border: ${border}; 
                     border-radius: 9999px; 
                     font-weight: 700; 
                     font-size: 14px; 
                     white-space: nowrap; 
                     cursor: pointer;
                     transition: all 0.2s;
-                    box-shadow: ${activeBoard.id === b.id ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none'};
+                    box-shadow: ${shadow};
                 "
-                ${idx < 2 ? '' : `onmousedown="this.style.cursor='grabbing';" onmouseup="this.style.cursor='pointer';" onmouseleave="this.style.cursor='pointer';"`}>
+                ${isAgency ? '' : `onmousedown="this.style.cursor='grabbing';" onmouseup="this.style.cursor='pointer';" onmouseleave="this.style.cursor='pointer';"`}>
                     ${b.title || 'Client '}
                 </button>
-            `).join('')}
+                `;
+            }).join('')}
             </div>
             <button onclick="window.openAddClientModal();" style="
                 flex-shrink: 0;
