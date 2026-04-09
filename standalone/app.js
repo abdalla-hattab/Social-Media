@@ -4319,22 +4319,39 @@ function renderSocialSchedulerApp(activeBoard) {
                 overlay.id = 'socialRulesOverlay';
                 overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); display:flex; align-items:center; justify-content:center; z-index:999999; backdrop-filter:blur(4px); opacity:0; transition:opacity 0.2s;";
                 
-                let existingRules = localStorage.getItem('sm-social-rules') || '';
-                // Migrate legacy plain text to HTML if needed
-                if (!existingRules.includes('<') && existingRules.includes('\n')) {
-                    existingRules = existingRules.replace(/\n/g, '<br>');
-                }
-                
                 overlay.innerHTML = `
-                    <div style="background:white; width:90%; max-width:850px; border-radius:12px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.1); transform:translateY(20px); transition:transform 0.2s; direction:rtl; display: flex; flex-direction: column;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                            <h3 style="margin:0; font-size:22px; color:#1e293b; font-weight:700; display:flex; align-items:center; gap:8px;">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                قواعد فريق العمل
-                            </h3>
-                            <button onclick="document.getElementById('socialRulesOverlay').style.opacity='0'; document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);" style="background:none; border:none; cursor:pointer; color:#94a3b8;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                        </div>
-                        <p style="font-size:15px; color:#64748b; margin-top:0; margin-bottom:16px;">اكتب هنا القواعد والشروط المرجعية لقسم التواصل الاجتماعي. (تُحفظ تلقائياً في المتصفح).</p>
+                    <div style="background:white; width:90%; max-width:850px; border-radius:12px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.1); transform:translateY(20px); transition:transform 0.2s; direction:rtl; display: flex; flex-direction: column; align-items:center;">
+                        <div class="sm-spinner" style="width:40px; height:40px; border:4px solid #e2e8f0; border-top-color:#ea580c; border-radius:50%; animation:spin 1s linear infinite;"></div>
+                        <div style="margin-top:16px; font-weight:bold; color:#64748b;">جاري تحميل قواعد الفريق...</div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                requestAnimationFrame(() => {
+                    overlay.style.opacity = '1';
+                    overlay.firstElementChild.style.transform = 'translateY(0)';
+                });
+
+                db.ref('agency_settings/team_rules').once('value').then(snap => {
+                    let existingRules = snap.val() || '';
+                    if (!existingRules && localStorage.getItem('sm-social-rules')) {
+                        existingRules = localStorage.getItem('sm-social-rules');
+                        db.ref('agency_settings/team_rules').set(existingRules);
+                    }
+                    if (!existingRules.includes('<') && existingRules.includes('\n')) {
+                        existingRules = existingRules.replace(/\n/g, '<br>');
+                    }
+
+                    overlay.innerHTML = `
+                        <div style="background:white; width:90%; max-width:850px; border-radius:12px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.1); transform:translateY(0px); transition:transform 0.2s; direction:rtl; display: flex; flex-direction: column;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                                <h3 style="margin:0; font-size:22px; color:#1e293b; font-weight:700; display:flex; align-items:center; gap:8px;">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                    قواعد فريق العمل
+                                </h3>
+                                <button onclick="document.getElementById('socialRulesOverlay').style.opacity='0'; document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);" style="background:none; border:none; cursor:pointer; color:#94a3b8;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                            </div>
+                            <p style="font-size:15px; color:#64748b; margin-top:0; margin-bottom:16px;">اكتب هنا القواعد والشروط المرجعية لقسم التواصل الاجتماعي. (مربوطة بقاعدة بيانات السيرفر لجميع أفراد الفريق).</p>
                         
                         <style>
                             #socialRulesInput ul { list-style-type: disc !important; padding-inline-start: 28px !important; margin: 12px 0 !important; }
@@ -4360,17 +4377,30 @@ function renderSocialSchedulerApp(activeBoard) {
                         
                         <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
                             <button onclick="document.getElementById('socialRulesOverlay').style.opacity='0'; document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);" style="background:#f1f5f9; color:#475569; border:none; padding:12px 24px; border-radius:8px; font-weight:700; cursor:pointer; font-size:15px; transition:background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">إلغاء</button>
-                            <button onclick="localStorage.setItem('sm-social-rules', document.getElementById('socialRulesInput').innerHTML); document.getElementById('socialRulesOverlay').style.opacity='0'; document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);" style="background:#ea580c; color:white; border:none; padding:12px 32px; border-radius:8px; font-weight:700; cursor:pointer; font-size:15px; transition:background 0.2s;" onmouseover="this.style.background='#c2410c'" onmouseout="this.style.background='#ea580c'">حفظ القواعد</button>
+                            <button id="saveRulesBtn" onclick="
+                                let btn = this;
+                                btn.innerText = 'جاري الحفظ...';
+                                btn.style.opacity = '0.7';
+                                document.getElementById('socialRulesInput').contentEditable = false;
+                                db.ref('agency_settings/team_rules').set(document.getElementById('socialRulesInput').innerHTML).then(() => {
+                                    localStorage.setItem('sm-social-rules', document.getElementById('socialRulesInput').innerHTML);
+                                    document.getElementById('socialRulesOverlay').style.opacity='0';
+                                    document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)';
+                                    setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);
+                                }).catch(e => {
+                                    btn.innerText = 'خطأ!';
+                                    setTimeout(() => {
+                                        btn.innerText = 'حفظ القواعد';
+                                        btn.style.opacity = '1';
+                                        document.getElementById('socialRulesInput').contentEditable = true;
+                                    }, 2000);
+                                });
+                            " style="background:#ea580c; color:white; border:none; padding:12px 32px; border-radius:8px; font-weight:700; cursor:pointer; font-size:15px; transition:background 0.2s;" onmouseover="this.style.background='#c2410c'" onmouseout="this.style.background='#ea580c'">حفظ القواعد</button>
                         </div>
                     </div>
                 `;
-                document.body.appendChild(overlay);
                 
                 document.getElementById('socialRulesInput').innerHTML = existingRules;
-                
-                requestAnimationFrame(() => {
-                    overlay.style.opacity = '1';
-                    overlay.firstElementChild.style.transform = 'translateY(0)';
                 });
             }
         };
