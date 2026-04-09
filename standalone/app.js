@@ -35,12 +35,12 @@ if (superShortId) {
     window.isResolvingShortLink = true;
     const ref = db.ref('sm_short_links/' + superShortId);
     
-    // Fallback timeout in case the short link does not exist or takes too long
+    // Fallback timeout bumped to 10 seconds to accommodate slower client connections
     const timeout = setTimeout(() => {
         ref.off('value');
         window.isResolvingShortLink = false;
         if (typeof render === 'function') render();
-    }, 1500);
+    }, 10000);
 
     ref.on('value', snap => {
         const fullC = snap.val();
@@ -77,8 +77,14 @@ if (superShortId) {
             }
             
             window.isResolvingShortLink = false;
-            // Delay rendering slightly to ensure cloudBoards sync finishes
-            setTimeout(() => { if (typeof render === 'function') render(); }, 10);
+            // Delay rendering slightly just to allow other synchronous listeners to trigger
+            setTimeout(() => { if (typeof render === 'function') render(); }, 50);
+        } else if (fullC === null) {
+            // Short link does not exist in DB (invalid link)
+            clearTimeout(timeout);
+            ref.off('value');
+            window.isResolvingShortLink = false;
+            if (typeof render === 'function') render();
         }
     });
 }
@@ -241,8 +247,10 @@ function ensureBoardStructure() {
 ensureBoardStructure();
 
 // Setup Firebase real-time listener for Social Scheduler ONLY
+window.isCloudDataLoaded = false;
 db.ref('ai_social_lists').on('value', (snapshot) => {
     isApplyingFirebaseSync = true;
+    window.isCloudDataLoaded = true;
     const data = snapshot.val();
     if (data) {
         cloudBoards = data;
@@ -3674,6 +3682,20 @@ function render() {
 
     appContainer.innerHTML = '';
     let activeBoard = boards.find(b => b.id === activeBoardId);
+    
+    // STRICT RULE: If we are in client view (resolving a direct link) and we haven't synced with firebase yet, 
+    // we must NEVER fallback to the first board (which would corrupt local state for this client).
+    // The board will safely appear in the subsequent firebase sync call within ms.
+    if (!activeBoard && window.isClientView) {
+        appContainer.innerHTML = `
+            <div style="display:flex; height:100vh; background:#f4f5f7; align-items:center; justify-content:center; color:#475569; font-weight:700; font-family:sans-serif; flex-direction:column; gap:20px;">
+                <div class="sm-spinner" style="width:48px; height:48px; border:4px solid #cbd5e1; border-top-color:#ea580c; border-radius:50%; animation:spin 1s linear infinite;"></div>
+                <div style="font-size: 18px;">جاري تهيئة ومزامنة مساحة العميل...</div>
+                <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+            </div>`;
+        return;
+    }
+
     if (!activeBoard) {
         if (boards.length > 0) {
             activeBoardId = boards[0].id;
@@ -4211,32 +4233,37 @@ function renderSocialSchedulerApp(activeBoard) {
                 }
 
                 return `
-                <button 
-                    ${isAgency ? 'class="sm-non-draggable"' : ''}
-                    data-id="${b.id}"
-                    onclick="window.switchSocialClient('${b.id}')" 
-                    ondblclick="window.renameSocialClient(event, '${b.id}')"
-                    title="${isAgency ? 'هذه مساحة خاصة داخليّة بالوكالة' : 'انقر نقراً مزدوجاً لـتعديل اسم العميل'}"
-                    style="
-                    flex-shrink: 0;
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    padding: 6px 16px; 
-                    background: ${bg}; 
-                    color: ${color}; 
-                    border: ${border}; 
-                    border-radius: ${btnRadius}; 
-                    font-weight: 700; 
-                    font-size: 14px; 
-                    white-space: nowrap; 
-                    cursor: pointer;
-                    transition: all 0.2s;
-                    box-shadow: ${shadow};
-                "
-                ${isAgency ? '' : `onmousedown="this.style.cursor='grabbing';" onmouseup="this.style.cursor='pointer';" onmouseleave="this.style.cursor='pointer';"`}>
-                    ${b.title || 'Client '}
-                </button>
+                <div style="display:flex; align-items:center; background: ${bg}; border: ${border}; border-radius: ${btnRadius}; box-shadow: ${shadow}; transition: all 0.2s; position:relative; padding-left: ${!isAgency ? '4px' : '0'};">
+                    <button 
+                        ${isAgency ? 'class="sm-non-draggable"' : ''}
+                        data-id="${b.id}"
+                        onclick="window.switchSocialClient('${b.id}')" 
+                        ondblclick="window.renameSocialClient(event, '${b.id}')"
+                        title="${isAgency ? 'هذه مساحة خاصة داخليّة بالوكالة' : 'انقر نقراً مزدوجاً لـتعديل اسم العميل'}"
+                        style="
+                        flex-shrink: 0;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        padding: 6px ${!isAgency ? '10px' : '16px'} 6px 16px; 
+                        background: transparent; 
+                        color: ${color}; 
+                        border: none;
+                        font-weight: 700; 
+                        font-size: 14px; 
+                        white-space: nowrap; 
+                        cursor: pointer;
+                        outline: none;
+                    "
+                    ${isAgency ? '' : `onmousedown="this.parentElement.style.cursor='grabbing'; this.style.cursor='grabbing';" onmouseup="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';" onmouseleave="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';"`}>
+                        ${b.title || 'Client '}
+                    </button>
+                    ${!isAgency ? `
+                    <button onclick="window.generateDirectShareLink('${b.id}', this, event)" title="نسخ رابط مباشر لمشاركة هذا العميل (${b.id})" style="background:transparent; border:none; cursor:pointer; padding: 4px; border-radius: 4px; display:flex; align-items:center; color:${isActive ? '#ea580c' : '#94a3b8'}; transition:all 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.05)'; this.style.color='#f97316'" onmouseout="this.style.background='transparent'; this.style.color='${isActive ? '#ea580c' : '#94a3b8'}'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    </button>
+                    ` : ''}
+                </div>
                 `;
             }).join('')}
             </div>
@@ -4261,6 +4288,29 @@ function renderSocialSchedulerApp(activeBoard) {
             </button>
         </div>
     `;
+    
+    window.generateDirectShareLink = window.generateDirectShareLink || function(boardId, btn, e) {
+        if (e) e.stopPropagation();
+        let m = window.activeSocialMonthView ? window.activeSocialMonthView.month : new Date().getMonth();
+        let y = window.activeSocialMonthView ? window.activeSocialMonthView.year : new Date().getFullYear();
+        
+        const targetUrl = window.location.href.split('?')[0] + '?c=' + boardId + '-' + m + '-' + y;
+        
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(targetUrl).then(() => {
+                if(btn) {
+                    const oldHtml = btn.innerHTML;
+                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                    setTimeout(() => { btn.innerHTML = oldHtml; }, 2000);
+                } else {
+                    alert("✅ تم نسخ رابط العميل المباشر بنجاح!");
+                }
+            });
+        } else {
+            prompt("انسخ رابط العميل التالي للمشاركة:", targetUrl);
+        }
+    };
+
     if (!window.openSocialRulesModal) {
         window.openSocialRulesModal = function() {
             let overlay = document.getElementById('socialRulesOverlay');
@@ -4542,9 +4592,9 @@ function renderSocialSchedulerApp(activeBoard) {
             <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: center;">
                 <button class="sm-primary-btn" style="padding: 10px 20px;" onclick="window.openCreatePostModal()">+ منشور جديد</button>
                 <div style="display: flex; gap: 8px;">
-                    <button class="sm-action-btn" title="مشاركة رابط العميل" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.generateAndOpenShareLink('${activeBoard.id}', '${currentMonth}', '${currentYear}', this)">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                        مشاركة العميل
+                    <button class="sm-action-btn" title="نسخ رابط مباشر للمشاركة مع العميل" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.generateDirectShareLink('${activeBoard.id}', this, event)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                        نسخ رابط العميل
                     </button>
                 </div>
                 ${tabsHtml}
