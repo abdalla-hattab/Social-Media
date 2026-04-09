@@ -4174,6 +4174,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 let color = '#1a202c';
                 let border = isActive ? '2px solid #f97316' : '2px solid #cbd5e0';
                 let shadow = isActive ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none';
+                let btnRadius = '9999px';
                 
                 // Agency specific premium styling
                 if (isAgency) {
@@ -4181,6 +4182,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     color = isActive ? 'white' : '#c2410c';
                     border = isActive ? '2px solid transparent' : '2px dashed #fdba74';
                     shadow = isActive ? '0 4px 12px rgba(249, 115, 22, 0.25)' : 'none';
+                    btnRadius = '14px 4px 14px 4px'; // Distinct geometric shape
                 }
 
                 return `
@@ -4199,7 +4201,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     background: ${bg}; 
                     color: ${color}; 
                     border: ${border}; 
-                    border-radius: 9999px; 
+                    border-radius: ${btnRadius}; 
                     font-weight: 700; 
                     font-size: 14px; 
                     white-space: nowrap; 
