@@ -4350,10 +4350,23 @@ function renderSocialSchedulerApp(activeBoard) {
                     overlay.innerHTML = `
                         <div style="background:white; width:90%; max-width:850px; border-radius:12px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.1); transform:translateY(0px); transition:transform 0.2s; direction:rtl; display: flex; flex-direction: column;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                                <h3 style="margin:0; font-size:22px; color:#1e293b; font-weight:700; display:flex; align-items:center; gap:8px;">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    قواعد فريق العمل
-                                </h3>
+                                <div style="display:flex; align-items:center; gap:16px;">
+                                    <h3 style="margin:0; font-size:22px; color:#1e293b; font-weight:700; display:flex; align-items:center; gap:8px;">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                        قواعد فريق العمل
+                                    </h3>
+                                    <div style="display:flex; gap:8px;">
+                                        <button onclick="window.exportDashboardData()" title="تصدير نسخة احتياطية لجميع العملاء" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; cursor:pointer; color:#475569; font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px; transition:all 0.2s;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='#f8fafc';">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                            تصدير البيانات
+                                        </button>
+                                        <label style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; cursor:pointer; color:#475569; font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px; transition:all 0.2s;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='#f8fafc';">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                            استيراد البيانات
+                                            <input type="file" accept=".json" style="display:none;" onchange="if(confirm('سيتم استبدال جميع بيانات العملاء الحالية. هل أنت متأكد؟')) { window.importDashboardData(event); } else { this.value = ''; }">
+                                        </label>
+                                    </div>
+                                </div>
                                 <button onclick="document.getElementById('socialRulesOverlay').style.opacity='0'; document.getElementById('socialRulesOverlay').firstElementChild.style.transform='translateY(20px)'; setTimeout(()=>document.getElementById('socialRulesOverlay').remove(), 200);" style="background:none; border:none; cursor:pointer; color:#94a3b8;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                             </div>
                             <p style="font-size:15px; color:#64748b; margin-top:0; margin-bottom:16px;">اكتب هنا القواعد والشروط المرجعية لقسم التواصل الاجتماعي. (مربوطة بقاعدة بيانات السيرفر لجميع أفراد الفريق).</p>
