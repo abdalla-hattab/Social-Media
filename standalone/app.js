@@ -4793,6 +4793,11 @@ function renderSocialSchedulerApp(activeBoard) {
         render();
     };
 
+    window.toggleLiveMode = window.toggleLiveMode || function() {
+        window.isLiveModeActive = !window.isLiveModeActive;
+        if (typeof render === 'function') render();
+    };
+
     window.exportDashboardData = window.exportDashboardData || function() {
         const dataToExport = {
             boards: typeof boards !== 'undefined' ? boards : [],
@@ -4912,6 +4917,13 @@ function renderSocialSchedulerApp(activeBoard) {
                                 <button class="sm-icon-btn" onclick="window.toggleClientEditsVisibility()" title="${window.smShowClientEditsToggle !== false ? 'إخفاء تعديلات العميل' : 'إظهار تعديلات العميل'}" style="margin-left: 4px; border: none; color:${window.smShowClientEditsToggle !== false ? '#16a34a' : '#64748b'};" onmouseover="this.style.background='${window.smShowClientEditsToggle !== false ? '#f0fdf4' : '#f1f5f9'}';" onmouseout="this.style.background='transparent';">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${window.smShowClientEditsToggle !== false ? '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"></path>' : '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'}</svg>
                                 </button>
+                                
+                                <style>@keyframes smLivePulse { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1.4); opacity: 0.6; box-shadow: 0 0 8px #ef4444; } }</style>
+                                <button class="sm-icon-btn" onclick="window.toggleLiveMode()" title="البث المباشر (Live)" style="margin-left: 4px; border: 1px solid ${window.isLiveModeActive ? '#ef4444' : 'transparent'}; background: ${window.isLiveModeActive ? '#fef2f2' : 'transparent'}; color:${window.isLiveModeActive ? '#ef4444' : '#64748b'}; font-weight:700; width: auto; padding: 0 10px; gap: 6px; font-size:13px; transition: all 0.2s;" onmouseover="this.style.background='${window.isLiveModeActive ? '#fee2e2' : '#f1f5f9'}';" onmouseout="this.style.background='${window.isLiveModeActive ? '#fef2f2' : 'transparent'}';">
+                                    <div style="width: 8px; height: 8px; border-radius: 50%; background: ${window.isLiveModeActive ? '#ef4444' : 'transparent'}; border: ${window.isLiveModeActive ? 'none' : '2px solid #94a3b8'}; ${window.isLiveModeActive ? 'animation: smLivePulse 0.8s infinite alternate;' : ''}"></div>
+                                    Live
+                                </button>
+
                                 
                                 <button class="sm-icon-btn" onclick="window.hideAllMonthEvents(${currentMonth})" title="إخفاء جميع المناسبات في هذا الشهر" style="margin-left: 4px; border: none; color:#ef4444;" onmouseover="this.style.background='#fef2f2';" onmouseout="this.style.background='transparent';">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
