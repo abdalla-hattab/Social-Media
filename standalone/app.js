@@ -4686,24 +4686,64 @@ function renderSocialSchedulerApp(activeBoard) {
                 this.innerHTML = '<div class="sm-spinner" style="width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 1s linear infinite; margin: 0 auto;"></div>';
                 this.style.pointerEvents = 'none';
                 
-                setTimeout(() => {
-                    modal.innerHTML = `
-                    <div style="background:#7c3aed; width: 400px; border-radius: 16px; padding: 40px 24px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; display:flex; flex-direction:column; align-items:center;">
-                        <div style="width: 60px; height: 60px; background: #22c55e; border-radius: 12px; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        </div>
-                        <h3 style="margin: 0 0 8px; color: white; font-size: 22px; font-weight:700;">تم الربط بنجاح!</h3>
-                        <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin-bottom: 0;">يمكنك إغلاق هذه النافذة الآن</p>
-                    </div>`;
+                const width = 500;
+                const height = 620;
+                const left = (window.innerWidth / 2) - (width / 2) + window.screenX;
+                const top = (window.innerHeight / 2) - (height / 2) + window.screenY;
+                const popup = window.open('', 'oauth_mock_window', `width=${width},height=${height},left=${left},top=${top}`);
+                
+                if (popup) {
+                    popup.document.write(`
+                        <html dir="ltr">
+                        <head><title>Authorize ${pName}</title></head>
+                        <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #fafafa;">
+                            <div style="background: white; border: 1px solid #dbdbdb; border-radius: 8px; padding: 40px; text-align: center; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                                <h1 style="margin: 0 0 20px; font-size: 28px; font-family: 'Comic Sans MS', cursive, sans-serif;">${pName}</h1>
+                                <p style="color: #262626; font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
+                                    <b>Social Media Connector</b> is requesting access to your account. If you select Allow, Social Media Connector will be able to access and publish content.
+                                </p>
+                                <button onclick="window.opener.handleOAuthMockSuccess('${platformId}'); window.close();" style="width: 100%; padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Allow</button>
+                                <button onclick="window.close();" style="width: 100%; padding: 10px 20px; background: transparent; color: #262626; border: 1px solid #dbdbdb; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Cancel</button>
+                                <p style="color: #a3a3a3; font-size: 11px; margin-top: 16px;">By allowing, you will receive ongoing access to your information.</p>
+                            </div>
+                        </body>
+                        </html>
+                    `);
                     
-                    board.connectedAccounts[platformId] = true;
-                    if (typeof window.saveState === 'function') { window.saveState(); } else if (typeof saveState === 'function') { saveState(); }
+                    window.handleOAuthMockSuccess = function(resolvedPlatformId) {
+                        modal.innerHTML = `
+                        <div style="background:#7c3aed; width: 400px; border-radius: 16px; padding: 40px 24px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; display:flex; flex-direction:column; align-items:center;">
+                            <div style="width: 60px; height: 60px; background: #22c55e; border-radius: 12px; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <h3 style="margin: 0 0 8px; color: white; font-size: 22px; font-weight:700;">تم الربط بنجاح!</h3>
+                            <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin-bottom: 0;">يمكنك إغلاق هذه النافذة الآن</p>
+                        </div>`;
+                        
+                        board.connectedAccounts[resolvedPlatformId] = true;
+                        if (typeof window.saveState === 'function') { window.saveState(); } else if (typeof saveState === 'function') { saveState(); }
+                        
+                        setTimeout(() => {
+                            modal.remove();
+                            if (typeof window.render === 'function') { window.render(); } else if (typeof render === 'function') { render(); }
+                        }, 2000);
+                    };
                     
-                    setTimeout(() => {
-                        modal.remove();
-                        if (typeof window.render === 'function') { window.render(); } else if (typeof render === 'function') { render(); }
-                    }, 1500);
-                }, 1500);
+                    const checkClosed = setInterval(() => {
+                        if (popup.closed) {
+                            clearInterval(checkClosed);
+                            if (document.getElementById('btn-oauth-start')) {
+                                document.getElementById('btn-oauth-start').innerHTML = 'فتح صفحة الربط';
+                                document.getElementById('btn-oauth-start').style.pointerEvents = 'auto';
+                            }
+                        }
+                    }, 500);
+
+                } else {
+                    alert('يرجى السماح بالنوافذ المنبثقة (Popups) في متصفحك لإتمام عملية الربط.');
+                    this.innerHTML = 'فتح صفحة الربط';
+                    this.style.pointerEvents = 'auto';
+                }
             };
         }
     };
