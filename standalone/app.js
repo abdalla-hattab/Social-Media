@@ -4628,6 +4628,38 @@ function renderSocialSchedulerApp(activeBoard) {
         });
     };
 
+    window.toggleSocialAccount = window.toggleSocialAccount || function(platformId) {
+        if (!window.activeBoard) return;
+        if (!window.activeBoard.connectedAccounts) {
+            window.activeBoard.connectedAccounts = {};
+        }
+        
+        const isCurrentlyConnected = window.activeBoard.connectedAccounts[platformId];
+        
+        if (isCurrentlyConnected) {
+            if (confirm('هل أنت متأكد من رغبتك في إلغاء ربط الحساب؟')) {
+                window.activeBoard.connectedAccounts[platformId] = false;
+                if (typeof window.saveState === 'function') window.saveState();
+                if (typeof window.render === 'function') window.render();
+            }
+        } else {
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(4px);";
+            loadingOverlay.innerHTML = `
+                <div class="sm-spinner" style="width:50px; height:50px; border:4px solid #e2e8f0; border-top-color:#ea580c; border-radius:50%; animation:spin 1s linear infinite;"></div>
+                <div style="margin-top: 16px; font-weight:bold; color:#1e293b; font-size:18px;">جاري توثيق الحساب...</div>
+            `;
+            document.body.appendChild(loadingOverlay);
+            
+            setTimeout(() => {
+                loadingOverlay.remove();
+                window.activeBoard.connectedAccounts[platformId] = true;
+                if (typeof window.saveState === 'function') window.saveState();
+                if (typeof window.render === 'function') window.render();
+            }, 1200);
+        }
+    };
+
     const headerPadding = (window.activeSocialTab === 'calendar' && !window.isClientView) ? '0 0 24px 0' : '24px 32px 24px 32px';
     const universalHeaderHtml = `
         <div style="padding: ${headerPadding}; flex-shrink: 0;">
@@ -4926,7 +4958,18 @@ function renderSocialSchedulerApp(activeBoard) {
             { id: 'linkedin', name: 'لينكد إن', icon: '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle>', color: '#0A66C2' }
         ];
 
-        let accCards = platforms.map(p => `
+        let accCards = platforms.map(p => {
+            const isConnected = window.activeBoard && window.activeBoard.connectedAccounts && window.activeBoard.connectedAccounts[p.id];
+            
+            const statusHtml = isConnected 
+                ? '<span class="sm-status connected" style="color: #16a34a; background: #dcfce7; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">متصل</span>'
+                : '<span class="sm-status disconnected">غير متصل</span>';
+            
+            const btnHtml = isConnected
+                ? `<button class="sm-btn-outline" style="color: #dc2626; border: 1px solid #fecaca; background: #fef2f2; width: 100%; padding: 8px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer;" onclick="window.toggleSocialAccount('${p.id}')">إلغاء الربط</button>`
+                : `<button class="sm-btn-primary" onclick="window.toggleSocialAccount('${p.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> ربط الحساب</button>`;
+                
+            return `
             <div class="sm-account-card">
                 <div class="sm-platform-info">
                     <div class="sm-platform-logo" style="background:${p.color};">
@@ -4934,13 +4977,14 @@ function renderSocialSchedulerApp(activeBoard) {
                     </div>
                     <div>
                         <h4>${p.name}</h4>
-                        <span class="sm-status disconnected">غير متصل</span>
+                        ${statusHtml}
                     </div>
                 </div>
-                <p class="sm-acc-desc">اربط حسابك للنشر التلقائي</p>
-                <button class="sm-btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> ربط الحساب</button>
+                <p class="sm-acc-desc">${isConnected ? 'هذا الحساب متصل وجاهز للنشر' : 'اربط حسابك للنشر التلقائي'}</p>
+                ${btnHtml}
             </div>
-        `).join('');
+            `;
+        }).join('');
 
         mainContentHtml = `
             <div class="sm-full-view" style="padding-top: 0; min-height: 0;">
