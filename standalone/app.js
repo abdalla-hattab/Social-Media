@@ -4629,34 +4629,82 @@ function renderSocialSchedulerApp(activeBoard) {
     };
 
     window.toggleSocialAccount = window.toggleSocialAccount || function(platformId) {
-        if (!window.activeBoard) return;
-        if (!window.activeBoard.connectedAccounts) {
-            window.activeBoard.connectedAccounts = {};
+        const boardId = typeof window.activeBoardId !== 'undefined' ? window.activeBoardId : (typeof activeBoardId !== 'undefined' ? activeBoardId : null);
+        const boardList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
+        const board = boardList.find(b => b.id === boardId);
+        
+        if (!board) return;
+
+        if (!board.connectedAccounts) {
+            board.connectedAccounts = {};
         }
         
-        const isCurrentlyConnected = window.activeBoard.connectedAccounts[platformId];
+        const isCurrentlyConnected = board.connectedAccounts[platformId];
         
         if (isCurrentlyConnected) {
             if (confirm('هل أنت متأكد من رغبتك في إلغاء ربط الحساب؟')) {
-                window.activeBoard.connectedAccounts[platformId] = false;
-                if (typeof window.saveState === 'function') window.saveState();
-                if (typeof window.render === 'function') window.render();
+                board.connectedAccounts[platformId] = false;
+                if (typeof window.saveState === 'function') { window.saveState(); } else if (typeof saveState === 'function') { saveState(); }
+                if (typeof window.render === 'function') { window.render(); } else if (typeof render === 'function') { render(); }
             }
         } else {
-            const loadingOverlay = document.createElement('div');
-            loadingOverlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(4px);";
-            loadingOverlay.innerHTML = `
-                <div class="sm-spinner" style="width:50px; height:50px; border:4px solid #e2e8f0; border-top-color:#ea580c; border-radius:50%; animation:spin 1s linear infinite;"></div>
-                <div style="margin-top: 16px; font-weight:bold; color:#1e293b; font-size:18px;">جاري توثيق الحساب...</div>
-            `;
-            document.body.appendChild(loadingOverlay);
+            const platformNameMap = {
+                'instagram': 'إنستغرام',
+                'twitter': 'تويتر',
+                'facebook': 'فيسبوك',
+                'snapchat': 'سناب شات',
+                'youtube': 'يوتيوب',
+                'tiktok': 'تيك توك',
+                'linkedin': 'لينكد إن'
+            };
+            const pName = platformNameMap[platformId] || platformId;
+        
+            const modalId = 'oauth-mock-modal';
+            let modal = document.getElementById(modalId);
+            if (modal) modal.remove();
+
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(2px);";
             
-            setTimeout(() => {
-                loadingOverlay.remove();
-                window.activeBoard.connectedAccounts[platformId] = true;
-                if (typeof window.saveState === 'function') window.saveState();
-                if (typeof window.render === 'function') window.render();
-            }, 1200);
+            modal.innerHTML = `
+                <div style="background:white; width: 400px; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; display:flex; flex-direction:column; align-items:center;">
+                    <div style="width: 50px; height: 50px; background: #fff7ed; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 16px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    </div>
+                    <h3 style="margin: 0 0 8px; color: #0f172a; font-size: 18px; font-weight:700;">ربط ${pName}</h3>
+                    <p style="color: #64748b; font-size: 13px; margin-bottom: 24px; line-height: 1.5;">سيتم فتح صفحة ${pName} في نافذة جديدة لإتمام عملية التوثيق. بعد الانتهاء، أغلق النافذة وسيتم تحديث الحالة تلقائياً.</p>
+                    <div style="display:flex; flex-direction:column; gap: 8px; width: 100%;">
+                        <button id="btn-oauth-start" style="background:#ea580c; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size: 14px; width: 100%;">فتح صفحة الربط</button>
+                        <button onclick="document.getElementById('${modalId}').remove()" style="background:transparent; color:#64748b; border:none; padding:12px; font-weight:600; cursor:pointer; font-size: 14px;">إلغاء</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('btn-oauth-start').onclick = function() {
+                this.innerHTML = '<div class="sm-spinner" style="width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 1s linear infinite; margin: 0 auto;"></div>';
+                this.style.pointerEvents = 'none';
+                
+                setTimeout(() => {
+                    modal.innerHTML = `
+                    <div style="background:#7c3aed; width: 400px; border-radius: 16px; padding: 40px 24px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; display:flex; flex-direction:column; align-items:center;">
+                        <div style="width: 60px; height: 60px; background: #22c55e; border-radius: 12px; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <h3 style="margin: 0 0 8px; color: white; font-size: 22px; font-weight:700;">تم الربط بنجاح!</h3>
+                        <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin-bottom: 0;">يمكنك إغلاق هذه النافذة الآن</p>
+                    </div>`;
+                    
+                    board.connectedAccounts[platformId] = true;
+                    if (typeof window.saveState === 'function') { window.saveState(); } else if (typeof saveState === 'function') { saveState(); }
+                    
+                    setTimeout(() => {
+                        modal.remove();
+                        if (typeof window.render === 'function') { window.render(); } else if (typeof render === 'function') { render(); }
+                    }, 1500);
+                }, 1500);
+            };
         }
     };
 
