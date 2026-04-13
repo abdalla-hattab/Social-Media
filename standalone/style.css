@@ -1761,6 +1761,8 @@ input[type=number] {
     flex-direction: column;
     gap: 24px;
     width: 100%;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .sm-stats-top-bar {
