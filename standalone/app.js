@@ -5047,7 +5047,8 @@ function renderSocialSchedulerApp(activeBoard) {
         ];
 
         let accCards = platforms.map(p => {
-            const isConnected = window.activeBoard && window.activeBoard.connectedAccounts && window.activeBoard.connectedAccounts[p.id];
+            const currentBoard = typeof activeBoard !== 'undefined' ? activeBoard : (window.activeBoard || null);
+            const isConnected = currentBoard && currentBoard.connectedAccounts && currentBoard.connectedAccounts[p.id];
             
             const statusHtml = isConnected 
                 ? '<span class="sm-status connected" style="color: #16a34a; background: #dcfce7; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">متصل</span>'
