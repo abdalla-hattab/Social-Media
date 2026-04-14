@@ -1558,9 +1558,17 @@ window.openCreatePostModal = function(postId = null) {
                         const fg = isConn ? p.colorFill : '#94a3b8';
                         const bg = isConn ? p.colorBg : '#f8fafc';
                         
-                        const cursorStyle = isConn ? "cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" : "opacity: 0.5; cursor: not-allowed;";
-                        const hoverEffects = isConn ? `onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"` : "";
-                        const clickHandler = isConn ? `onclick="if(typeof window.toggleLivePlatform==='function') window.toggleLivePlatform(this, '${p.colorFill}', '${p.id}')"` : "";
+                        const cursorStyle = isConn 
+                            ? "cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
+                            : "cursor: pointer; opacity: 0.6; transition: transform 0.2s, filter 0.2s; filter: grayscale(100%);";
+                        
+                        const hoverEffects = isConn 
+                            ? `onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"` 
+                            : `onmouseover="this.style.transform='scale(1.1)'; this.style.filter='grayscale(0%)'" onmouseout="this.style.transform='scale(1)'; this.style.filter='grayscale(100%)'" title="Connect ${p.id} via Zernio"`;
+                            
+                        const clickHandler = isConn 
+                            ? `onclick="if(typeof window.toggleLivePlatform==='function') window.toggleLivePlatform(this, '${p.colorFill}', '${p.id}')"` 
+                            : `onclick="if(typeof window.connectZernioPlatform==='function') window.connectZernioPlatform('${p.id}')"`;
                         
                         html += `
                             <div class="sm-live-platform-icon" data-platform="${p.id}" style="flex-shrink:0; width:34px; height:34px; border-radius:50%; background:${bg}; display:flex; align-items:center; justify-content:center; color:${fg}; ${cursorStyle}" ${clickHandler} ${hoverEffects}>
@@ -4717,102 +4725,19 @@ function renderSocialSchedulerApp(activeBoard) {
                 if (typeof window.render === 'function') { window.render(); } else if (typeof render === 'function') { render(); }
             }
         } else {
-            const platformNameMap = {
-                'instagram': 'إنستغرام',
-                'twitter': 'تويتر',
-                'facebook': 'فيسبوك',
-                'snapchat': 'سناب شات',
-                'youtube': 'يوتيوب',
-                'tiktok': 'تيك توك',
-                'linkedin': 'لينكد إن'
-            };
-            const pName = platformNameMap[platformId] || platformId;
-        
-            const modalId = 'oauth-mock-modal';
-            let modal = document.getElementById(modalId);
-            if (modal) modal.remove();
-
-            modal = document.createElement('div');
-            modal.id = modalId;
-            modal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; backdrop-filter:blur(2px);";
-            
-            modal.innerHTML = `
-                <div style="background:white; width: 400px; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; display:flex; flex-direction:column; align-items:center;">
-                    <div style="width: 50px; height: 50px; background: #fff7ed; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 16px;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                    </div>
-                    <h3 style="margin: 0 0 8px; color: #0f172a; font-size: 18px; font-weight:700;">ربط ${pName}</h3>
-                    <p style="color: #64748b; font-size: 13px; margin-bottom: 24px; line-height: 1.5;">سيتم فتح صفحة ${pName} في نافذة جديدة لإتمام عملية التوثيق. بعد الانتهاء، أغلق النافذة وسيتم تحديث الحالة تلقائياً.</p>
-                    <div style="display:flex; flex-direction:column; gap: 8px; width: 100%;">
-                        <button id="btn-oauth-start" style="background:#ea580c; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; font-size: 14px; width: 100%;">فتح صفحة الربط</button>
-                        <button onclick="document.getElementById('${modalId}').remove()" style="background:transparent; color:#64748b; border:none; padding:12px; font-weight:600; cursor:pointer; font-size: 14px;">إلغاء</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            document.getElementById('btn-oauth-start').onclick = function() {
-                this.innerHTML = '<div class="sm-spinner" style="width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:white; border-radius:50%; animation:spin 1s linear infinite; margin: 0 auto;"></div>';
-                this.style.pointerEvents = 'none';
+        } else {
+            if (typeof window.connectZernioPlatform === 'function') {
+                window.connectZernioPlatform(platformId);
                 
-                const width = 500;
-                const height = 620;
-                const left = (window.innerWidth / 2) - (width / 2) + window.screenX;
-                const top = (window.innerHeight / 2) - (height / 2) + window.screenY;
-                const popup = window.open('', 'oauth_mock_window', `width=${width},height=${height},left=${left},top=${top}`);
-                
-                if (popup) {
-                    popup.document.write(`
-                        <html dir="ltr">
-                        <head><title>Authorize ${pName}</title></head>
-                        <body style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #fafafa;">
-                            <div style="background: white; border: 1px solid #dbdbdb; border-radius: 8px; padding: 40px; text-align: center; max-width: 350px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                                <h1 style="margin: 0 0 20px; font-size: 28px; font-family: 'Comic Sans MS', cursive, sans-serif;">${pName}</h1>
-                                <p style="color: #262626; font-size: 14px; margin-bottom: 24px; line-height: 1.5;">
-                                    <b>Social Media Connector</b> is requesting access to your account. If you select Allow, Social Media Connector will be able to access and publish content.
-                                </p>
-                                <button onclick="window.opener.handleOAuthMockSuccess('${platformId}'); window.close();" style="width: 100%; padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Allow</button>
-                                <button onclick="window.close();" style="width: 100%; padding: 10px 20px; background: transparent; color: #262626; border: 1px solid #dbdbdb; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">Cancel</button>
-                                <p style="color: #a3a3a3; font-size: 11px; margin-top: 16px;">By allowing, you will receive ongoing access to your information.</p>
-                            </div>
-                        </body>
-                        </html>
-                    `);
-                    
-                    window.handleOAuthMockSuccess = function(resolvedPlatformId) {
-                        modal.innerHTML = `
-                        <div style="background:#7c3aed; width: 400px; border-radius: 16px; padding: 40px 24px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: scaleIn 0.3s ease; display:flex; flex-direction:column; align-items:center;">
-                            <div style="width: 60px; height: 60px; background: #22c55e; border-radius: 12px; display: flex; justify-content: center; align-items: center; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            </div>
-                            <h3 style="margin: 0 0 8px; color: white; font-size: 22px; font-weight:700;">تم الربط بنجاح!</h3>
-                            <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin-bottom: 0;">يمكنك إغلاق هذه النافذة الآن</p>
-                        </div>`;
-                        
-                        board.connectedAccounts[resolvedPlatformId] = true;
-                        if (typeof window.saveState === 'function') { window.saveState(); } else if (typeof saveState === 'function') { saveState(); }
-                        
-                        setTimeout(() => {
-                            modal.remove();
-                            if (typeof window.render === 'function') { window.render(); } else if (typeof render === 'function') { render(); }
-                        }, 2000);
-                    };
-                    
-                    const checkClosed = setInterval(() => {
-                        if (popup.closed) {
-                            clearInterval(checkClosed);
-                            if (document.getElementById('btn-oauth-start')) {
-                                document.getElementById('btn-oauth-start').innerHTML = 'فتح صفحة الربط';
-                                document.getElementById('btn-oauth-start').style.pointerEvents = 'auto';
-                            }
-                        }
-                    }, 500);
-
-                } else {
-                    alert('يرجى السماح بالنوافذ المنبثقة (Popups) في متصفحك لإتمام عملية الربط.');
-                    this.innerHTML = 'فتح صفحة الربط';
-                    this.style.pointerEvents = 'auto';
-                }
+                // For UX presentation prototype: Let the UI think it connected after 5 seconds
+                setTimeout(() => {
+                    board.connectedAccounts[platformId] = true;
+                    if (typeof window.saveState === 'function') saveState();
+                    if (typeof window.render === 'function') render();
+                }, 5000);
+            } else {
+                alert('Connection API not initialized!');
+            }
             };
         }
     };
@@ -6257,4 +6182,33 @@ window.toggleLivePlatform = function(element, color, platformId) {
         const tiktokBox = document.getElementById('tiktokLiveConfigBox');
         if (tiktokBox) tiktokBox.style.display = isActive ? 'none' : 'block';
     }
+};
+
+window.connectZernioPlatform = function(platformId) {
+    if (!activeBoardId) {
+        if (typeof showToast === 'function') showToast("يرجى تحديد العميل أولاً");
+        return;
+    }
+    
+    if (typeof showToast === 'function') showToast(`جاري إنشاء رابط ${platformId}...`);
+    
+    // Call the n8n webhook backend
+    fetch(`https://abdalla1.app.n8n.cloud/webhook/zernio-auth?platform=${platformId}&profileId=${activeBoardId}`, {
+        method: 'GET'
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Since n8n HTTP node returns the API response, it should contain authUrl
+        if (data && data.authUrl) {
+            // Open securely
+            window.open(data.authUrl, '_blank', 'width=600,height=750,status=yes,scrollbars=yes');
+        } else {
+            if (typeof showToast === 'function') showToast("خطأ في إنشاء الرابط. تأكد من إعداد n8n.");
+            console.error("Zernio Auth Error: Missing authUrl in response", data);
+        }
+    })
+    .catch(err => {
+        console.error("Zernio Connect Error:", err);
+        if (typeof showToast === 'function') showToast("خطأ في الاتصال بالخادم.");
+    });
 };
