@@ -1524,10 +1524,13 @@ window.openCreatePostModal = function(postId = null) {
         const connected = localBoard ? (localBoard.connectedAccounts || {}) : {};
         
         const igLiveConfigBox = document.getElementById('igLiveConfigBox');
-        if (igLiveConfigBox) {
-            // In Live mode, only show when selected by the user. Hidden by default.
-            igLiveConfigBox.style.display = 'none';
-        }
+        if (igLiveConfigBox) igLiveConfigBox.style.display = 'none';
+        
+        const fbLiveConfigBox = document.getElementById('fbLiveConfigBox');
+        if (fbLiveConfigBox) fbLiveConfigBox.style.display = 'none';
+        
+        const tiktokLiveConfigBox = document.getElementById('tiktokLiveConfigBox');
+        if (tiktokLiveConfigBox) tiktokLiveConfigBox.style.display = 'none';
 
         const livePlatformsSection = document.getElementById('smLivePlatformsSection');
         const smPlatformsSection = document.getElementById('smPlatformsSection');
@@ -6250,5 +6253,8 @@ window.toggleLivePlatform = function(element, color, platformId) {
     } else if (platformId === 'facebook') {
         const fbBox = document.getElementById('fbLiveConfigBox');
         if (fbBox) fbBox.style.display = isActive ? 'none' : 'block';
+    } else if (platformId === 'tiktok') {
+        const tiktokBox = document.getElementById('tiktokLiveConfigBox');
+        if (tiktokBox) tiktokBox.style.display = isActive ? 'none' : 'block';
     }
 };
