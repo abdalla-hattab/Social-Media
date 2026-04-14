@@ -1335,6 +1335,84 @@
                                 }
                             });
                         });
+                </div>
+                    
+                    <div id="igLiveConfigBox" style="display: none; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 24px; padding: 0; background: #fff; overflow: hidden; width: 100%;">
+                        <!-- Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; background: #fafafa;">
+                            <!-- Tabs -->
+                            <div style="display: flex; gap: 4px; flex-direction: row-reverse;" id="igLiveTabs">
+                                <!-- Styled exact to screenshot -->
+                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Carousel')" style="text-decoration: line-through; background: transparent; color: #cbd5e1; border: none; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">Carousel</button>
+                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Reel')" style="background: transparent; color: #94a3b8; border: none; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">Reel</button>
+                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Story')" style="background: transparent; color: #94a3b8; border: none; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">Story</button>
+                                <button class="ig-live-tab active" onclick="window.switchIgLiveTab(this, 'Feed')" style="background: #1e293b; color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">Feed</button>
+                            </div>
+                            <!-- Title & Icon -->
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-weight: 700; font-size: 15px; color: #1e293b;">إنستغرام</span>
+                                <div style="display: flex; justify-content: center; align-items: center; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Content -->
+                        <div style="padding: 20px;">
+                            <div style="margin-bottom: 20px; text-align: right;">
+                                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">المتعاونون (حتى 3)</label>
+                                <input type="text" placeholder="@username" style="width: 100%; padding: 10px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: ltr;">
+                            </div>
+
+                            <div style="margin-bottom: 20px; text-align: right;">
+                                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">التعليق الأول</label>
+                                <textarea placeholder="...أضف سياقاً إضافياً أو CTA هنا" style="width: 100%; min-height: 80px; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: rtl; resize: vertical; font-family: inherit;" oninput="this.nextElementSibling.innerText = this.value.length + '/2200';"></textarea>
+                                <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 6px; text-align: left; direction: ltr;">0/2200</div>
+                            </div>
+
+                            <div style="margin-bottom: 20px; text-align: right;">
+                                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">نص مخصص</label>
+                                <textarea placeholder="...اتركه فارغاً لاستخدام المحتوى الرئيسي" style="width: 100%; min-height: 80px; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: rtl; resize: vertical; font-family: inherit;" oninput="this.nextElementSibling.innerText = this.value.length + '/2200';"></textarea>
+                                <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 6px; text-align: left; direction: ltr;">0/2200</div>
+                            </div>
+                            
+                            <!-- Reel Specific Options -->
+                            <div id="igLiveReelOptions" style="display: none; margin-bottom: 0;">
+                                <div style="margin-bottom: 16px; text-align: right;">
+                                    <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">غلاف الريلز</label>
+                                    <div style="border: 1px dashed #cbd5e0; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; color: #64748b; font-size: 14px; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='transparent'; this.style.borderColor='#cbd5e0';">
+                                        اختر صورة للغلاف
+                                    </div>
+                                </div>
+                                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px 16px; text-align: right; direction: rtl; font-size: 13px; color: #1e40af; line-height: 1.5;">
+                                    <strong style="color: #1e3a8a;">تنبيه:</strong> Instagram API لا يدعم حالياً تعيين غلاف مخصص للريلز عبر API. سيتم إرسال الصورة ولكن Instagram قد يتجاهلها ويختار إطاراً من الفيديو تلقائياً.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <script>
+                        window.switchIgLiveTab = function(btn, type) {
+                            const tabs = document.querySelectorAll('.ig-live-tab');
+                            tabs.forEach(t => {
+                                t.style.background = 'transparent';
+                                t.style.color = t.innerText.trim() === 'Carousel' ? '#cbd5e1' : '#94a3b8';
+                                t.classList.remove('active');
+                            });
+                            
+                            btn.style.background = '#1e293b';
+                            btn.style.color = 'white';
+                            btn.classList.add('active');
+                            
+                            const reelOpts = document.getElementById('igLiveReelOptions');
+                            if (reelOpts) {
+                                if (type === 'Reel') {
+                                    reelOpts.style.display = 'block';
+                                } else {
+                                    reelOpts.style.display = 'none';
+                                }
+                            }
+                        };
                     </script>
                 </div>
 
