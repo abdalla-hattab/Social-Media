@@ -1593,15 +1593,21 @@ window.openCreatePostModal = function(postId = null) {
         
         publishToggles.forEach(b => {
             b.classList.remove('active');
-            if (!window.isLiveModeActive && b.textContent.trim() !== 'مسودة') {
-                b.style.display = 'none';
+            const txt = b.textContent.trim();
+            if (!window.isLiveModeActive) {
+                if (txt !== 'مسودة') b.style.display = 'none';
+                else b.style.display = '';
             } else {
-                b.style.display = '';
+                if (txt !== 'جدولة') b.style.display = 'none';
+                else b.style.display = '';
             }
         });
         
         const draftBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'مسودة');
-        if (draftBtn) draftBtn.click();
+        const schedBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'جدولة');
+        
+        if (!window.isLiveModeActive && draftBtn) draftBtn.click();
+        else if (window.isLiveModeActive && schedBtn) schedBtn.click();
         
         let targetOpt = window.activeSocialDateOptions;
         
@@ -1780,7 +1786,8 @@ window.openCreatePostModal = function(postId = null) {
                     if (post.status) {
                         let targetStatus = post.status;
                         if (!window.isLiveModeActive) targetStatus = 'مسودة';
-
+                        else targetStatus = 'جدولة'; // Force schedule when inside Live mode
+                        
                         publishToggles.forEach(b => {
                             b.classList.remove('active');
                             if (b.textContent.trim() === targetStatus) b.classList.add('active');
@@ -1790,6 +1797,16 @@ window.openCreatePostModal = function(postId = null) {
                             const activeBtn = Array.from(publishToggles).find(b => b.classList.contains('active'));
                             if (activeBtn) activeBtn.click();
                         }, 50);
+                        
+                        // Show warning if user opened a 'Draft' post in Live mode
+                        const warningEl = document.getElementById('smLiveScheduleWarning');
+                        if (warningEl) {
+                            if (window.isLiveModeActive && post.status === 'مسودة') {
+                                warningEl.style.display = 'block';
+                            } else {
+                                warningEl.style.display = 'none';
+                            }
+                        }
                     }
                     
                     // Set correct date target
