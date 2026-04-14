@@ -4309,13 +4309,13 @@ function renderSocialSchedulerApp(activeBoard) {
                 let shadow = isActive ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none';
                 let btnRadius = '9999px';
                 
-                // Agency specific premium styling
+                // Agency specific premium styling (updated to be completely unique from other tabs)
                 if (isAgency) {
-                    bg = isActive ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' : '#fff7ed';
-                    color = isActive ? 'white' : '#c2410c';
-                    border = isActive ? '2px solid transparent' : '2px dashed #fdba74';
-                    shadow = isActive ? '0 4px 12px rgba(249, 115, 22, 0.25)' : 'none';
-                    btnRadius = '14px 4px 14px 4px'; // Distinct geometric shape
+                    bg = isActive ? 'linear-gradient(to right, #ec4899, #f43f5e, #fb923c)' : 'linear-gradient(to right, #fdf2f8, #fff1f2, #fff7ed)';
+                    color = isActive ? 'white' : '#e11d48';
+                    border = isActive ? '2px solid transparent' : '2px solid #fda4af';
+                    shadow = isActive ? '0 10px 20px rgba(225, 29, 72, 0.3)' : '0 4px 10px rgba(244, 63, 94, 0.1)';
+                    btnRadius = '9999px'; // Fully rounded
                 }
 
                 return `
