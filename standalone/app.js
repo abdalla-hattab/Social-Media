@@ -6043,6 +6043,18 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         const statusBtn = document.querySelector('.sm-toggle-btn.active');
         if (statusBtn) status = statusBtn.textContent.trim();
         
+        if (!isAutoSave && (status === 'فوري' || status === 'جدولة')) {
+            const activePlatforms = document.querySelectorAll('.sm-platform-empty > div > div[data-active="true"]');
+            if (activePlatforms.length === 0) {
+                if (typeof showToast === 'function') {
+                    showToast('⚠️ يرجى اختيار منصة واحدة على الأقل قبل النشر.');
+                } else {
+                    alert('يرجى اختيار منصة واحدة على الأقل قبل النشر.');
+                }
+                return;
+            }
+        }
+        
         let postType = 'image';
         const postTypeInput = document.querySelector('input[name="smPostType"]:checked');
         if (postTypeInput) postType = postTypeInput.value;
