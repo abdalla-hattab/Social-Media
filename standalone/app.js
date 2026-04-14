@@ -1525,17 +1525,17 @@ window.openCreatePostModal = function(postId = null) {
         
         const igLiveConfigBox = document.getElementById('igLiveConfigBox');
         if (igLiveConfigBox) {
-            if (window.isLiveModeActive && connected['instagram']) {
-                igLiveConfigBox.style.display = 'block';
-            } else {
-                igLiveConfigBox.style.display = 'none';
-            }
+            // In Live mode, only show when selected by the user. Hidden by default.
+            igLiveConfigBox.style.display = 'none';
         }
 
         const livePlatformsSection = document.getElementById('smLivePlatformsSection');
+        const smPlatformsSection = document.getElementById('smPlatformsSection');
+        
         if (livePlatformsSection) {
             if (window.isLiveModeActive) {
                 livePlatformsSection.style.display = 'block';
+                if (smPlatformsSection) smPlatformsSection.style.display = 'none';
                 const liveContainer = document.getElementById('smLivePlatformsContainer');
                 if (liveContainer) {
                     const allPlatforms = [
@@ -1552,8 +1552,13 @@ window.openCreatePostModal = function(postId = null) {
                         const isConn = !!connected[p.id];
                         const fg = isConn ? p.colorFill : '#94a3b8';
                         const bg = isConn ? p.colorBg : '#f8fafc';
+                        
+                        const cursorStyle = isConn ? "cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" : "opacity: 0.5; cursor: not-allowed;";
+                        const hoverEffects = isConn ? `onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"` : "";
+                        const clickHandler = isConn ? `onclick="if(typeof window.toggleLivePlatform==='function') window.toggleLivePlatform(this, '${p.colorFill}', '${p.id}')"` : "";
+                        
                         html += `
-                            <div style="flex-shrink:0; width:34px; height:34px; border-radius:50%; background:${bg}; display:flex; align-items:center; justify-content:center; color:${fg}">
+                            <div class="sm-live-platform-icon" data-platform="${p.id}" style="flex-shrink:0; width:34px; height:34px; border-radius:50%; background:${bg}; display:flex; align-items:center; justify-content:center; color:${fg}; ${cursorStyle}" ${clickHandler} ${hoverEffects}>
                                 ${p.icon}
                             </div>
                         `;
@@ -6222,3 +6227,24 @@ if(document) document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+// Multi-select platform toggling logic for Live Mode
+window.toggleLivePlatform = function(element, color, platformId) {
+    const isActive = element.getAttribute('data-active') === 'true';
+    if (isActive) {
+        element.style.boxShadow = 'none';
+        element.removeAttribute('data-active');
+    } else {
+        element.style.boxShadow = '0 0 0 2px #fff, 0 0 0 3px ' + color;
+        element.setAttribute('data-active', 'true');
+    }
+    
+    // Toggle the configuration box for that specific platform
+    if (platformId === 'instagram') {
+        const box = document.getElementById('igLiveConfigBox');
+        if (box) box.style.display = isActive ? 'none' : 'block';
+    } else if (platformId === 'facebook') {
+        const fbBox = document.getElementById('fbLiveConfigBox');
+        if (fbBox) fbBox.style.display = isActive ? 'none' : 'block';
+    }
+};
