@@ -1531,11 +1531,13 @@ window.openCreatePostModal = function(postId = null) {
 
         const livePlatformsSection = document.getElementById('smLivePlatformsSection');
         const smPlatformsSection = document.getElementById('smPlatformsSection');
+        const formatSelectorsWrapper = document.getElementById('formatSelectorsWrapper');
         
         if (livePlatformsSection) {
             if (window.isLiveModeActive) {
                 livePlatformsSection.style.display = 'block';
                 if (smPlatformsSection) smPlatformsSection.style.display = 'none';
+                if (formatSelectorsWrapper) formatSelectorsWrapper.style.display = 'none';
                 const liveContainer = document.getElementById('smLivePlatformsContainer');
                 if (liveContainer) {
                     const allPlatforms = [
@@ -1567,6 +1569,8 @@ window.openCreatePostModal = function(postId = null) {
                 }
             } else {
                 livePlatformsSection.style.display = 'none';
+                if (smPlatformsSection) smPlatformsSection.style.display = 'block';
+                if (formatSelectorsWrapper) formatSelectorsWrapper.style.display = 'grid';
             }
         }
         if (window.clearMediaUpload) window.clearMediaUpload(); // clears gallery
