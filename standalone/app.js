@@ -6138,15 +6138,24 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                 }).then(async res => {
                     const txt = await res.text();
                     console.log("Publish response:", txt);
+                    
+                    let parsedData = null;
+                    try { parsedData = JSON.parse(txt); } catch(e) {}
+
                     if (res.ok) {
-                        if (typeof showToast === 'function') setTimeout(() => showToast('✅ تم نشر المنشور بنجاح على منصات التواصل!'), 1000);
+                        if (parsedData && (parsedData.error || (parsedData.status && parsedData.status === 'failed'))) {
+                            const errorMsg = parsedData.error || parsedData.message || "حدث خطأ أثناء النشر";
+                            if (typeof showToast === 'function') setTimeout(() => showToast('⚠️ خطأ من المنصة: ' + errorMsg), 1000);
+                        } else {
+                            if (typeof showToast === 'function') setTimeout(() => showToast('✅ تم نشر المنشور بنجاح على منصات التواصل!'), 1000);
+                        }
                     } else {
-                        if (typeof showToast === 'function') setTimeout(() => showToast('⚠️ تم إرسال الطلب لكن الخادم لم يتجاوب بنجاح.'), 1000);
+                        const errorMsg = (parsedData && (parsedData.error || parsedData.message)) ? parsedData.error || parsedData.message : `خطأ (${res.status})`;
+                        if (typeof showToast === 'function') setTimeout(() => showToast('⚠️ فشل النشر: ' + errorMsg), 1000);
                     }
                 }).catch(err => {
-                    console.error("Publishing webhook failed (No backend response)", err);
-                    // Fallback visual fix for UI presentation
-                    if (typeof showToast === 'function') setTimeout(() => showToast('✅ (Prototype) تم النشر المباشر بنجاح!'), 1500);
+                    console.error("Publishing webhook failed", err);
+                    if (typeof showToast === 'function') setTimeout(() => showToast('🔴 فشل الاتصال بالخادم. يرجى المحاولة لاحقاً.'), 1500);
                 });
             } else {
                 if (typeof showToast === 'function') showToast('تم الحفظ بنجاح');
