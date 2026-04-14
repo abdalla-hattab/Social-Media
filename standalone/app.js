@@ -6271,6 +6271,17 @@ window.toggleLivePlatform = function(element, color, platformId) {
         const tiktokBox = document.getElementById('tiktokLiveConfigBox');
         if (tiktokBox) tiktokBox.style.display = isActive ? 'none' : 'block';
     }
+    
+    // Visually highlight the entire calendar to reflect Live Mode context
+    const calendarWrap = document.querySelector('.sm-calendar-wrap');
+    if (calendarWrap) {
+        const anyActive = document.querySelector('.sm-live-platform-icon[data-active="true"]');
+        if (anyActive) {
+            calendarWrap.classList.add('sm-calendar-live-active');
+        } else {
+            calendarWrap.classList.remove('sm-calendar-live-active');
+        }
+    }
 };
 
 window.connectZernioPlatform = function(platformId) {
