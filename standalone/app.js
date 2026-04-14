@@ -4297,6 +4297,48 @@ function renderSocialSchedulerApp(activeBoard) {
     };
 
     const clientTabsHtml = `
+        <style>
+            @keyframes agencyGlow {
+                0% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
+                50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.8), 0 0 30px rgba(236, 72, 153, 0.6); }
+                100% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
+            }
+            @keyframes gradientShift {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+            }
+            .agency-premium-tab {
+                background: linear-gradient(135deg, #4f46e5, #9333ea, #ec4899, #f43f5e) !important;
+                background-size: 300% 300% !important;
+                animation: gradientShift 4s ease infinite, agencyGlow 2s infinite alternate !important;
+                color: white !important;
+                border: 2px solid rgba(255, 255, 255, 0.3) !important;
+                backdrop-filter: blur(10px);
+                transform: scale(1.05);
+                z-index: 10;
+            }
+            .agency-premium-tab button {
+                color: white !important;
+            }
+            .agency-premium-tab:hover {
+                transform: translateY(-2px) scale(1.08);
+                filter: brightness(1.15);
+            }
+            .agency-premium-tab-inactive {
+                background: linear-gradient(135deg, #312e81, #5b21b6) !important;
+                border: 2px solid rgba(139, 92, 246, 0.4) !important;
+                box-shadow: 0 4px 15px rgba(76, 29, 149, 0.3) !important;
+            }
+            .agency-premium-tab-inactive button {
+                color: #e2e8f0 !important;
+            }
+            .agency-premium-tab-inactive:hover {
+                background: linear-gradient(135deg, #4338ca, #6d28d9) !important;
+                transform: translateY(-1px);
+                border-color: rgba(167, 139, 250, 0.6) !important;
+            }
+        </style>
         <div style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; align-items: center; flex-wrap: nowrap;">
             <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center;">
             ${socialBoards.map((b, idx) => {
@@ -4309,17 +4351,14 @@ function renderSocialSchedulerApp(activeBoard) {
                 let shadow = isActive ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none';
                 let btnRadius = '9999px';
                 
-                // Agency specific premium styling (updated to be completely unique from other tabs)
+                let extraClasses = '';
                 if (isAgency) {
-                    bg = isActive ? 'linear-gradient(to right, #ec4899, #f43f5e, #fb923c)' : 'linear-gradient(to right, #fdf2f8, #fff1f2, #fff7ed)';
-                    color = isActive ? 'white' : '#e11d48';
-                    border = isActive ? '2px solid transparent' : '2px solid #fda4af';
-                    shadow = isActive ? '0 10px 20px rgba(225, 29, 72, 0.3)' : '0 4px 10px rgba(244, 63, 94, 0.1)';
-                    btnRadius = '9999px'; // Fully rounded
+                    extraClasses = isActive ? 'agency-premium-tab' : 'agency-premium-tab-inactive';
+                    btnRadius = '9999px';
                 }
 
                 return `
-                <div style="display:flex; align-items:center; background: ${bg}; border: ${border}; border-radius: ${btnRadius}; box-shadow: ${shadow}; transition: all 0.2s; position:relative;">
+                <div class="${extraClasses}" style="${isAgency ? '' : `background: ${bg}; border: ${border}; box-shadow: ${shadow};`} display:flex; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative;">
                     <button 
                         ${isAgency ? 'class="sm-non-draggable"' : ''}
                         data-id="${b.id}"
