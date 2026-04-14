@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تم الربط بنجاح</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f7f9fc;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .icon {
+            font-size: 64px;
+            color: #00DB80;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin: 0 0 10px;
+            color: #1c1c1c;
+        }
+        p {
+            color: #666;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">✅</div>
+        <h2>تم الربط بنجاح!</h2>
+        <p>جاري إغلاق النافذة...</p>
+    </div>
+    
+    <script>
+        // Tell the parent window we successfully connected
+        if (window.opener && window.opener.postMessage) {
+            // Note: In reality Zernio might pass a connection id/status in query params,
+            // but for now we just tell the parent it's done.
+            window.opener.postMessage({ type: 'ZERNIO_OAUTH_SUCCESS' }, window.location.origin);
+        }
+        
+        // Close the popup after a brief moment
+        setTimeout(() => {
+            window.close();
+        }, 1500);
+    </script>
+</body>
+</html>
