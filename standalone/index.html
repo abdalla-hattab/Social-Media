@@ -1040,9 +1040,13 @@
                                 أضف رابط Frame.io
                             </div>
                             
-                            <div id="frameIoContainer" style="display:flex; width: 100%; max-width: 400px; gap: 8px;">
+                            <div id="frameIoContainer" style="display:flex; width: 100%; max-width: 480px; gap: 8px;">
                                 <input type="text" id="frameIoInput" placeholder="الصق الرابط هنا..." style="flex:1; border: 1px solid #cbd5e0; border-radius: 6px; padding: 10px 12px; font-size: 13px; outline:none;" dir="ltr">
-                                <button onclick="event.stopPropagation(); window.addFrameIoMedia()" style="background:#f97316; color:white; border:none; border-radius:6px; padding:0 20px; font-size:13px; font-weight:600; cursor:pointer;">إضافة</button>
+                                <select id="frameIoType" style="border: 1px solid #cbd5e0; border-radius: 6px; padding: 8px 12px; font-size: 13px; outline:none; background: #fff; color: #1e293b; font-weight: 500; cursor: pointer;">
+                                    <option value="video">🎥 فيديو (Video)</option>
+                                    <option value="image">🖼️ صورة (Image)</option>
+                                </select>
+                                <button onclick="event.stopPropagation(); window.addFrameIoMedia()" style="background:#f97316; color:white; border:none; border-radius:6px; padding:0 20px; font-size:13px; font-weight:600; cursor:pointer; transition: opacity 0.2s;">إضافة</button>
                             </div>
 
                             <!-- Client Edits moved to left column -->
@@ -1144,7 +1148,7 @@
                                 
                                 fetch('https://api.microlink.io/?url=' + encodeURIComponent(url))
                                     .then(r => r.json())
-                                    .then(data => {
+                                    .then(async data => {
                                         let isVideo = false;
                                         let durationStr = '';
                                         // Default to video unless we specifically lack ANY video indicators
@@ -1158,9 +1162,14 @@
                                             }
                                         }
                                         
-                                        // Force video detection for Frame.io
+                                        // Force explicit user selection for Frame.io to bypass API restrictions
                                         if (url.includes('f.io') || url.includes('frame.io')) {
-                                            isVideo = true;
+                                            const typeSelect = document.getElementById('frameIoType');
+                                            if (typeSelect) {
+                                                isVideo = (typeSelect.value === 'video');
+                                            } else {
+                                                isVideo = true; // Fallback
+                                            }
                                         }
                                         
                                         // Set data attributes for saving state
