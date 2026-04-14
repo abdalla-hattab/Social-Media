@@ -1435,15 +1435,27 @@
 
                             <!-- Tabs (Segmented Control Style) -->
                             <div style="display: flex; gap: 2px; padding: 4px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;" id="fbLiveTabs">
-                                <button class="fb-live-tab active" onclick="window.switchFbLiveTab(this, 'Reel')" style="background: #1e293b; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">Reel</button>
-                                <button class="fb-live-tab" onclick="window.switchFbLiveTab(this, 'Feed')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">Feed</button>
+                                <!-- Order from right to left (RTL visuals) -> first item is usually furthest right physically, but flex-direction might be LTR depending on container. Given standard LTR flex, right-most comes last, but wait, the main container `direction: rtl`? No, main container isn't RTL by default, we just have text-align right. Let's list Post first logically if it's main, but following the image visually:
+                                Image shows: (Left) ريلز | قصة | منشور (Right). 
+                                We will render Post first, then Story, then Reel, which normally shows Post left and Reel right. Let's force RTL layout for tabs right here to be safe and match the image perfectly. -->
+                                <div style="display: flex; flex-direction: row-reverse; gap: 2px;">
+                                    <button class="fb-live-tab" onclick="window.switchFbLiveTab(this, 'Feed')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">منشور</button>
+                                    <button class="fb-live-tab active" onclick="window.switchFbLiveTab(this, 'Story')" style="background: #1e293b; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">قصة</button>
+                                    <button class="fb-live-tab" onclick="window.switchFbLiveTab(this, 'Reel')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">ريلز</button>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Form Content -->
                         <div style="padding: 20px;">
+                            <div id="fbLiveFirstComment" style="margin-bottom: 20px; text-align: right;">
+                                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">التعليق الأول</label>
+                                <textarea placeholder="...أضف تعليقاً تلقائياً" style="width: 100%; min-height: 80px; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: rtl; resize: vertical; font-family: inherit;" oninput="this.nextElementSibling.innerText = this.value.length + '/2200';"></textarea>
+                                <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 6px; text-align: left; direction: ltr;">0/2200</div>
+                            </div>
+
                             <div id="fbLiveCustomText" style="margin-bottom: 0px; text-align: right;">
-                                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">نص مخصص (فيسبوك)</label>
+                                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">نص مخصص</label>
                                 <textarea placeholder="...اتركه فارغاً لاستخدام المحتوى الرئيسي" style="width: 100%; min-height: 80px; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: rtl; resize: vertical; font-family: inherit;" oninput="this.nextElementSibling.innerText = this.value.length + '/2200';"></textarea>
                                 <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 6px; text-align: left; direction: ltr;">0/2200</div>
                             </div>
