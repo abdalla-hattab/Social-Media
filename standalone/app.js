@@ -6044,7 +6044,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         if (statusBtn) status = statusBtn.textContent.trim();
         
         if (!isAutoSave && (status === 'فوري' || status === 'جدولة')) {
-            const activePlatforms = document.querySelectorAll('.sm-platform-empty > div > div[data-active="true"]');
+            const activePlatforms = document.querySelectorAll('.sm-platform-empty > div > div[data-active="true"], .sm-live-platform-icon[data-active="true"]');
             if (activePlatforms.length === 0) {
                 if (typeof showToast === 'function') {
                     showToast('⚠️ يرجى اختيار منصة واحدة على الأقل قبل النشر.');
