@@ -1743,10 +1743,7 @@ window.openCreatePostModal = function(postId = null) {
                                         </div>
                                         <div style="padding: 10px; background: #ffffff; display: flex; justify-content: center; border-top: 1px solid #edf2f7;">
                                             <button onclick="event.stopPropagation(); window.showFrameIoVideo(this, '${mi.url}', '${placeholderId}')" style="display:flex; align-items:center; justify-content:center; gap:6px; width: 100%; background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 8px 0; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                                                ${mi.mediaType === 'image' 
-                                                    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> عرض الصورة` 
-                                                    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> عرض الفيديو ${mi.duration ? '('+mi.duration+')' : ''}`
-                                                }
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> عرض
                                             </button>
                                         </div>
                                         ${window.isClientView ? '' : `<button onclick="event.stopPropagation(); window.removeMediaItem(this)" style="position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,0.95); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#e53e3e; font-weight:bold; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.2); z-index:10; line-height: 1;">×</button>`}
@@ -1768,8 +1765,8 @@ window.openCreatePostModal = function(postId = null) {
                                             ${sizeBadge}
                                         </div>
                                         <div style="padding: 10px; background: #ffffff; display: flex; justify-content: center; border-top: 1px solid #edf2f7;">
-                                            <button onclick="${clickHandler}" style="width: 100%; background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 8px 0; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                                                عرض ال${mediaTypeLabel}
+                                            <button onclick="${clickHandler}" style="width: 100%; display:flex; align-items:center; justify-content:center; gap:6px; background: #3b82f6; color: white; border: none; border-radius: 6px; padding: 8px 0; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> عرض
                                             </button>
                                         </div>
                                     `;

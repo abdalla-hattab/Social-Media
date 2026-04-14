@@ -1040,13 +1040,9 @@
                                 أضف رابط Frame.io
                             </div>
                             
-                            <div id="frameIoContainer" style="display:flex; width: 100%; max-width: 480px; gap: 8px;">
+                            <div id="frameIoContainer" style="display:flex; width: 100%; max-width: 400px; gap: 8px;">
                                 <input type="text" id="frameIoInput" placeholder="الصق الرابط هنا..." style="flex:1; border: 1px solid #cbd5e0; border-radius: 6px; padding: 10px 12px; font-size: 13px; outline:none;" dir="ltr">
-                                <select id="frameIoType" style="border: 1px solid #cbd5e0; border-radius: 6px; padding: 8px 12px; font-size: 13px; outline:none; background: #fff; color: #1e293b; font-weight: 500; cursor: pointer;">
-                                    <option value="video">🎥 فيديو (Video)</option>
-                                    <option value="image">🖼️ صورة (Image)</option>
-                                </select>
-                                <button onclick="event.stopPropagation(); window.addFrameIoMedia()" style="background:#f97316; color:white; border:none; border-radius:6px; padding:0 20px; font-size:13px; font-weight:600; cursor:pointer; transition: opacity 0.2s;">إضافة</button>
+                                <button onclick="event.stopPropagation(); window.addFrameIoMedia()" style="background:#f97316; color:white; border:none; border-radius:6px; padding:0 20px; font-size:13px; font-weight:600; cursor:pointer;">إضافة</button>
                             </div>
 
                             <!-- Client Edits moved to left column -->
@@ -1162,14 +1158,9 @@
                                             }
                                         }
                                         
-                                        // Force explicit user selection for Frame.io to bypass API restrictions
+                                        // Revert back and enforce true validation via Secure Webhook for Frame.io or fallback to Video
                                         if (url.includes('f.io') || url.includes('frame.io')) {
-                                            const typeSelect = document.getElementById('frameIoType');
-                                            if (typeSelect) {
-                                                isVideo = (typeSelect.value === 'video');
-                                            } else {
-                                                isVideo = true; // Fallback
-                                            }
+                                            isVideo = true; // Fallback to video as default
                                         }
                                         
                                         // Set data attributes for saving state
@@ -1183,11 +1174,7 @@
                                             btnElement.style.color = 'white';
                                             btnElement.style.cursor = 'pointer';
                                             btnElement.style.animation = 'none';
-                                            if (isVideo) {
-                                                btnElement.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> عرض الفيديو ${durationStr ? '('+durationStr+')' : ''}`;
-                                            } else {
-                                                btnElement.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> عرض الصورة`;
-                                            }
+                                            btnElement.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> عرض`;
                                         }
 
                                         // Use logo if image is missing, or fallback to an empty string.
