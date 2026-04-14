@@ -1520,7 +1520,16 @@ window.openCreatePostModal = function(postId = null) {
             }
         }
         if (window.clearMediaUpload) window.clearMediaUpload(); // clears gallery
-        publishToggles.forEach(b => b.classList.remove('active'));
+        
+        publishToggles.forEach(b => {
+            b.classList.remove('active');
+            if (!window.isLiveModeActive && b.textContent.trim() !== 'مسودة') {
+                b.style.display = 'none';
+            } else {
+                b.style.display = '';
+            }
+        });
+        
         const draftBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'مسودة');
         if (draftBtn) draftBtn.click();
         
@@ -1702,9 +1711,12 @@ window.openCreatePostModal = function(postId = null) {
                     
                     // Match toggle 
                     if (post.status) {
+                        let targetStatus = post.status;
+                        if (!window.isLiveModeActive) targetStatus = 'مسودة';
+
                         publishToggles.forEach(b => {
                             b.classList.remove('active');
-                            if (b.textContent.trim() === post.status) b.classList.add('active');
+                            if (b.textContent.trim() === targetStatus) b.classList.add('active');
                         });
                         // Wait for modal transition then trigger the toggle logic 
                         setTimeout(() => {
