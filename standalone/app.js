@@ -1517,6 +1517,7 @@ window.openCreatePostModal = function(postId = null) {
             // Hide Agency container entirely for Client
             if (agencyEditsContainer) {
                 agencyEditsContainer.style.setProperty("display", "none", "important");
+            }
         }
         
         const livePlatformsSection = document.getElementById('smLivePlatformsSection');
