@@ -2200,11 +2200,23 @@ if (closeCreatePostModal && createPostModal) {
                     if (primaryActionBtn) primaryActionBtn.textContent = 'جدولة المنشور';
                     
                     const dateInput = createPostModal.querySelector('.sm-date-input');
+                    const timeInput = createPostModal.querySelector('.sm-time-input');
                     if (dateInput && window.activeSocialDateOptions) {
                         const d = window.activeSocialDateOptions.date.toString().padStart(2, '0');
                         const m = (window.activeSocialDateOptions.month + 1).toString().padStart(2, '0');
                         const y = window.activeSocialDateOptions.year;
-                        dateInput.value = `${d}/${m}/${y}`;
+                        dateInput.value = `${y}-${m}-${d}`;
+                    }
+                    if (timeInput) {
+                        // Retrieve the time from the current post if it exists, otherwise default to blank or a placeholder
+                        let currentEditingPost = null;
+                        if (window.boards && window.activeBoardId && window.currentEditingSocialPostId) {
+                            const b = boards.find(bd => bd.id === window.activeBoardId);
+                            if (b && b.cards) currentEditingPost = b.cards.find(c => c.id === window.currentEditingSocialPostId);
+                        }
+                        if (currentEditingPost && currentEditingPost.timeStr) {
+                            timeInput.value = currentEditingPost.timeStr;
+                        }
                     }
                 }
             };
@@ -6050,8 +6062,26 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             }
         }
         
-        const opts = window.activeSocialDateOptions || { year: new Date().getFullYear(), month: new Date().getMonth(), date: new Date().getDate() };
-        const dateStr = `${opts.year}-${opts.month}-${opts.date}`;
+        let opts = window.activeSocialDateOptions || { year: new Date().getFullYear(), month: new Date().getMonth(), date: new Date().getDate() };
+        let dateStr = `${opts.year}-${opts.month}-${opts.date}`;
+        let timeStr = null;
+        
+        // Use custom user-provided date from the datepicker if available and valid
+        const dateInputEl = document.querySelector('.sm-date-input');
+        if (dateInputEl && dateInputEl.value) {
+            const parts = dateInputEl.value.split('-'); // format from input type="date" is YYYY-MM-DD
+            if (parts.length === 3) {
+                opts = { year: parseInt(parts[0], 10), month: parseInt(parts[1], 10) - 1, date: parseInt(parts[2], 10) };
+                dateStr = `${opts.year}-${opts.month}-${opts.date}`;
+            }
+        }
+        
+        // Also grab custom time
+        const timeInputEl = document.querySelector('.sm-time-input');
+        if (timeInputEl && timeInputEl.value) {
+            timeStr = timeInputEl.value; // typical format is HH:MM
+        }
+        
         let status = 'مسودة';
         
         const statusBtn = document.querySelector('.sm-toggle-btn.active');
@@ -6102,6 +6132,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
             fullText: textContent,
             dateStr: dateStr,
+            timeStr: timeStr,
             status: status,
             postType: postType,
             mediaItems: mediaItems.length > 0 ? mediaItems : null,
