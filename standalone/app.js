@@ -4960,7 +4960,7 @@ function renderSocialSchedulerApp(activeBoard) {
             <div class="sm-main-content" style="padding: 24px 32px 16px 32px;">
                 <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
                     ${window.isClientView ? '' : universalHeaderHtml}
-                    <div class="sm-calendar-wrap" style="flex: 1; overflow: auto; margin-bottom: 0;">
+                    <div class="sm-calendar-wrap ${window.isLiveModeActive ? 'sm-calendar-live-active' : ''}" style="flex: 1; overflow: auto; margin-bottom: 0;">
                         <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 12px;">
                             <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title} ${monthStatsHtml}</h3>
                             <div class="sm-cal-nav">
@@ -6270,17 +6270,6 @@ window.toggleLivePlatform = function(element, color, platformId) {
     } else if (platformId === 'tiktok') {
         const tiktokBox = document.getElementById('tiktokLiveConfigBox');
         if (tiktokBox) tiktokBox.style.display = isActive ? 'none' : 'block';
-    }
-    
-    // Visually highlight the entire calendar to reflect Live Mode context
-    const calendarWrap = document.querySelector('.sm-calendar-wrap');
-    if (calendarWrap) {
-        const anyActive = document.querySelector('.sm-live-platform-icon[data-active="true"]');
-        if (anyActive) {
-            calendarWrap.classList.add('sm-calendar-live-active');
-        } else {
-            calendarWrap.classList.remove('sm-calendar-live-active');
-        }
     }
 };
 

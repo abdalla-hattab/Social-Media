@@ -2367,9 +2367,9 @@ input[type=number] {
 }
 
 .sm-calendar-live-active {
-    border: 2px solid #FF8B2A !important;
+    border: 2px solid #ef4444 !important;
     border-radius: 12px;
     background-color: #fafbfd !important;
-    box-shadow: inset 0 0 10px rgba(255, 139, 42, 0.05), 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+    box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.05), 0 4px 15px rgba(0, 0, 0, 0.03) !important;
     transition: all 0.3s ease-in-out;
 }
