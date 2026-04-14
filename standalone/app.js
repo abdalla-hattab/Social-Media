@@ -1463,6 +1463,11 @@ window.openCreatePostModal = function(postId = null) {
             const cc = document.querySelector('.sm-char-count');
             if (cc) cc.innerText = '0 حرف';
         }
+        
+        const liveBadge = document.getElementById('createPostModalLiveBadge');
+        if (liveBadge) {
+            liveBadge.style.display = window.isLiveModeActive ? 'flex' : 'none';
+        }
         const clientEditsContainer = document.getElementById('clientEditsContainer');
         const clientEditsInput = document.getElementById('clientEditsInput');
         const clientEditsLabel = document.getElementById('clientEditsLabel');
