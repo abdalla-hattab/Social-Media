@@ -1061,7 +1061,18 @@
                                 let url = input.value.trim();
                                 if (!url) return;
                                 
+                                const isFrameIo = url.includes('frame.io') || url.includes('f.io');
                                 let isGoogleDrive = url.includes('drive.google.com');
+                                
+                                if (!isFrameIo && !isGoogleDrive) {
+                                    if (typeof showToast === 'function') {
+                                        showToast('⚠️ الرابط غير صالح. يرجى إدخال رابط Frame.io أو Google Drive');
+                                    } else {
+                                        alert('الرابط غير صالح. يرجى إدخال رابط Frame.io أو Google Drive');
+                                    }
+                                    return;
+                                }
+                                
                                 if (isGoogleDrive) {
                                     url = url.replace(/\/view.*$/, '/preview');
                                 }
