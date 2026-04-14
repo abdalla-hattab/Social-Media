@@ -1365,6 +1365,9 @@
 
                         <!-- Form Content -->
                         <div style="padding: 20px;">
+                            <div id="igLiveRulesBox" style="display: block; background: #f0fdf4; padding: 12px; border-radius: 8px; font-size: 13px; color: #166534; margin-bottom: 20px; border: 1px solid #bbf7d0; font-weight: 500; text-align: right; line-height: 1.5;" dir="rtl">
+                                💡 <strong>نصيحة:</strong> الكاروسيل في إنستغرام يجب أن يحتوي على صورتين أو أكثر، ولا تدعم رفع فيديوهات داخل الكاروسيل حالياً.
+                            </div>
                             <div id="igLiveCollaborators" style="margin-bottom: 20px; text-align: right;">
                                 <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">المتعاونون (حتى 3)</label>
                                 <input type="text" placeholder="@username" style="width: 100%; padding: 10px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: ltr;">
@@ -1426,6 +1429,25 @@
                                     firstCommentOpts.style.display = 'block';
                                 }
                             }
+                            
+                            const rulesBox = document.getElementById('igLiveRulesBox');
+                            if (rulesBox) {
+                                if (type === 'Carousel') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> الكاروسيل في إنستغرام يجب أن يحتوي على صورتين أو أكثر (كحد أقصى 10). ولا تدعم رفع فيديوهات داخل الكاروسيل حالياً.';
+                                } else if (type === 'Reel') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> أفضل مقاس لفيديو الريلز هو الطولي 9:16 وبدقة 1080x1920 وبمدة لا تتجاوز 90 ثانية.';
+                                } else if (type === 'Story') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> القصص (Story) يجب أن تكون صورة أو فيديو طولي (9:16).<br>⚠️ لا يمكنك استخدام نظام الكاروسيل لنشر قصة متعددة.';
+                                } else if (type === 'Feed') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> للمنشور العادي (Feed)، يُنصح بشدة استخدام صور أو مقاطع مربعة 1:1 أو طولية 4:5 (1080x1350).';
+                                } else {
+                                    rulesBox.style.display = 'none';
+                                }
+                            }
                         };
                     </script>
                     <div id="fbLiveConfigBox" style="display: none; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 24px; padding: 0; background: #fff; overflow: hidden; width: 100%;">
@@ -1454,6 +1476,9 @@
 
                         <!-- Form Content -->
                         <div style="padding: 20px;">
+                            <div id="fbLiveRulesBox" style="display: block; background: #f0fdf4; padding: 12px; border-radius: 8px; font-size: 13px; color: #166534; margin-bottom: 20px; border: 1px solid #bbf7d0; font-weight: 500; text-align: right; line-height: 1.5;" dir="rtl">
+                                💡 <strong>نصيحة:</strong> القصص (Story) على فيسبوك يجب أن تكون صورة واحدة أو فيديو طولي 9:16 بحد أقصى 60 ثانية.
+                            </div>
                             <div id="fbLiveFirstComment" style="margin-bottom: 20px; text-align: right;">
                                 <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">التعليق الأول</label>
                                 <textarea placeholder="...أضف تعليقاً تلقائياً" style="width: 100%; min-height: 80px; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: rtl; resize: vertical; font-family: inherit;" oninput="this.nextElementSibling.innerText = this.value.length + '/2200';"></textarea>
@@ -1480,6 +1505,22 @@
                             btn.style.background = '#1e293b';
                             btn.style.color = 'white';
                             btn.classList.add('active');
+                            
+                            const rulesBox = document.getElementById('fbLiveRulesBox');
+                            if (rulesBox) {
+                                if (type === 'Story') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> القصص (Story) على فيسبوك يجب أن تكون صورة واحدة أو فيديو طولي 9:16 بحد أقصى 60 ثانية.';
+                                } else if (type === 'Reel') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> أفضل مقاس لفيديو الريلز هو الطولي 9:16 بمدة لا تتجاوز 90 ثانية.';
+                                } else if (type === 'Feed') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> للمنشورات العادية (Feed)، يمكنك رفع أي مقاس، لكن المقاس المربع 1:1 هو الأفضل.';
+                                } else {
+                                    rulesBox.style.display = 'none';
+                                }
+                            }
                         };
                     </script>
                     
@@ -1505,6 +1546,9 @@
 
                         <!-- Form Content -->
                         <div style="padding: 20px;">
+                            <div id="tiktokLiveRulesBox" style="display: block; background: #f0fdf4; padding: 12px; border-radius: 8px; font-size: 13px; color: #166534; margin-bottom: 20px; border: 1px solid #bbf7d0; font-weight: 500; text-align: right; line-height: 1.5;" dir="rtl">
+                                💡 <strong>نصيحة:</strong> هذا الخيار يسمح برفع فيديو واحد بصيغة 9:16 ولا يمكنك رفع كاروسيل.
+                            </div>
                             <div id="tiktokLiveCustomText" style="margin-bottom: 0px; text-align: right;">
                                 <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">نص مخصص</label>
                                 <textarea placeholder="...اتركه فارغاً لاستخدام المحتوى الرئيسي" style="width: 100%; min-height: 80px; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: rtl; resize: vertical; font-family: inherit;" oninput="this.nextElementSibling.innerText = this.value.length + '/2200';"></textarea>
@@ -1528,6 +1572,19 @@
                             btn.style.background = '#1e293b';
                             btn.style.color = 'white';
                             btn.classList.add('active');
+                            
+                            const rulesBox = document.getElementById('tiktokLiveRulesBox');
+                            if (rulesBox) {
+                                if (type === 'Video') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> أفضل مقاس للنشر في تيك توك هو الفيديو الطولي 9:16، بمدة تتراوح من 15 ثانية حتى 3 دقائق للفيديوهات القياسية.';
+                                } else if (type === 'Carousel') {
+                                    rulesBox.style.display = 'block';
+                                    rulesBox.innerHTML = '💡 <strong>نصيحة:</strong> الكاروسيل في تيك توك يدعم الصور فقط (ليس الفيديو)، ويجب أن يحتوي على صورتين أو أكثر.';
+                                } else {
+                                    rulesBox.style.display = 'none';
+                                }
+                            }
                         };
                     </script>
                 </div>
