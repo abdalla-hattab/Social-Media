@@ -1800,6 +1800,32 @@ window.openCreatePostModal = function(postId = null) {
             }
         }
         
+        // Conditionally hide 'Instant' (فوري) if date is not today
+        const todayForCheck = new Date();
+        const resolvedOpt = targetOpt || window.activeSocialDateOptions;
+        const isToday = resolvedOpt &&
+                        resolvedOpt.date === todayForCheck.getDate() &&
+                        resolvedOpt.month === todayForCheck.getMonth() &&
+                        resolvedOpt.year === todayForCheck.getFullYear();
+
+        publishToggles.forEach(btn => {
+            if (btn.innerText.trim() === 'فوري') {
+                if (isToday) {
+                    btn.style.display = 'inline-block';
+                } else {
+                    btn.style.display = 'none';
+                    if (btn.classList.contains('active')) {
+                        btn.classList.remove('active');
+                        const draftBtn = Array.from(publishToggles).find(b => b.innerText.trim() === 'مسودة');
+                        if (draftBtn) {
+                            draftBtn.classList.add('active');
+                            // Ensure the related input states sync if click is needed or handled elsewhere
+                        }
+                    }
+                }
+            }
+        });
+        
         const subtitle = document.getElementById('createPostSubtitle');
         if (subtitle && targetOpt) {
             const monthNamesArabic = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
