@@ -1147,6 +1147,11 @@
                                             }
                                         }
                                         
+                                        // Force video detection for Frame.io
+                                        if (url.includes('f.io') || url.includes('frame.io')) {
+                                            isVideo = true;
+                                        }
+                                        
                                         // Set data attributes for saving state
                                         card.setAttribute('data-media-type', isVideo ? 'video' : 'image');
                                         if (durationStr) card.setAttribute('data-duration', durationStr);
