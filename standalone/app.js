@@ -1517,6 +1517,41 @@ window.openCreatePostModal = function(postId = null) {
             // Hide Agency container entirely for Client
             if (agencyEditsContainer) {
                 agencyEditsContainer.style.setProperty("display", "none", "important");
+        }
+        
+        const livePlatformsSection = document.getElementById('smLivePlatformsSection');
+        if (livePlatformsSection) {
+            if (window.isLiveModeActive) {
+                livePlatformsSection.style.display = 'block';
+                const liveContainer = document.getElementById('smLivePlatformsContainer');
+                if (liveContainer) {
+                    const localBoard = boards.find(b => b.id === activeBoardId);
+                    const connected = localBoard ? (localBoard.connectedAccounts || {}) : {};
+                    
+                    const allPlatforms = [
+                        { id: 'facebook', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>', colorFill: '#1877f2', colorBg: '#e6f2ff' },
+                        { id: 'instagram', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>', colorFill: '#e1306c', colorBg: '#fce4ec' },
+                        { id: 'snapchat', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.882 7.842a4.882 4.882 0 1 0 -9.764 0c0 4.288 -.348 7.023 -2.618 7.023c-.314 0 -1.5 .5 -1.5 1.25c0 .64 .324 1.135 1.704 1.135c.421 0 1.956 -.093 3.654 .231c.365 .07 .666 .273 .97 .702c1.472 2.062 4.093 1.849 5.342 0c.304 -.429 .605 -.632 .97 -.702c1.7 -.324 3.233 -.231 3.654 -.231c1.38 0 1.704 -.494 1.704 -1.135c0 -.75 -1.186 -1.25 -1.5 -1.25c-2.27 0 -2.618 -2.735 -2.618 -7.023z"></path></svg>', colorFill: '#ca8a04', colorBg: '#fef9c3' },
+                        { id: 'twitter', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>', colorFill: '#0f1419', colorBg: '#f1f5f9' },
+                        { id: 'linkedin', icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>', colorFill: '#0a66c2', colorBg: '#e4f0fd' },
+                        { id: 'tiktok', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.12-3.44-3.17-3.8-5.46-.4-2.51.69-5.17 2.73-6.69 1.51-1.12 3.35-1.57 5.11-1.33v4.22c-1.14-.15-2.31.22-3.11 1.01-.89.87-1.1 2.27-.47 3.35.48.98 1.63 1.56 2.73 1.5 1.78-.15 2.91-1.74 2.87-3.53.01-4.14.01-8.29.01-12.43 0-.52-.01-1.04-.01-1.56Z"/></svg>', colorFill: '#000000', colorBg: '#f1f5f9' }
+                    ];
+                    
+                    let html = '';
+                    allPlatforms.forEach(p => {
+                        const isConn = !!connected[p.id];
+                        const fg = isConn ? p.colorFill : '#94a3b8';
+                        const bg = isConn ? p.colorBg : '#f8fafc';
+                        html += `
+                            <div style="flex-shrink:0; width:34px; height:34px; border-radius:50%; background:${bg}; display:flex; align-items:center; justify-content:center; color:${fg}">
+                                ${p.icon}
+                            </div>
+                        `;
+                    });
+                    liveContainer.innerHTML = html;
+                }
+            } else {
+                livePlatformsSection.style.display = 'none';
             }
         }
         if (window.clearMediaUpload) window.clearMediaUpload(); // clears gallery
