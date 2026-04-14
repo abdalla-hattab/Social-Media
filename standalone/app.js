@@ -4725,20 +4725,18 @@ function renderSocialSchedulerApp(activeBoard) {
                 if (typeof window.render === 'function') { window.render(); } else if (typeof render === 'function') { render(); }
             }
         } else {
-        } else {
             if (typeof window.connectZernioPlatform === 'function') {
                 window.connectZernioPlatform(platformId);
                 
                 // For UX presentation prototype: Let the UI think it connected after 5 seconds
                 setTimeout(() => {
                     board.connectedAccounts[platformId] = true;
-                    if (typeof window.saveState === 'function') saveState();
-                    if (typeof window.render === 'function') render();
+                    if (typeof window.saveState === 'function') { window.saveState(); } else if (typeof saveState === 'function') { saveState(); }
+                    if (typeof window.render === 'function') { window.render(); } else if (typeof render === 'function') { render(); }
                 }, 5000);
             } else {
                 alert('Connection API not initialized!');
             }
-            };
         }
     };
 
