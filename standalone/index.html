@@ -1359,18 +1359,18 @@
 
                         <!-- Form Content -->
                         <div style="padding: 20px;">
-                            <div style="margin-bottom: 20px; text-align: right;">
+                            <div id="igLiveCollaborators" style="margin-bottom: 20px; text-align: right;">
                                 <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">المتعاونون (حتى 3)</label>
                                 <input type="text" placeholder="@username" style="width: 100%; padding: 10px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: ltr;">
                             </div>
 
-                            <div style="margin-bottom: 20px; text-align: right;">
+                            <div id="igLiveFirstComment" style="margin-bottom: 20px; text-align: right;">
                                 <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">التعليق الأول</label>
                                 <textarea placeholder="...أضف سياقاً إضافياً أو CTA هنا" style="width: 100%; min-height: 80px; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: rtl; resize: vertical; font-family: inherit;" oninput="this.nextElementSibling.innerText = this.value.length + '/2200';"></textarea>
                                 <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 6px; text-align: left; direction: ltr;">0/2200</div>
                             </div>
 
-                            <div style="margin-bottom: 20px; text-align: right;">
+                            <div id="igLiveCustomText" style="margin-bottom: 20px; text-align: right;">
                                 <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">نص مخصص</label>
                                 <textarea placeholder="...اتركه فارغاً لاستخدام المحتوى الرئيسي" style="width: 100%; min-height: 80px; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; text-align: right; direction: rtl; resize: vertical; font-family: inherit;" oninput="this.nextElementSibling.innerText = this.value.length + '/2200';"></textarea>
                                 <div style="font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 6px; text-align: left; direction: ltr;">0/2200</div>
@@ -1396,7 +1396,7 @@
                             const tabs = document.querySelectorAll('.ig-live-tab');
                             tabs.forEach(t => {
                                 t.style.background = 'transparent';
-                                t.style.color = t.innerText.trim() === 'Carousel' ? '#cbd5e1' : '#94a3b8';
+                                t.style.color = t.innerText.trim() === 'Carousel' ? '#cbd5e1' : '#64748b';
                                 t.classList.remove('active');
                             });
                             
@@ -1405,11 +1405,19 @@
                             btn.classList.add('active');
                             
                             const reelOpts = document.getElementById('igLiveReelOptions');
+                            const collabOpts = document.getElementById('igLiveCollaborators');
+                            const firstCommentOpts = document.getElementById('igLiveFirstComment');
+
                             if (reelOpts) {
-                                if (type === 'Reel') {
-                                    reelOpts.style.display = 'block';
+                                reelOpts.style.display = type === 'Reel' ? 'block' : 'none';
+                            }
+                            if (collabOpts && firstCommentOpts) {
+                                if (type === 'Story') {
+                                    collabOpts.style.display = 'none';
+                                    firstCommentOpts.style.display = 'none';
                                 } else {
-                                    reelOpts.style.display = 'none';
+                                    collabOpts.style.display = 'block';
+                                    firstCommentOpts.style.display = 'block';
                                 }
                             }
                         };
