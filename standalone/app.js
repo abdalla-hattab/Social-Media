@@ -1686,6 +1686,56 @@ window.openCreatePostModal = function(postId = null) {
                         if (cc) cc.innerText = textArea.value.length + ' حرف';
                     }
                     
+                    // Restore Platforms
+                    if (post.platforms && post.platforms.length > 0) {
+                        setTimeout(() => {
+                            post.platforms.forEach(plat => {
+                                // For live mode
+                                const liveIcon = document.querySelector(`.sm-live-platform-icon[data-platform="${plat}"]`);
+                                if (liveIcon && typeof window.toggleLivePlatform === 'function') {
+                                    let fillCol = '#000';
+                                    if (plat === 'instagram') fillCol = '#e1306c';
+                                    if (plat === 'facebook') fillCol = '#1877f2';
+                                    if (plat === 'snapchat') fillCol = '#ca8a04';
+                                    if (plat === 'twitter') fillCol = '#0f1419';
+                                    if (plat === 'linkedin') fillCol = '#0a66c2';
+                                    if (liveIcon.getAttribute('data-active') !== 'true') {
+                                        window.toggleLivePlatform(liveIcon, fillCol, plat);
+                                    }
+                                }
+                                
+                                // For draft mode
+                                const draftIcons = document.querySelectorAll('.sm-platform-empty > div > div');
+                                draftIcons.forEach(icon => {
+                                    const onclickAttr = icon.getAttribute('onclick') || '';
+                                    let matched = false;
+                                    if (plat === 'instagram' && onclickAttr.includes('#e1306c')) matched = true;
+                                    if (plat === 'facebook' && onclickAttr.includes('#1877f2')) matched = true;
+                                    if (plat === 'snapchat' && onclickAttr.includes('#ca8a04')) matched = true;
+                                    if (plat === 'twitter' && onclickAttr.includes('#0f1419')) matched = true;
+                                    if (plat === 'linkedin' && onclickAttr.includes('#0a66c2')) matched = true;
+                                    if (plat === 'tiktok' && onclickAttr.includes('#000000')) matched = true;
+                                    
+                                    if (matched && icon.getAttribute('data-active') !== 'true') {
+                                        let col = '#000';
+                                        if (plat === 'instagram') col = '#e1306c';
+                                        if (plat === 'facebook') col = '#1877f2';
+                                        if (plat === 'snapchat') col = '#ca8a04';
+                                        if (plat === 'twitter') col = '#0f1419';
+                                        if (plat === 'linkedin') col = '#0a66c2';
+                                        let target = null;
+                                        if (plat === 'instagram') target = 'igFormatSelector';
+                                        if (plat === 'tiktok') target = 'tiktokFormatSelector';
+                                        
+                                        if (typeof selectSocialPlatform === 'function') {
+                                            selectSocialPlatform(icon, col, target);
+                                        }
+                                    }
+                                });
+                            });
+                        }, 100);
+                    }
+                    
                     const pType = post.postType || 'image';
                     const ptInput = document.querySelector(`input[name="smPostType"][value="${pType}"]`);
                     if (ptInput) {
@@ -6150,6 +6200,22 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             };
         }
         
+        const activePlatformsTokens = document.querySelectorAll('.sm-platform-empty > div > div[data-active="true"], .sm-live-platform-icon[data-active="true"]');
+        let platformsArray = [];
+        if (activePlatformsTokens.length > 0) {
+            platformsArray = Array.from(activePlatformsTokens).map(p => {
+                if (p.hasAttribute('data-platform')) return p.getAttribute('data-platform');
+                const onclickAttr = p.getAttribute('onclick') || '';
+                if (onclickAttr.includes('#e1306c')) return 'instagram';
+                if (onclickAttr.includes('#1877f2')) return 'facebook';
+                if (onclickAttr.includes('#ca8a04')) return 'snapchat';
+                if (onclickAttr.includes('#0f1419')) return 'twitter';
+                if (onclickAttr.includes('#0a66c2')) return 'linkedin';
+                if (onclickAttr.includes('#000000')) return 'tiktok';
+                return null;
+            }).filter(Boolean);
+        }
+
         const newDraft = {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
             title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
@@ -6160,7 +6226,8 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             postType: postType,
             mediaItems: mediaItems.length > 0 ? mediaItems : null,
             clientEdits: clientEdits,
-            clientModified: isClientModified
+            clientModified: isClientModified,
+            platforms: platformsArray
         };
         
         if (existingPost && existingPost.isClientDayNote) newDraft.isClientDayNote = true;
