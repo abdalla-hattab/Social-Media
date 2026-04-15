@@ -1452,6 +1452,15 @@ window.hideAllMonthEvents = function(monthIndex) {
 };
 
 window.openCreatePostModal = function(postId = null) {
+    if (window.isLiveModeActive && !postId) {
+        if (typeof showToast === 'function') {
+            showToast('⚠️ يتم إنشاء المنشورات في وضع المسودات فقط. استخدم وضع النشر (Live) للجدولة.');
+        } else {
+            alert('يتم إنشاء المنشورات في وضع المسودات فقط. استخدم وضع النشر (Live) للجدولة.');
+        }
+        return;
+    }
+
     if (createPostModal) {
         window.currentEditingSocialPostId = postId;
         const textArea = document.querySelector('.sm-textarea');
