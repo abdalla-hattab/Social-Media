@@ -2216,6 +2216,8 @@ if (closeCreatePostModal && createPostModal) {
                         }
                         if (currentEditingPost && currentEditingPost.timeStr) {
                             timeInput.value = currentEditingPost.timeStr;
+                        } else {
+                            timeInput.value = '16:00';
                         }
                     }
                 }
