@@ -963,70 +963,8 @@
             <div class="sm-modal-body">
                 <!-- Content Column (First in DOM due to RTL flowing from right) -->
                 <div class="sm-modal-right-col">
-                    <!-- Format Selectors Wrapper for Overlapping Animation -->
-                    <div id="formatSelectorsWrapper" style="display: grid; grid-template-columns: 1fr; margin-bottom: 0px; transition: margin-bottom 0.4s ease;">
-                        <!-- IG Format Selector -->
-                        <div id="igFormatSelector" style="grid-area: 1/1; max-height: 0; opacity: 0; overflow: hidden; pointer-events: none; transition: max-height 0.4s ease, opacity 0.3s ease;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top: 4px;">
-                            <h4 style="margin:0; font-size: 14px; font-weight: 600; color: #1e293b;">اختر شكل المحتوى لـ <span style="color: #e1306c;">إنستغرام</span>:</h4>
-                            <span style="font-size: 13px; color: #64748b; cursor: pointer;" onclick="resetSocialPlatforms()">إلغاء</span>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-                            <!-- Post -->
-                            <div class="ig-format-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; background: #fff;" onmouseover="this.style.borderColor='#f97316'; this.style.boxShadow='0 2px 8px rgba(249,115,22,0.1)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-                                <span style="font-size: 20px; margin-bottom: 8px;">📝</span>
-                                <span style="font-weight: 600; font-size: 13px; margin-bottom: 4px; display: block; color: #1e293b;">منشور</span>
-                                <span style="font-size: 10px; color: #64748b; line-height: 1.4;">نص وصور وفيديو</span>
-                            </div>
-                            
-                            <!-- Carousel -->
-                            <div class="ig-format-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; background: #fff;" onmouseover="this.style.borderColor='#f97316'; this.style.boxShadow='0 2px 8px rgba(249,115,22,0.1)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-                                <span style="font-size: 20px; margin-bottom: 8px;">🎠</span>
-                                <span style="font-weight: 600; font-size: 13px; margin-bottom: 4px; display: block; color: #1e293b;">كاروسيل</span>
-                                <span style="font-size: 10px; color: #64748b; line-height: 1.4;">عدة صور/فيديوهات (حتى 10)</span>
-                            </div>
+                    <!-- Format Selectors Wrapper for Overlapping Animation Removed -->
 
-                            <!-- Story -->
-                            <div class="ig-format-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; background: #fff;" onmouseover="this.style.borderColor='#f97316'; this.style.boxShadow='0 2px 8px rgba(249,115,22,0.1)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-                                <span style="font-size: 20px; margin-bottom: 8px;">📱</span>
-                                <span style="font-weight: 600; font-size: 13px; margin-bottom: 4px; display: block; color: #1e293b;">قصة (Story)</span>
-                                <span style="font-size: 10px; color: #64748b; line-height: 1.4;">صورة أو فيديو يختفي بعد 24 ساعة</span>
-                            </div>
-
-                            <!-- Reel -->
-                            <div class="ig-format-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; background: #fff;" onmouseover="this.style.borderColor='#f97316'; this.style.boxShadow='0 2px 8px rgba(249,115,22,0.1)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-                                <span style="font-size: 20px; margin-bottom: 8px;">▶️</span>
-                                <span style="font-weight: 600; font-size: 13px; margin-bottom: 4px; display: block; color: #1e293b;">ريلز (Reel)</span>
-                                <span style="font-size: 10px; color: #64748b; line-height: 1.4;">فيديو قصير طولي</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tiktok Format Selector -->
-                    <div id="tiktokFormatSelector" style="grid-area: 1/1; max-height: 0; opacity: 0; overflow: hidden; pointer-events: none; transition: max-height 0.4s ease, opacity 0.3s ease;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-top: 4px;">
-                            <h4 style="margin:0; font-size: 14px; font-weight: 600; color: #1e293b;">اختر شكل المحتوى لـ <span style="color: #000000;">تيك توك</span>:</h4>
-                            <span style="font-size: 13px; color: #64748b; cursor: pointer;" onclick="resetSocialPlatforms()">إلغاء</span>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                            <!-- Reel -->
-                            <div class="ig-format-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; background: #fff;" onmouseover="this.style.borderColor='#f97316'; this.style.boxShadow='0 2px 8px rgba(249,115,22,0.1)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-                                <span style="font-size: 20px; margin-bottom: 8px;">▶️</span>
-                                <span style="font-weight: 600; font-size: 13px; margin-bottom: 4px; display: block; color: #1e293b;">ريلز (Reel)</span>
-                                <span style="font-size: 10px; color: #64748b; line-height: 1.4;">فيديو قصير طولي</span>
-                            </div>
-
-                            <!-- Story -->
-                            <div class="ig-format-card" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; background: #fff;" onmouseover="this.style.borderColor='#f97316'; this.style.boxShadow='0 2px 8px rgba(249,115,22,0.1)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none';">
-                                <span style="font-size: 20px; margin-bottom: 8px;">📱</span>
-                                <span style="font-weight: 600; font-size: 13px; margin-bottom: 4px; display: block; color: #1e293b;">قصة (Story)</span>
-                                <span style="font-size: 10px; color: #64748b; line-height: 1.4;">صورة أو فيديو يختفي بعد 24 ساعة</span>
-                            </div>
-                        </div>
-                    </div>
-                    </div> <!-- Close formatSelectorsWrapper -->
 
                     <!-- Active Post Indicator Removed as requested -->
 
@@ -1649,51 +1587,12 @@
                             function selectSocialPlatform(element, color, targetSelectorId) {
                                 const isActive = element.getAttribute('data-active') === 'true';
                                 
-                                if (window.isClientView) {
-                                    if (isActive) {
-                                        element.style.boxShadow = 'none';
-                                        element.removeAttribute('data-active');
-                                    } else {
-                                        element.style.boxShadow = '0 0 0 2px #fff, 0 0 0 4px ' + color;
-                                        element.setAttribute('data-active', 'true');
-                                    }
-                                    return; // In client view, allow multi-select and don't show format selectors
-                                }
-                                
-                                const parent = element.parentElement;
-                                for(let i=0; i<parent.children.length; i++) {
-                                    parent.children[i].style.boxShadow = 'none';
-                                    parent.children[i].removeAttribute('data-active');
-                                }
-                                
-                                const wrapper = document.getElementById('formatSelectorsWrapper');
-                                
-                                const selectors = ['igFormatSelector', 'tiktokFormatSelector'];
-                                selectors.forEach(id => {
-                                    const el = document.getElementById(id);
-                                    if(el) {
-                                        el.style.maxHeight = '0';
-                                        el.style.opacity = '0';
-                                        el.style.pointerEvents = 'none';
-                                    }
-                                });
-                                
-                                if(isActive) {
-                                    if(wrapper) wrapper.style.marginBottom = '0px';
-                                    return; // It's now toggled off, so we stop here
-                                }
-                                
-                                element.style.boxShadow = '0 0 0 2px #fff, 0 0 0 4px ' + color;
-                                element.setAttribute('data-active', 'true');
-                                
-                                if(targetSelectorId) {
-                                    if(wrapper) wrapper.style.marginBottom = '24px';
-                                    const target = document.getElementById(targetSelectorId);
-                                    target.style.maxHeight = '500px';
-                                    target.style.opacity = '1';
-                                    target.style.pointerEvents = 'auto';
+                                if (isActive) {
+                                    element.style.boxShadow = 'none';
+                                    element.removeAttribute('data-active');
                                 } else {
-                                    if(wrapper) wrapper.style.marginBottom = '0px';
+                                    element.style.boxShadow = '0 0 0 2px #fff, 0 0 0 4px ' + color;
+                                    element.setAttribute('data-active', 'true');
                                 }
                             }
                         </script>
