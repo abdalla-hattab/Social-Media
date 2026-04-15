@@ -1293,11 +1293,11 @@
                             </div>
 
                             <!-- Tabs (Segmented Control Style) -->
-                            <div style="display: flex; gap: 2px; padding: 4px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;" id="igLiveTabs">
-                                <button class="ig-live-tab active" onclick="window.switchIgLiveTab(this, 'Carousel')" style="background: #1e293b; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">Carousel</button>
-                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Reel')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">Reel</button>
-                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Story')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">Story</button>
-                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Feed')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">Feed</button>
+                            <div style="display: flex; gap: 2px; padding: 4px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;" id="igLiveTabs" dir="rtl">
+                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Feed')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">منشور</button>
+                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Story')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">قصة</button>
+                                <button class="ig-live-tab" onclick="window.switchIgLiveTab(this, 'Reel')" style="background: transparent; color: #64748b; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit;">ريلز</button>
+                                <button class="ig-live-tab active" onclick="window.switchIgLiveTab(this, 'Carousel')" style="background: #1e293b; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">كاروسيل</button>
                             </div>
                         </div>
 
@@ -1343,7 +1343,7 @@
                             const tabs = document.querySelectorAll('.ig-live-tab');
                             tabs.forEach(t => {
                                 t.style.background = 'transparent';
-                                t.style.color = t.innerText.trim() === 'Carousel' ? '#cbd5e1' : '#64748b';
+                                t.style.color = t.innerText.trim() === 'كاروسيل' ? '#cbd5e1' : '#64748b';
                                 t.classList.remove('active');
                             });
                             
@@ -1475,7 +1475,7 @@
 
                             <!-- Tabs (Segmented Control Style) -->
                             <div style="display: flex; gap: 2px; padding: 4px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;" id="tiktokLiveTabs">
-                                <div style="display: flex; flex-direction: row-reverse; gap: 2px;">
+                                <div style="display: flex; gap: 2px;" dir="rtl">
                                     <button class="tiktok-live-tab active" onclick="window.switchTiktokLiveTab(this, 'Video')" style="background: #1e293b; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit;">فيديو</button>
                                     <button class="tiktok-live-tab" title="كاروسيل TikTok يدعم صور فقط (لا فيديو)" style="background: transparent; color: #94a3b8; border: none; border-radius: 6px; padding: 6px 16px; font-size: 13px; font-weight: 500; cursor: not-allowed; transition: all 0.2s; font-family: inherit; opacity: 0.6;">كاروسيل</button>
                                 </div>
