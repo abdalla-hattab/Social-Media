@@ -6262,6 +6262,53 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             }).filter(Boolean);
         }
 
+        platformsArray = Array.from(new Set(platformsArray));
+
+        let platformsConfig = {};
+        if (platformsArray.length > 0) {
+            platformsArray.forEach(plat => {
+                platformsConfig[plat] = {};
+                if (plat === 'instagram') {
+                    const activeTab = document.querySelector('.ig-live-tab.active');
+                    if (activeTab) {
+                        const t = activeTab.textContent.trim();
+                        if (t === 'منشور') platformsConfig[plat].type = 'Feed';
+                        else if (t === 'قصة') platformsConfig[plat].type = 'Story';
+                        else if (t === 'ريلز') platformsConfig[plat].type = 'Reel';
+                        else if (t === 'كاروسيل') platformsConfig[plat].type = 'Carousel';
+                    }
+                    const collabNode = document.querySelector('#igLiveCollaborators input');
+                    if (collabNode) platformsConfig[plat].collaborators = collabNode.value.trim();
+                    const cmtNode = document.querySelector('#igLiveFirstComment textarea');
+                    if (cmtNode) platformsConfig[plat].firstComment = cmtNode.value.trim();
+                    const txtNode = document.querySelector('#igLiveCustomText textarea');
+                    if (txtNode) platformsConfig[plat].customText = txtNode.value.trim();
+                } else if (plat === 'facebook') {
+                    const activeTab = document.querySelector('.fb-live-tab.active');
+                    if (activeTab) {
+                        const t = activeTab.textContent.trim();
+                        if (t === 'منشور') platformsConfig[plat].type = 'Feed';
+                        else if (t === 'قصة') platformsConfig[plat].type = 'Story';
+                        else if (t === 'ريلز') platformsConfig[plat].type = 'Reel';
+                    }
+                    const cmtNode = document.querySelector('#fbLiveFirstComment textarea');
+                    if (cmtNode) platformsConfig[plat].firstComment = cmtNode.value.trim();
+                    const txtNode = document.querySelector('#fbLiveCustomText textarea');
+                    if (txtNode) platformsConfig[plat].customText = txtNode.value.trim();
+                } else if (plat === 'tiktok') {
+                    const activeTab = document.querySelector('.tiktok-live-tab.active');
+                    if (activeTab) {
+                        const t = activeTab.textContent.trim();
+                        if (t === 'فيديو') platformsConfig[plat].type = 'Video';
+                        else if (t === 'صور') platformsConfig[plat].type = 'Photos';
+                        else if (t === 'قصة') platformsConfig[plat].type = 'Story';
+                    }
+                    const txtNode = document.querySelector('#tiktokLiveCustomText textarea');
+                    if (txtNode) platformsConfig[plat].customText = txtNode.value.trim();
+                }
+            });
+        }
+
         const newDraft = {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
             title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
@@ -6273,7 +6320,8 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             mediaItems: mediaItems.length > 0 ? mediaItems : null,
             clientEdits: clientEdits,
             clientModified: isClientModified,
-            platforms: platformsArray
+            platforms: platformsArray,
+            platformsConfig: platformsConfig
         };
         
         if (existingPost && existingPost.isClientDayNote) newDraft.isClientDayNote = true;
