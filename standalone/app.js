@@ -1610,7 +1610,7 @@ window.openCreatePostModal = function(postId = null) {
                             
                         const clickHandler = isConn 
                             ? `onclick="if(typeof window.toggleLivePlatform==='function') window.toggleLivePlatform(this, '${p.colorFill}', '${p.id}')"` 
-                            : `onclick="if(typeof window.connectZernioPlatform==='function') window.connectZernioPlatform('${p.id}')"`;
+                            : `onclick="if(typeof showToast==='function') { showToast('⚠️ حساب ${p.id} غير متصل بعد، يرجى ربطه أولاً.'); } else { alert('حساب ${p.id} غير متصل بعد، يرجى ربطه أولاً.'); }"`;
                         
                         html += `
                             <div class="sm-live-platform-icon" data-platform="${p.id}" style="flex-shrink:0; width:34px; height:34px; border-radius:50%; background:${bg}; display:flex; align-items:center; justify-content:center; color:${fg}; ${cursorStyle}" ${clickHandler} ${hoverEffects}>
