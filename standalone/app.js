@@ -1581,7 +1581,11 @@ window.openCreatePostModal = function(postId = null) {
         if (livePlatformsSection) {
             if (window.isLiveModeActive) {
                 livePlatformsSection.style.display = 'block';
-                if (smPlatformsSection) smPlatformsSection.style.display = 'none';
+                if (smPlatformsSection) {
+                    smPlatformsSection.style.display = 'block';
+                    smPlatformsSection.style.pointerEvents = 'none';
+                    smPlatformsSection.style.opacity = '0.7';
+                }
                 if (formatSelectorsWrapper) formatSelectorsWrapper.style.display = 'none';
                 const liveContainer = document.getElementById('smLivePlatformsContainer');
                 if (liveContainer) {
@@ -1622,7 +1626,11 @@ window.openCreatePostModal = function(postId = null) {
                 }
             } else {
                 livePlatformsSection.style.display = 'none';
-                if (smPlatformsSection) smPlatformsSection.style.display = 'block';
+                if (smPlatformsSection) {
+                    smPlatformsSection.style.display = 'block';
+                    smPlatformsSection.style.pointerEvents = 'auto';
+                    smPlatformsSection.style.opacity = '1';
+                }
                 if (formatSelectorsWrapper) formatSelectorsWrapper.style.display = 'grid';
             }
         }
