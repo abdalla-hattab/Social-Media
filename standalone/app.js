@@ -1468,6 +1468,17 @@ window.openCreatePostModal = function(postId = null) {
         if (liveBadge) {
             liveBadge.style.display = window.isLiveModeActive ? 'flex' : 'none';
         }
+        
+        const frameIoLabel = document.getElementById('frameIoLabel');
+        const frameIoContainer = document.getElementById('frameIoContainer');
+        if (window.isLiveModeActive) {
+            if (frameIoLabel) frameIoLabel.style.display = 'none';
+            if (frameIoContainer) frameIoContainer.style.display = 'none';
+        } else {
+            if (frameIoLabel) frameIoLabel.style.display = 'flex';
+            if (frameIoContainer) frameIoContainer.style.display = 'flex';
+        }
+
         const clientEditsContainer = document.getElementById('clientEditsContainer');
         const clientEditsInput = document.getElementById('clientEditsInput');
         const clientEditsLabel = document.getElementById('clientEditsLabel');
@@ -1798,14 +1809,24 @@ window.openCreatePostModal = function(postId = null) {
                             if (activeBtn) activeBtn.click();
                         }, 50);
                         
-                        // Show warning if user opened a 'Draft' post in Live mode
+                        // Show warning or success if user opened a post in Live mode
                         const warningEl = document.getElementById('smLiveScheduleWarning');
-                        if (warningEl) {
-                            if (window.isLiveModeActive && post.status === 'مسودة') {
-                                warningEl.style.display = 'block';
+                        const successEl = document.getElementById('smLiveScheduledSuccess');
+                        
+                        if (window.isLiveModeActive) {
+                            if (post.status === 'مسودة') {
+                                if (warningEl) warningEl.style.display = 'block';
+                                if (successEl) successEl.style.display = 'none';
+                            } else if (post.status === 'جدولة') {
+                                if (warningEl) warningEl.style.display = 'none';
+                                if (successEl) successEl.style.display = 'block';
                             } else {
-                                warningEl.style.display = 'none';
+                                if (warningEl) warningEl.style.display = 'none';
+                                if (successEl) successEl.style.display = 'none';
                             }
+                        } else {
+                            if (warningEl) warningEl.style.display = 'none';
+                            if (successEl) successEl.style.display = 'none';
                         }
                     }
                     
