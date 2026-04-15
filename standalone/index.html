@@ -1603,6 +1603,7 @@
                         <div class="sm-publish-toggle">
                             <button class="sm-toggle-btn active">مسودة</button>
                             <button class="sm-toggle-btn">جدولة</button>
+                            <button class="sm-toggle-btn" style="display:none;">فوري</button>
                         </div>
                     </div>
                     
@@ -1627,7 +1628,7 @@
                             <div id="smLiveScheduledSuccess" style="display:none; color: #16a34a; font-size: 13px; font-weight: 600; text-align: right; background: #dcfce7; padding: 10px; border-radius: 6px; border: 1px dashed #22c55e; margin-bottom: 12px; direction: rtl;">✅ هذا المنشور مجدول</div>
                             <div class="sm-datetime-inputs" style="min-width: 0;">
                                 <div class="sm-date-input-wrap" style="min-width: 0;">
-                                    <input type="date" class="sm-date-input" style="min-width: 0;" onchange="if(typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) window.saveSocialDraft(true); if(typeof window.updateLiveDiff === 'function') setTimeout(window.updateLiveDiff, 50);">
+                                    <input type="date" class="sm-date-input" style="min-width: 0;" onchange="if(typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) window.saveSocialDraft(true); if(typeof window.updateLiveDiff === 'function') setTimeout(window.updateLiveDiff, 50); if(typeof window.updatePublishTogglesVisibility === 'function') window.updatePublishTogglesVisibility();">
                                 </div>
                                 <div class="sm-time-input-wrap" style="min-width: 0;">
                                     <input type="time" class="sm-time-input" style="min-width: 0;" onchange="if(typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) window.saveSocialDraft(true); if(typeof window.updateLiveDiff === 'function') setTimeout(window.updateLiveDiff, 50);">

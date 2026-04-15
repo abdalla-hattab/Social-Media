@@ -1636,23 +1636,10 @@ window.openCreatePostModal = function(postId = null) {
         }
         if (window.clearMediaUpload) window.clearMediaUpload(); // clears gallery
         
-        publishToggles.forEach(b => {
-            b.classList.remove('active');
-            const txt = b.textContent.trim();
-            if (!window.isLiveModeActive) {
-                if (txt !== 'مسودة') b.style.display = 'none';
-                else b.style.display = '';
-            } else {
-                if (txt !== 'جدولة') b.style.display = 'none';
-                else b.style.display = '';
-            }
-        });
-        
-        const draftBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'مسودة');
-        const schedBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'جدولة');
-        
-        if (!window.isLiveModeActive && draftBtn) draftBtn.click();
-        else if (window.isLiveModeActive && schedBtn) schedBtn.click();
+        if (typeof window.updatePublishTogglesVisibility === 'function') {
+            window.updatePublishTogglesVisibility(true);
+        }
+
         
         let targetOpt = window.activeSocialDateOptions;
         
@@ -6520,4 +6507,62 @@ window.connectZernioPlatform = function(platformId) {
         console.error("Zernio Connect Error:", err);
         if (typeof showToast === 'function') showToast("خطأ في الاتصال بالخادم.");
     });
+};
+
+window.updatePublishTogglesVisibility = function(isInitialOpen = false) {
+    const createPostModal = document.getElementById('createPostModal');
+    if (!createPostModal) return;
+    
+    const publishToggles = createPostModal.querySelectorAll('.sm-toggle-btn');
+    const dateInput = createPostModal.querySelector('.sm-date-input');
+    
+    let isToday = false;
+    if (dateInput && dateInput.value) {
+        const todayLocal = new Date();
+        const y = todayLocal.getFullYear();
+        const m = String(todayLocal.getMonth() + 1).padStart(2, '0');
+        const d = String(todayLocal.getDate()).padStart(2, '0');
+        if (dateInput.value === `${y}-${m}-${d}`) {
+            isToday = true;
+        }
+    } else if (window.activeSocialDateOptions) {
+        const todayLocal = new Date();
+        if (window.activeSocialDateOptions.year === todayLocal.getFullYear() &&
+            window.activeSocialDateOptions.month === todayLocal.getMonth() &&
+            window.activeSocialDateOptions.date === todayLocal.getDate()) {
+            isToday = true;
+        }
+    }
+    
+    publishToggles.forEach(b => {
+        const txt = b.textContent.trim();
+        if (!window.isLiveModeActive) { // Draft Mode
+            b.style.display = (txt === 'مسودة') ? '' : 'none';
+        } else { // Live Mode
+            if (txt === 'مسودة') b.style.display = 'none';
+            else if (txt === 'فوري') b.style.display = isToday ? '' : 'none';
+            else if (txt === 'جدولة') b.style.display = '';
+        }
+    });
+
+    if (isInitialOpen) {
+        publishToggles.forEach(b => b.classList.remove('active'));
+        const draftBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'مسودة');
+        const schedBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'جدولة');
+        
+        if (!window.isLiveModeActive && draftBtn) draftBtn.click();
+        else if (window.isLiveModeActive && schedBtn) schedBtn.click();
+    } else {
+        const activeBtn = Array.from(publishToggles).find(b => b.classList.contains('active') && b.style.display !== 'none');
+        if (!activeBtn) {
+            publishToggles.forEach(b => b.classList.remove('active'));
+            if (!window.isLiveModeActive) {
+                const draftBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'مسودة');
+                if (draftBtn) draftBtn.click();
+            } else {
+                const schedBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'جدولة');
+                if (schedBtn) schedBtn.click();
+            }
+        }
+    }
 };
