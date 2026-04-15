@@ -6187,6 +6187,30 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                 }
                 return;
             }
+            
+            if (status === 'جدولة') {
+                if (!timeStr) {
+                    if (typeof showToast === 'function') showToast('⚠️ يرجى تحديد وقت الجدولة.');
+                    return;
+                }
+                
+                const scheduledDate = new Date(opts.year, opts.month, opts.date);
+                const timeParts = timeStr.split(':');
+                if (timeParts.length >= 2) {
+                    scheduledDate.setHours(parseInt(timeParts[0], 10), parseInt(timeParts[1], 10), 0, 0);
+                }
+                
+                const now = new Date();
+                
+                if (scheduledDate.getTime() < now.getTime()) {
+                    if (typeof showToast === 'function') {
+                        showToast('⚠️ لا يمكن جدولة منشور في تاريخ أو وقت مضى.');
+                    } else {
+                        alert('لا يمكن جدولة منشور في تاريخ أو وقت مضى.');
+                    }
+                    return;
+                }
+            }
         }
         
         let postType = 'image';
