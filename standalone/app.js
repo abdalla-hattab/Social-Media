@@ -1464,6 +1464,23 @@ window.openCreatePostModal = function(postId = null) {
             if (cc) cc.innerText = '0 حرف';
         }
         
+        // Always reset draft icon highlights explicitly so state doesn't leak between posts
+        const draftIconsState = document.querySelectorAll('.sm-platform-empty > div > div');
+        draftIconsState.forEach(icon => {
+            icon.style.boxShadow = 'none';
+            icon.removeAttribute('data-active');
+        });
+        const wrapperEl = document.getElementById('formatSelectorsWrapper');
+        if (wrapperEl) wrapperEl.style.marginBottom = '0px';
+        ['igFormatSelector', 'tiktokFormatSelector'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.maxHeight = '0';
+                el.style.opacity = '0';
+                el.style.pointerEvents = 'none';
+            }
+        });
+        
         const liveBadge = document.getElementById('createPostModalLiveBadge');
         if (liveBadge) {
             liveBadge.style.display = window.isLiveModeActive ? 'flex' : 'none';
