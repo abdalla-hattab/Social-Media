@@ -1132,30 +1132,52 @@
 
                                         if (imgUrl) {
                                             try {
-                                                const getBase64 = (src) => new Promise((resolve, reject) => {
+                                                const fetchAsBlobWithRetry = async (url, retries = 2) => {
+                                                    for (let i = 0; i <= retries; i++) {
+                                                        try {
+                                                            let res = await fetch(url).catch(() => null);
+                                                            if (!res || !res.ok) {
+                                                                res = await fetch('https://corsproxy.io/?' + encodeURIComponent(url)).catch(() => null);
+                                                            }
+                                                            if (!res || !res.ok) {
+                                                                res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(url)).catch(() => null);
+                                                            }
+                                                            if (res && res.ok) {
+                                                                return await res.blob();
+                                                            }
+                                                        } catch (e) {
+                                                            console.warn('Attempt ' + (i+1) + ' failed', e);
+                                                        }
+                                                        if (i < retries) await new Promise(r => setTimeout(r, 1500)); // wait 1.5s then retry
+                                                    }
+                                                    throw new Error('All blob fetch attempts failed');
+                                                };
+
+                                                const blob = await fetchAsBlobWithRetry(imgUrl);
+                                                const rawDataUrl = await new Promise((res, rej) => {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => res(reader.result);
+                                                    reader.onerror = rej;
+                                                    reader.readAsDataURL(blob);
+                                                });
+
+                                                const scaledBase64 = await new Promise((resolve) => {
                                                     const img = new Image();
-                                                    img.crossOrigin = 'anonymous';
                                                     img.onload = () => {
                                                         const cvs = document.createElement('canvas');
-                                                        const MAX_W = 400; // Optimal thumbnail width
+                                                        const MAX_W = 400;
                                                         const scale = Math.min(MAX_W / img.width, 1);
                                                         cvs.width = img.width * scale;
                                                         cvs.height = img.height * scale;
                                                         const ctx = cvs.getContext('2d');
                                                         ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
-                                                        try { resolve(cvs.toDataURL('image/jpeg', 0.8)); } 
-                                                        catch(e) { reject(e); }
+                                                        resolve(cvs.toDataURL('image/jpeg', 0.8));
                                                     };
-                                                    img.onerror = reject;
-                                                    img.src = src;
+                                                    img.onerror = () => resolve(rawDataUrl); // fallback to unscaled logic
+                                                    img.src = rawDataUrl;
                                                 });
                                                 
-                                                try {
-                                                    imgUrl = await getBase64(imgUrl);
-                                                } catch(err1) {
-                                                    console.warn('Native crossOrigin failed, fallback to proxy', err1);
-                                                    imgUrl = await getBase64('https://api.allorigins.win/raw?url=' + encodeURIComponent(imgUrl));
-                                                }
+                                                imgUrl = scaledBase64;
                                             } catch (finalErr) {
                                                 console.error('Frame.io compression entirely failed:', finalErr);
                                             }
