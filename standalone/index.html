@@ -1196,10 +1196,11 @@
                                             }
                                             
                                             // Update the object memory directly just in case the modal was closed
-                                            if (targetPostId && typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined') {
+                                            let finalPostId = targetPostId || window.currentEditingSocialPostId;
+                                            if (finalPostId && typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined') {
                                                 const board = boards.find(b => b.id === activeBoardId);
                                                 if (board && board.cards) {
-                                                    const draft = board.cards.find(c => c.id === targetPostId);
+                                                    const draft = board.cards.find(c => c.id === finalPostId);
                                                     if (draft && draft.mediaItems) {
                                                         draft.mediaItems.forEach(mi => {
                                                             if (mi.url === url) {
@@ -1247,10 +1248,11 @@
                                         }
                                         
                                         // Update the object memory directly just in case the modal was closed
-                                        if (targetPostId && typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined') {
+                                        let finalPostId = targetPostId || window.currentEditingSocialPostId;
+                                        if (finalPostId && typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined') {
                                             const board = boards.find(b => b.id === activeBoardId);
                                             if (board && board.cards) {
-                                                const draft = board.cards.find(c => c.id === targetPostId);
+                                                const draft = board.cards.find(c => c.id === finalPostId);
                                                 if (draft && draft.mediaItems) {
                                                     draft.mediaItems.forEach(mi => {
                                                         if (mi.url === url) {
