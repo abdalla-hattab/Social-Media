@@ -1922,7 +1922,7 @@ window.openCreatePostModal = function(postId = null) {
 
         publishToggles.forEach(btn => {
             if (btn.innerText.trim() === 'فوري') {
-                if (isToday) {
+                if (isToday && window.isLiveModeActive) {
                     btn.style.display = 'inline-block';
                 } else {
                     btn.style.display = 'none';
