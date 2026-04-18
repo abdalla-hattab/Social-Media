@@ -1082,7 +1082,7 @@
                                 
                                 fetch('https://api.microlink.io/?url=' + encodeURIComponent(url))
                                     .then(r => r.json())
-                                    .then(data => {
+                                    .then(async data => {
                                         let isVideo = false;
                                         let durationStr = '';
                                         // Default to video unless we specifically lack ANY video indicators
@@ -1130,7 +1130,38 @@
                                             }
                                         }
 
-                                        if (imgUrl) card.setAttribute('data-thumbnail', imgUrl);
+                                        if (imgUrl) {
+                                            try {
+                                                const getBase64 = (src) => new Promise((resolve, reject) => {
+                                                    const img = new Image();
+                                                    img.crossOrigin = 'anonymous';
+                                                    img.onload = () => {
+                                                        const cvs = document.createElement('canvas');
+                                                        const MAX_W = 400; // Optimal thumbnail width
+                                                        const scale = Math.min(MAX_W / img.width, 1);
+                                                        cvs.width = img.width * scale;
+                                                        cvs.height = img.height * scale;
+                                                        const ctx = cvs.getContext('2d');
+                                                        ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+                                                        try { resolve(cvs.toDataURL('image/jpeg', 0.8)); } 
+                                                        catch(e) { reject(e); }
+                                                    };
+                                                    img.onerror = reject;
+                                                    img.src = src;
+                                                });
+                                                
+                                                try {
+                                                    imgUrl = await getBase64(imgUrl);
+                                                } catch(err1) {
+                                                    console.warn('Native crossOrigin failed, fallback to proxy', err1);
+                                                    imgUrl = await getBase64('https://api.allorigins.win/raw?url=' + encodeURIComponent(imgUrl));
+                                                }
+                                            } catch (finalErr) {
+                                                console.error('Frame.io compression entirely failed:', finalErr);
+                                            }
+                                            
+                                            card.setAttribute('data-thumbnail', imgUrl);
+                                        }
                                         
                                         const previewDiv = document.getElementById(placeholderId + '-img');
                                         
