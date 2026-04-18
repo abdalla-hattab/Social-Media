@@ -6381,14 +6381,37 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                     try { parsedData = JSON.parse(txt); } catch(e) {}
 
                     if (res.ok) {
-                        if (parsedData && (parsedData.error || (parsedData.status && parsedData.status === 'failed'))) {
-                            const errorMsg = parsedData.error || parsedData.message || "حدث خطأ أثناء النشر";
+                        let isError = false;
+                        let errorMsg = "حدث خطأ أثناء النشر";
+
+                        if (parsedData) {
+                            if (parsedData.error) {
+                                isError = true;
+                                if (typeof parsedData.error === 'object') {
+                                    errorMsg = parsedData.error.description || parsedData.error.message || JSON.stringify(parsedData.error);
+                                } else {
+                                    errorMsg = parsedData.error;
+                                }
+                            } else if (parsedData.status === 'error' || parsedData.status === 'failed') {
+                                isError = true;
+                                errorMsg = parsedData.message || parsedData.description || errorMsg;
+                            }
+                        }
+
+                        if (isError) {
                             if (typeof showToast === 'function') setTimeout(() => showToast('⚠️ خطأ من المنصة: ' + errorMsg), 1000);
                         } else {
                             if (typeof showToast === 'function') setTimeout(() => showToast('✅ تم نشر المنشور بنجاح على منصات التواصل!'), 1000);
                         }
                     } else {
-                        const errorMsg = (parsedData && (parsedData.error || parsedData.message)) ? parsedData.error || parsedData.message : `خطأ (${res.status})`;
+                        let errorMsg = `خطأ (${res.status})`;
+                        if (parsedData) {
+                            if (parsedData.error) {
+                                errorMsg = typeof parsedData.error === 'object' ? (parsedData.error.description || parsedData.error.message || JSON.stringify(parsedData.error)) : parsedData.error;
+                            } else if (parsedData.message) {
+                                errorMsg = parsedData.message;
+                            }
+                        }
                         if (typeof showToast === 'function') setTimeout(() => showToast('⚠️ فشل النشر: ' + errorMsg), 1000);
                     }
                 }).catch(err => {
