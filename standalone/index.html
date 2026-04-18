@@ -1080,6 +1080,8 @@
                                     window.saveSocialDraft(true);
                                 }
                                 
+                                const targetPostId = window.currentEditingSocialPostId;
+                                
                                 fetch('https://api.microlink.io/?url=' + encodeURIComponent(url))
                                     .then(r => r.json())
                                     .then(async data => {
@@ -1192,8 +1194,33 @@
                                                 previewDiv.style.cursor = 'pointer';
                                                 previewDiv.onclick = function(e) { e.stopPropagation(); window.showFrameIoVideo(null, url, placeholderId); };
                                             }
-                                            if (typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) {
+                                            
+                                            // Update the object memory directly just in case the modal was closed
+                                            if (targetPostId && typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined') {
+                                                const board = boards.find(b => b.id === activeBoardId);
+                                                if (board && board.cards) {
+                                                    const draft = board.cards.find(c => c.id === targetPostId);
+                                                    if (draft && draft.mediaItems) {
+                                                        draft.mediaItems.forEach(mi => {
+                                                            if (mi.url === url) {
+                                                                if (imgUrl) mi.thumbnail = imgUrl;
+                                                                mi.mediaType = isVideo ? 'video' : 'image';
+                                                                if (durationStr) mi.duration = durationStr;
+                                                            }
+                                                        });
+                                                    }
+                                                    if (typeof saveState === 'function') saveState();
+                                                }
+                                            }
+                                            
+                                            const createPostModal = document.getElementById('createPostModal');
+                                            const isModalOpen = createPostModal && createPostModal.classList.contains('active');
+
+                                            if (isModalOpen && typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId === targetPostId) {
                                                 window.saveSocialDraft(true);
+                                            }
+                                            if (!isModalOpen && typeof render === 'function') {
+                                                render();
                                             }
                                             input.value = '';
                                             return;
@@ -1219,9 +1246,33 @@
                                             `;
                                         }
                                         
-                                        // auto-save the thumbnail link onto the card immediately
-                                        if (typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) {
+                                        // Update the object memory directly just in case the modal was closed
+                                        if (targetPostId && typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined') {
+                                            const board = boards.find(b => b.id === activeBoardId);
+                                            if (board && board.cards) {
+                                                const draft = board.cards.find(c => c.id === targetPostId);
+                                                if (draft && draft.mediaItems) {
+                                                    draft.mediaItems.forEach(mi => {
+                                                        if (mi.url === url) {
+                                                            if (imgUrl) mi.thumbnail = imgUrl;
+                                                            mi.mediaType = isVideo ? 'video' : 'image';
+                                                            if (durationStr) mi.duration = durationStr;
+                                                        }
+                                                    });
+                                                }
+                                                if (typeof saveState === 'function') saveState();
+                                            }
+                                        }
+
+                                        const createPostModal = document.getElementById('createPostModal');
+                                        const isModalOpen = createPostModal && createPostModal.classList.contains('active');
+                                        
+                                        // Only attempt DOM scrape auto-save if modal is genuinely open
+                                        if (isModalOpen && typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId === targetPostId) {
                                             window.saveSocialDraft(true);
+                                        }
+                                        if (!isModalOpen && typeof render === 'function') {
+                                            render(); // refresh sidebar so image shows up natively
                                         }
                                         
                                         input.value = '';

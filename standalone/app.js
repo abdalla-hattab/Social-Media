@@ -6132,6 +6132,12 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                 }
             } else {
                 // If the post is auto-saving but has become completely empty, we brutally delete it
+                // ONLY DO THIS IF THE MODAL IS ACTUALLY OPEN! If it's closed, the DOM is empty and we shouldn't kill the post.
+                const createPostModal = document.getElementById('createPostModal');
+                const isModalOpen = createPostModal && createPostModal.classList.contains('active');
+                
+                if (!isModalOpen) return;
+
                 if (window.currentEditingSocialPostId) {
                     const idx = activeBoard.cards.findIndex(c => c.id === window.currentEditingSocialPostId);
                     if (idx > -1) {
