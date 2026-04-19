@@ -1666,7 +1666,6 @@ window.openCreatePostModal = function(postId = null) {
         
         // Calculate and show post number indicator
         let postNum = 1;
-        const activeBoard = boards.find(b => b.id === activeBoardId);
         if (activeBoard && activeBoard.cards && targetOpt) {
             const targetDateStr = `${targetOpt.year}-${targetOpt.month}-${targetOpt.date}`;
             const dayPosts = activeBoard.cards.filter(c => c.dateStr === targetDateStr && (window.smShowClientEditsToggle !== false || !c.isClientDayNote));
