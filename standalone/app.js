@@ -6357,13 +6357,38 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         saveState();
         
         if (!isAutoSave) {
-            // Close modal and reset fields
             const modal = document.getElementById('createPostModal');
-            if (modal) modal.classList.remove('active');
-            if (textArea) textArea.value = '';
-            if (window.clearMediaUpload) window.clearMediaUpload();
             
             if (status === 'فوري') {
+                const primaryActionBtn = document.getElementById('sm-primary-action-btn');
+                let originalBtnText = '';
+                
+                if (primaryActionBtn) {
+                    originalBtnText = primaryActionBtn.innerHTML;
+                    primaryActionBtn.innerHTML = `<svg style="animation: smSpin 1s linear infinite; height: 16px; width: 16px; margin-left: 8px; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> جاري النشر...`;
+                    primaryActionBtn.disabled = true;
+                    primaryActionBtn.style.opacity = '0.7';
+                    primaryActionBtn.style.cursor = 'not-allowed';
+                }
+                
+                let blockingOverlay = document.getElementById('sm-blocking-overlay');
+                if (!blockingOverlay) {
+                    blockingOverlay = document.createElement('div');
+                    blockingOverlay.id = 'sm-blocking-overlay';
+                    blockingOverlay.style.position = 'absolute';
+                    blockingOverlay.style.top = '0';
+                    blockingOverlay.style.left = '0';
+                    blockingOverlay.style.right = '0';
+                    blockingOverlay.style.bottom = '0';
+                    blockingOverlay.style.background = 'rgba(255,255,255,0.4)';
+                    blockingOverlay.style.zIndex = '9999';
+                    blockingOverlay.style.cursor = 'wait';
+                    if (modal) {
+                        const modalBody = modal.querySelector('.sm-modal-body');
+                        if (modalBody) modalBody.appendChild(blockingOverlay);
+                    }
+                }
+
                 if (typeof showToast === 'function') showToast('⏳ جاري إرسال المنشور إلى منصات التواصل...');
                 
                 fetch('https://abdalla1.app.n8n.cloud/webhook/publish-post', {
@@ -6379,6 +6404,16 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                     
                     let parsedData = null;
                     try { parsedData = JSON.parse(txt); } catch(e) {}
+
+                    const removeLoadingState = () => {
+                        if (primaryActionBtn) {
+                            primaryActionBtn.innerHTML = originalBtnText;
+                            primaryActionBtn.disabled = false;
+                            primaryActionBtn.style.opacity = '1';
+                            primaryActionBtn.style.cursor = 'pointer';
+                        }
+                        if (blockingOverlay) blockingOverlay.remove();
+                    };
 
                     if (res.ok) {
                         let isError = false;
@@ -6399,11 +6434,17 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                         }
 
                         if (isError) {
+                            removeLoadingState();
                             if (typeof showToast === 'function') setTimeout(() => showToast('⚠️ خطأ من المنصة: ' + errorMsg), 1000);
                         } else {
                             if (typeof showToast === 'function') setTimeout(() => showToast('✅ تم نشر المنشور بنجاح على منصات التواصل!'), 1000);
+                            removeLoadingState();
+                            if (modal) modal.classList.remove('active');
+                            if (textArea) textArea.value = '';
+                            if (window.clearMediaUpload) window.clearMediaUpload();
                         }
                     } else {
+                        removeLoadingState();
                         let errorMsg = `خطأ (${res.status})`;
                         if (parsedData) {
                             if (parsedData.error) {
@@ -6415,10 +6456,21 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                         if (typeof showToast === 'function') setTimeout(() => showToast('⚠️ فشل النشر: ' + errorMsg), 1000);
                     }
                 }).catch(err => {
+                    if (primaryActionBtn) {
+                        primaryActionBtn.innerHTML = originalBtnText;
+                        primaryActionBtn.disabled = false;
+                        primaryActionBtn.style.opacity = '1';
+                        primaryActionBtn.style.cursor = 'pointer';
+                    }
+                    if (blockingOverlay) blockingOverlay.remove();
+                    
                     console.error("Publishing webhook failed", err);
                     if (typeof showToast === 'function') setTimeout(() => showToast('🔴 فشل الاتصال بالخادم. يرجى المحاولة لاحقاً.'), 1500);
                 });
             } else {
+                if (modal) modal.classList.remove('active');
+                if (textArea) textArea.value = '';
+                if (window.clearMediaUpload) window.clearMediaUpload();
                 if (typeof showToast === 'function') showToast('تم الحفظ بنجاح');
             }
         }
