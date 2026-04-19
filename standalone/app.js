@@ -1642,6 +1642,27 @@ window.openCreatePostModal = function(postId = null) {
 
         
         let targetOpt = window.activeSocialDateOptions;
+        const activeBoard = boards.find(b => b.id === activeBoardId);
+        
+        const modalDateInput = document.querySelector('.sm-date-input');
+        if (modalDateInput) {
+            let syncOpt = targetOpt;
+            if (postId && activeBoard && activeBoard.cards) {
+                const existingPost = activeBoard.cards.find(c => c.id === postId);
+                if (existingPost && existingPost.dateStr) {
+                    const parts = existingPost.dateStr.split('-');
+                    if (parts.length === 3) {
+                        syncOpt = { year: parseInt(parts[0], 10), month: parseInt(parts[1], 10), date: parseInt(parts[2], 10) };
+                    }
+                }
+            }
+            if (syncOpt) {
+                const yyyy = syncOpt.year;
+                const mm = String(syncOpt.month + 1).padStart(2, '0');
+                const dd = String(syncOpt.date).padStart(2, '0');
+                modalDateInput.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
         
         // Calculate and show post number indicator
         let postNum = 1;
