@@ -5496,8 +5496,16 @@ function renderSocialSchedulerApp(activeBoard) {
         const existingMenu = document.getElementById('custom-social-context-menu');
         if (existingMenu) existingMenu.remove();
 
-        // Get saved link
-        const savedLink = localStorage.getItem(`social_link_${platform}`);
+        // Clear previous generic event listeners if any
+        if (window.__socialContextMenuCleanups) {
+            window.__socialContextMenuCleanups.forEach(fn => fn());
+        }
+        window.__socialContextMenuCleanups = [];
+
+        // Get saved link per board
+        const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
+        const storageKey = `social_link_${boardPrefix}_${platform}`;
+        const savedLink = localStorage.getItem(storageKey);
         
         // Platform Arabic names
         const platformNames = {
@@ -5553,7 +5561,7 @@ function renderSocialSchedulerApp(activeBoard) {
             menu.appendChild(createMenuItem('تعديل الرابط', () => {
                 window.openSocialLinkModal(`تعديل رابط ${pName}`, savedLink, (newLink) => {
                     if (newLink !== null) {
-                        localStorage.setItem(`social_link_${platform}`, newLink.trim());
+                        localStorage.setItem(storageKey, newLink.trim());
                     }
                 });
             }));
@@ -5561,7 +5569,7 @@ function renderSocialSchedulerApp(activeBoard) {
             menu.appendChild(createMenuItem('إضافة رابط', () => {
                 window.openSocialLinkModal(`إضافة رابط لـ ${pName}`, '', (newLink) => {
                     if (newLink && newLink.trim() !== '') {
-                        localStorage.setItem(`social_link_${platform}`, newLink.trim());
+                        localStorage.setItem(storageKey, newLink.trim());
                     }
                 });
             }));
@@ -5570,24 +5578,21 @@ function renderSocialSchedulerApp(activeBoard) {
         document.body.appendChild(menu);
 
         // Dismiss menu on outside or right click
+        const closeMenu = (e) => {
+            const m = document.getElementById('custom-social-context-menu');
+            if (m && !m.contains(e.target)) {
+                m.remove();
+            }
+        };
+
         setTimeout(() => {
-            const closeMenu = (e) => {
-                const m = document.getElementById('custom-social-context-menu');
-                // Ensure we do not immediately close if they re-right-click
-                if (m) m.remove();
-                document.removeEventListener('click', closeMenu);
-            };
-            const closeMenuCtx = (e) => {
-                const m = document.getElementById('custom-social-context-menu');
-                if (m && e.target !== m && !m.contains(e.target)) {
-                    m.remove();
-                }
-                document.removeEventListener('contextmenu', closeMenuCtx);
-            };
-            
             document.addEventListener('click', closeMenu);
-            document.addEventListener('contextmenu', closeMenuCtx);
-        }, 0);
+            document.addEventListener('contextmenu', closeMenu);
+            window.__socialContextMenuCleanups.push(() => {
+                document.removeEventListener('click', closeMenu);
+                document.removeEventListener('contextmenu', closeMenu);
+            });
+        }, 10);
     };
 
     window.handleSocialIconClick = function(platform, element) {
