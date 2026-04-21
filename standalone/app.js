@@ -5174,7 +5174,11 @@ function renderSocialSchedulerApp(activeBoard) {
                                 <div onclick="window.handleSocialIconClick('tiktok', this)" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:#f4f4f5; border:2px solid ${window.activePreviewPlatform === 'tiktok' ? '#18181b' : 'transparent'}; border-radius:50%; color:#18181b; cursor:pointer; transition:all 0.2s ease;" onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
                                 </div>
+                                <div onclick="window.handleSocialIconClick('snapchat', this)" style="display:flex; align-items:center; justify-content:center; width:30px; height:30px; background:#fef9c3; border:2px solid ${window.activePreviewPlatform === 'snapchat' ? '#ca8a04' : 'transparent'}; border-radius:50%; color:#ca8a04; cursor:pointer; transition:all 0.2s ease;" onmouseover="this.style.transform='scale(1.1)';" onmouseout="this.style.transform='scale(1)';">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16.882 7.842a4.882 4.882 0 1 0 -9.764 0c0 4.288 -.348 7.023 -2.618 7.023c-.314 0 -1.5 .5 -1.5 1.25c0 .64 .324 1.135 1.704 1.135c.421 0 1.956 -.093 3.654 .231c.365 .07 .666 .273 .97 .702c1.472 2.062 4.093 1.849 5.342 0c.304 -.429 .605 -.632 .97 -.702c1.7 -.324 3.233 -.231 3.654 -.231c1.38 0 1.704 -.494 1.704 -1.135c0 -.75 -1.186 -1.25 -1.5 -1.25c-2.27 0 -2.618 -2.735 -2.618 -7.023z"></path></svg>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                     ${sidebarEventsSection}
@@ -5344,7 +5348,7 @@ function renderSocialSchedulerApp(activeBoard) {
         } else {
             window.activePreviewPlatform = platform;
             element.parentElement.querySelectorAll('div').forEach(el=>el.style.border='2px solid transparent');
-            const colors = {facebook: '#0ea5e9', instagram: '#ec4899', twitter: '#0f172a', linkedin: '#2563eb', tiktok: '#18181b'};
+            const colors = {facebook: '#0ea5e9', instagram: '#ec4899', twitter: '#0f172a', linkedin: '#2563eb', tiktok: '#18181b', snapchat: '#ca8a04'};
             element.style.border = '2px solid ' + colors[platform];
         }
         const selectedCell = document.querySelector('.sm-cal-cell.selected');
