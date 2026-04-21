@@ -5342,6 +5342,153 @@ function renderSocialSchedulerApp(activeBoard) {
         `;
     }
     window.activePreviewPlatform = window.activePreviewPlatform || null;
+    window.openSocialLinkModal = function(title, defaultValue, onSave) {
+        const existing = document.getElementById('social-link-modal-overlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'social-link-modal-overlay';
+        Object.assign(overlay.style, {
+            position: 'fixed',
+            top: '0', left: '0', right: '0', bottom: '0',
+            backgroundColor: 'rgba(15, 23, 42, 0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: '100001',
+            backdropFilter: 'blur(4px)',
+            opacity: '0',
+            transition: 'opacity 0.2s ease',
+            direction: 'rtl',
+            fontFamily: 'inherit'
+        });
+
+        const modal = document.createElement('div');
+        Object.assign(modal.style, {
+            background: '#fff',
+            borderRadius: '16px',
+            padding: '24px',
+            width: '90%',
+            maxWidth: '380px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            transform: 'scale(0.95)',
+            transition: 'transform 0.2s ease',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+        });
+
+        const header = document.createElement('h3');
+        header.textContent = title;
+        Object.assign(header.style, {
+            margin: '0',
+            fontSize: '18px',
+            fontWeight: '700',
+            color: '#0f172a'
+        });
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = defaultValue || '';
+        input.placeholder = 'https://...';
+        input.dir = 'ltr';
+        Object.assign(input.style, {
+            width: '100%',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            border: '2px solid #e2e8f0',
+            fontSize: '15px',
+            outline: 'none',
+            boxSizing: 'border-box',
+            transition: 'border-color 0.2s'
+        });
+        input.onfocus = () => input.style.borderColor = '#ea580c';
+        input.onblur = () => input.style.borderColor = '#e2e8f0';
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                onSave(input.value);
+                close();
+            } else if (e.key === 'Escape') {
+                close();
+            }
+        };
+
+        const btnWrapper = document.createElement('div');
+        Object.assign(btnWrapper.style, {
+            display: 'flex',
+            gap: '12px',
+            justifyContent: 'flex-end',
+            marginTop: '4px'
+        });
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'إلغاء';
+        Object.assign(cancelBtn.style, {
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: 'none',
+            background: '#f1f5f9',
+            color: '#475569',
+            fontWeight: '600',
+            cursor: 'pointer',
+            fontSize: '14px',
+            transition: 'all 0.2s'
+        });
+        cancelBtn.onmouseover = () => cancelBtn.style.background = '#e2e8f0';
+        cancelBtn.onmouseout = () => cancelBtn.style.background = '#f1f5f9';
+        cancelBtn.onclick = () => close();
+
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'حفظ';
+        Object.assign(saveBtn.style, {
+            padding: '10px 24px',
+            borderRadius: '8px',
+            border: 'none',
+            background: '#ea580c',
+            color: '#fff',
+            fontWeight: '600',
+            cursor: 'pointer',
+            fontSize: '14px',
+            transition: 'all 0.2s',
+            boxShadow: '0 4px 6px -1px rgba(234, 88, 12, 0.2)'
+        });
+        saveBtn.onmouseover = () => {
+            saveBtn.style.background = '#c2410c';
+            saveBtn.style.transform = 'translateY(-1px)';
+        };
+        saveBtn.onmouseout = () => {
+            saveBtn.style.background = '#ea580c';
+            saveBtn.style.transform = 'none';
+        };
+        saveBtn.onclick = () => {
+            onSave(input.value);
+            close();
+        };
+
+        function close() {
+            overlay.style.opacity = '0';
+            modal.style.transform = 'scale(0.95)';
+            setTimeout(() => overlay.remove(), 200);
+        }
+
+        btnWrapper.appendChild(cancelBtn);
+        btnWrapper.appendChild(saveBtn);
+        modal.appendChild(header);
+        modal.appendChild(input);
+        modal.appendChild(btnWrapper);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '1';
+            modal.style.transform = 'scale(1)';
+            input.focus();
+            if (input.value) {
+                input.setSelectionRange(0, input.value.length);
+            }
+        });
+    };
+
     window.handleSocialIconContextMenu = function(event, platform) {
         event.preventDefault();
         
@@ -5404,17 +5551,19 @@ function renderSocialSchedulerApp(activeBoard) {
                 window.open(url, '_blank');
             }));
             menu.appendChild(createMenuItem('تعديل الرابط', () => {
-                const newLink = prompt(`تعديل رابط ${pName}:`, savedLink);
-                if (newLink !== null) {
-                    localStorage.setItem(`social_link_${platform}`, newLink.trim());
-                }
+                window.openSocialLinkModal(`تعديل رابط ${pName}`, savedLink, (newLink) => {
+                    if (newLink !== null) {
+                        localStorage.setItem(`social_link_${platform}`, newLink.trim());
+                    }
+                });
             }));
         } else {
             menu.appendChild(createMenuItem('إضافة رابط', () => {
-                const newLink = prompt(`إضافة رابط لـ ${pName}:`);
-                if (newLink && newLink.trim() !== '') {
-                    localStorage.setItem(`social_link_${platform}`, newLink.trim());
-                }
+                window.openSocialLinkModal(`إضافة رابط لـ ${pName}`, '', (newLink) => {
+                    if (newLink && newLink.trim() !== '') {
+                        localStorage.setItem(`social_link_${platform}`, newLink.trim());
+                    }
+                });
             }));
         }
 
