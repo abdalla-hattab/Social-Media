@@ -1726,6 +1726,10 @@ window.openCreatePostModal = function(postId = null) {
                         const cc = document.querySelector('.sm-char-count');
                         if (cc) cc.innerText = textArea.value.length + ' حرف';
                     }
+                    const postLinkInput = document.getElementById('smPostLink');
+                    if (postLinkInput) {
+                        postLinkInput.value = post.postLink || '';
+                    }
                     
                     // Restore Platforms
                     if (post.platforms && post.platforms.length > 0) {
@@ -4248,6 +4252,12 @@ function renderSocialSchedulerApp(activeBoard) {
                     const safeDesc = p.description ? window.smEscapeHTML(p.description) : '';
                     const textSnippetRaw = p.fullText ? p.fullText.substring(0, 25) + '...' : (p.description ? p.description.substring(0, 25) + '...' : 'مسودة منشور...');
                     const textSnippet = window.smEscapeHTML(textSnippetRaw);
+                    
+                    const hasLink = p.postLink && p.postLink.trim() !== '';
+                    let linkHtml = '';
+                    if (hasLink) {
+                        linkHtml = `<a href="${p.postLink}" target="_blank" onclick="event.stopPropagation();" style="color: #0ea5e9; margin-right: auto; padding: 2px 4px; border-radius: 4px; background: #e0f2fe; display: inline-flex; align-items: center; justify-content: center;" title="فتح الرابط المرفق"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a>`;
+                    }
                     const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
                     
                     const defaultIcon = p.postType === 'video' ? '▶️' : '🖼️';
@@ -4277,6 +4287,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         <div style="display:flex; align-items:center; width: 100%; justify-content: center;">
                             ${mediaThumb}
                             <div class="sm-thumb-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; padding-bottom:1px; flex:1; font-weight:500; pointer-events:none;">${textSnippet}</div>
+                            ${linkHtml}
                         </div>
                         ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:4px; padding:4px; background:#bbf7d0; color:#166534; border-radius:4px; font-size:10px; font-weight:700; text-align:right;">تم تعديله من العميل${p.clientEdits ? `<br><span style="font-weight:500;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
                     </div>`;
@@ -4802,8 +4813,10 @@ function renderSocialSchedulerApp(activeBoard) {
         const textArea = document.querySelector('.sm-textarea');
         const postTypeInput = document.querySelector('input[name="smPostType"]:checked');
         const clientEditsInput = document.getElementById('clientEditsInput');
+        const postLinkInput = document.getElementById('smPostLink');
         
         const currentText = textArea ? textArea.value : (post.fullText || '');
+        const currentLink = postLinkInput ? postLinkInput.value : (post.postLink || '');
         const currentType = postTypeInput ? postTypeInput.value : (post.postType || 'image');
         const currentClientEdits = clientEditsInput ? clientEditsInput.value : (post.clientEdits || '');
         
@@ -4837,6 +4850,13 @@ function renderSocialSchedulerApp(activeBoard) {
                     ${tsHtml}
                     <div style="font-weight: 700; margin-bottom: 4px; color: #0ea5e9;">تعديل المحتوى</div>
                     <div style="line-height: 1.6; font-size: 13px; color: #334155;">${window.getDiffHtml(post.originalState.fullText, currentText)}</div>
+                </div>`;
+            }
+            if (post.originalState && post.originalState.postLink !== currentLink) {
+                changes += `<div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 8px;">
+                    ${tsHtml}
+                    <div style="font-weight: 700; margin-bottom: 4px; color: #0ea5e9;">تعديل الرابط المرفق</div>
+                    <div style="line-height: 1.6; font-size: 13px; color: #334155;">${window.getDiffHtml(post.originalState.postLink || '', currentLink || '')}</div>
                 </div>`;
             }
             if (currentClientEdits && currentClientEdits.trim() !== '') {
@@ -5700,7 +5720,10 @@ function renderSocialSchedulerApp(activeBoard) {
                                 ${mediaHtmlStr}
                                 <div style="flex-grow:1; overflow:hidden; display:flex; flex-direction:column; gap:6px;">
                                     <p style="font-size:15px; font-weight:700; color:#0f172a; margin:0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${p.title || 'منشور بدون نص'}</p>
-                                    <span style="font-size:12px; background:#f3e8ff; color:#7e22ce; padding:4px 10px; border-radius:6px; font-weight:600; align-self:flex-start;">${p.status || 'مسودة'}</span>
+                                    <div style="display:flex; gap: 8px; align-items:center;">
+                                        <span style="font-size:12px; background:#f3e8ff; color:#7e22ce; padding:4px 10px; border-radius:6px; font-weight:600; align-self:flex-start;">${p.status || 'مسودة'}</span>
+                                        ${p.postLink && p.postLink.trim() !== '' ? `<a href="${p.postLink}" target="_blank" onclick="event.stopPropagation();" style="border-radius:6px; padding: 4px 10px; font-size: 12px; font-weight: 600; color: #0ea5e9; background: #e0f2fe; text-decoration: none; display: flex; align-items:center; gap: 4px;" title="فتح الرابط المرفق"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>رابط</a>` : ''}
+                                    </div>
                                 </div>
                             </div>`;
                         }).join('') + (window.isClientView ? '' : `
@@ -6058,6 +6081,8 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         
         const textArea = document.querySelector('.sm-textarea');
         const textContent = textArea ? textArea.value.trim() : '';
+        const postLinkInput = document.getElementById('smPostLink');
+        const postLinkVal = postLinkInput ? postLinkInput.value : '';
         const input = document.getElementById('smMediaInput');
         
         let mediaItems = [];
@@ -6267,12 +6292,13 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         }
         
         const isClientModified = window.isClientView 
-            ? (clientEdits !== '' || (existingPost && existingPost.fullText !== textContent) || (existingPost && existingPost.postType !== postType) || (existingPost && typeof existingPost.clientModified !== 'undefined' ? existingPost.clientModified : false))
+            ? (clientEdits !== '' || (existingPost && existingPost.fullText !== textContent) || (existingPost && existingPost.postLink !== postLinkVal) || (existingPost && existingPost.postType !== postType) || (existingPost && typeof existingPost.clientModified !== 'undefined' ? existingPost.clientModified : false))
             : (existingPost ? !!existingPost.clientModified : false);
 
         if (window.isClientView && isClientModified && existingPost && !originalState) {
             originalState = {
                 fullText: existingPost.fullText,
+                postLink: existingPost.postLink,
                 postType: existingPost.postType
             };
         }
@@ -6344,6 +6370,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
             title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
             fullText: textContent,
+            postLink: postLinkVal,
             dateStr: dateStr,
             timeStr: timeStr,
             status: status,
