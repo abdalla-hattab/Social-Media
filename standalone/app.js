@@ -245,7 +245,9 @@ function ensureBoardStructure() {
         cloudBoards.push(defaultBoard);
     }
 
-    if (!activeBoardId && boards.length > 0) activeBoardId = boards[0].id;
+    if (!activeBoardId && boards.length > 0) {
+        activeBoardId = boards.length > 2 ? boards[2].id : boards[0].id;
+    }
 }
 
 ensureBoardStructure();
@@ -3951,8 +3953,9 @@ function render() {
 
     if (!activeBoard) {
         if (boards.length > 0) {
-            activeBoardId = boards[0].id;
-            activeBoard = boards[0];
+            const fallbackIdx = boards.length > 2 ? 2 : 0;
+            activeBoardId = boards[fallbackIdx].id;
+            activeBoard = boards[fallbackIdx];
             localStorage.setItem('ai_active_board', activeBoardId);
         } else {
             return;
@@ -4515,6 +4518,7 @@ function renderSocialSchedulerApp(activeBoard) {
             <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center;">
             ${socialBoards.map((b, idx) => {
                 const isAgency = idx < 2;
+                if (isAgency) return ''; // Hide "أهدافنا" and "إنجازاتنا"
                 const isActive = activeBoard.id === b.id;
                 
                 let bg = isActive ? 'white' : 'transparent';
