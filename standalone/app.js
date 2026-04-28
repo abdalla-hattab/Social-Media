@@ -4203,6 +4203,139 @@ function updateAllTrackersSummaries(activeBoard) {
 
 let animatingOutIds = new Set();
 let animatingOrigins = {};
+window.generatePipelineHtml = function(board) {
+    if (!board.pipeline) {
+        board.pipeline = {
+            stages: ["المرحلة 1", "المرحلة 2", "المرحلة 3"],
+            activeStageIndex: 0,
+            stageEntries: {
+                "0": Date.now()
+            }
+        };
+        saveState();
+    }
+
+    const pl = board.pipeline;
+    const stages = pl.stages || [];
+    const activeIndex = pl.activeStageIndex || 0;
+    const entries = pl.stageEntries || {};
+
+    let html = `<div class="sm-pipeline-wrapper" style="margin: 0 32px 16px 32px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
+    html += `<div class="sm-pipeline-container" style="flex: 1; display: flex; gap: 4px; overflow: hidden; border-radius: 6px;">`;
+
+    stages.forEach((stage, index) => {
+        const isActive = index === activeIndex;
+        const isPast = index < activeIndex;
+        let className = "sm-pipeline-stage";
+        if (isActive) className += " active";
+        else if (isPast) className += " past";
+
+        let timeStr = "";
+        if (entries[index]) {
+            const entryTime = entries[index];
+            const endTime = (index < activeIndex && entries[index + 1]) ? entries[index + 1] : Date.now();
+            const daysSpent = Math.floor((endTime - entryTime) / (1000 * 60 * 60 * 24));
+            if (daysSpent >= 0) {
+                timeStr = ` <span style="font-size: 11px; opacity: 0.8; margin-right: 6px; font-weight: normal;">(${daysSpent}d)</span>`;
+            }
+        }
+
+        html += `
+            <div class="${className}" onclick="window.changePipelineStage(${index})" title="انتقال إلى ${stage}">
+                ${stage}${timeStr}
+            </div>
+        `;
+    });
+
+    html += `</div>`; 
+
+    html += `
+        <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal()" title="تعديل المراحل" style="margin-right: 12px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        </button>
+    `;
+
+    html += `</div>`;
+    return html;
+};
+
+window.changePipelineStage = function(index) {
+    const board = window.boards ? window.boards.find(b => b.id === window.currentManagingBoardId) : window.activeBoard;
+    if (!board || !board.pipeline) return;
+
+    board.pipeline.activeStageIndex = index;
+    if (!board.pipeline.stageEntries) board.pipeline.stageEntries = {};
+    board.pipeline.stageEntries[index] = Date.now();
+
+    saveState();
+    renderSocialSchedulerApp(board);
+};
+
+window.openPipelineEditModal = function() {
+    const board = window.boards ? window.boards.find(b => b.id === window.currentManagingBoardId) : window.activeBoard;
+    if (!board || !board.pipeline) return;
+
+    let stagesHtml = board.pipeline.stages.map((stage, i) => `
+        <div class="pipeline-stage-edit-row" style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" value="${stage}" data-index="${i}" class="pipeline-stage-input" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+            <button onclick="this.parentElement.remove()" style="padding: 8px 12px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer;">X</button>
+        </div>
+    `).join('');
+
+    const modalHtml = `
+        <div class="modal-overlay active" id="pipelineEditModal" style="z-index: 10000; align-items: flex-start; padding-top: 100px;">
+            <div class="modal-content" style="max-width: 400px; padding: 24px; border-radius: 12px; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 18px; color: #0f172a;">تعديل مراحل المشروع</h3>
+                <div id="pipelineStagesList" style="max-height: 400px; overflow-y: auto;">
+                    ${stagesHtml}
+                </div>
+                <button onclick="window.addPipelineStageRow()" style="width: 100%; padding: 10px; background: #f1f5f9; border: 1px dashed #cbd5e1; color: #64748b; border-radius: 6px; margin-bottom: 16px; cursor: pointer; font-weight: 600; outline: none; margin-top: 8px;">+ إضافة مرحلة جديدة</button>
+                
+                <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
+                    <button onclick="document.getElementById('pipelineEditModal').remove()" style="padding: 10px 16px; background: transparent; border: none; color: #64748b; cursor: pointer; font-weight: 600; outline: none;">إلغاء</button>
+                    <button onclick="window.savePipelineStages()" style="padding: 10px 16px; background: #ea580c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; outline: none;">حفظ المراحل</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+};
+
+window.addPipelineStageRow = function() {
+    const html = `
+        <div class="pipeline-stage-edit-row" style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" placeholder="اسم المرحلة" class="pipeline-stage-input" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+            <button onclick="this.parentElement.remove()" style="padding: 8px 12px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer;">X</button>
+        </div>
+    `;
+    document.getElementById('pipelineStagesList').insertAdjacentHTML('beforeend', html);
+};
+
+window.savePipelineStages = function() {
+    const board = window.boards ? window.boards.find(b => b.id === window.currentManagingBoardId) : window.activeBoard;
+    if (!board) return;
+
+    const inputs = document.querySelectorAll('#pipelineEditModal .pipeline-stage-input');
+    const newStages = Array.from(inputs).map(inp => inp.value.trim()).filter(v => v);
+
+    if (newStages.length === 0) {
+        alert("يجب إضافة مرحلة واحدة على الأقل.");
+        return;
+    }
+
+    if (!board.pipeline) board.pipeline = {};
+    board.pipeline.stages = newStages;
+    
+    if (board.pipeline.activeStageIndex >= newStages.length) {
+        board.pipeline.activeStageIndex = newStages.length - 1;
+    }
+
+    saveState();
+    document.getElementById('pipelineEditModal').remove();
+    renderSocialSchedulerApp(board);
+};
+
 function renderSocialSchedulerApp(activeBoard) {
     document.body.style.background = '#f4f5f7';
     appContainer.style.padding = '0';
@@ -5116,6 +5249,7 @@ function renderSocialSchedulerApp(activeBoard) {
             <div class="sm-main-content" style="padding: 24px 32px 16px 32px;">
                 <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
                     ${window.isClientView ? '' : universalHeaderHtml}
+                    ${window.isClientView ? '' : window.generatePipelineHtml(activeBoard)}
                     <div class="sm-calendar-wrap ${window.isLiveModeActive ? 'sm-calendar-live-active' : ''}" style="flex: 1; overflow: auto; margin-bottom: 0;">
                         <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 12px;">
                             <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title} ${monthStatsHtml}</h3>
