@@ -5194,14 +5194,6 @@ function renderSocialSchedulerApp(activeBoard) {
                     </div>
                     ${sidebarEventsSection}
                     <div class="sm-sidebar-body">
-                        <div class="sm-empty-icon" style="margin-bottom:12px; opacity: 0.6;">
-                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        </div>
-                        <p class="sm-empty-text" style="font-size:14px; color:#64748b; margin-bottom:20px; font-weight:500;">لا توجد منشورات لهذا اليوم</p>
-                        ${window.isClientView ? '' : `<button onclick="window.openCreatePostModal()" style="width:100%; background:#ea580c; color:white; border:none; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; transition:background 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseover="this.style.background='#c2410c';" onmouseout="this.style.background='#ea580c';">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            إضافة منشور
-                        </button>`}
                     </div>
                 </div>
             </div>
@@ -5976,16 +5968,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             إضافة منشور آخر
                         </button>`);
                     } else {
-                        sidebarBody.innerHTML = `
-                            <div class="sm-empty-icon" style="margin-bottom:12px; opacity: 0.6;">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                            </div>
-                            <p class="sm-empty-text" style="font-size:14px; color:#64748b; margin-bottom:20px; font-weight:500;">لا توجد منشورات لهذا اليوم</p>
-                            ${window.isClientView ? '' : `<button onclick="window.openCreatePostModal()" style="width:100%; background:#ea580c; color:white; border:none; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; transition:background 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px;" onmouseover="this.style.background='#c2410c';" onmouseout="this.style.background='#ea580c';">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                إضافة منشور
-                            </button>`}
-                        `;
+                        sidebarBody.innerHTML = ``;
                     }
                 }
             };
