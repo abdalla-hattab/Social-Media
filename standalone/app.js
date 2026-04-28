@@ -4260,7 +4260,7 @@ window.generatePipelineHtml = function(board) {
 };
 
 window.changePipelineStage = function(index) {
-    const board = window.boards ? window.boards.find(b => b.id === window.currentManagingBoardId) : window.activeBoard;
+    const board = (window.boards || []).find(b => b.id === window.activeBoardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
     if (!board || !board.pipeline) return;
 
     board.pipeline.activeStageIndex = index;
@@ -4272,7 +4272,7 @@ window.changePipelineStage = function(index) {
 };
 
 window.openPipelineEditModal = function() {
-    const board = window.boards ? window.boards.find(b => b.id === window.currentManagingBoardId) : window.activeBoard;
+    const board = (window.boards || []).find(b => b.id === window.activeBoardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
     if (!board || !board.pipeline) return;
 
     let stagesHtml = board.pipeline.stages.map((stage, i) => `
@@ -4313,7 +4313,7 @@ window.addPipelineStageRow = function() {
 };
 
 window.savePipelineStages = function() {
-    const board = window.boards ? window.boards.find(b => b.id === window.currentManagingBoardId) : window.activeBoard;
+    const board = (window.boards || []).find(b => b.id === window.activeBoardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
     if (!board) return;
 
     const inputs = document.querySelectorAll('#pipelineEditModal .pipeline-stage-input');
