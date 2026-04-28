@@ -4532,9 +4532,7 @@ function renderSocialSchedulerApp(activeBoard) {
         </style>
         <div style="display: flex; gap: 8px; overflow-x: auto; padding: 2px 0; align-items: center; flex-wrap: nowrap;">
             <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center;">
-            ${socialBoards.map((b, idx) => {
-                const isAgency = idx < 2;
-                if (isAgency) return ''; // Hide "أهدافنا" and "إنجازاتنا"
+            ${socialBoards.slice(2).map((b, idx) => {
                 const isActive = activeBoard.id === b.id;
                 
                 let bg = isActive ? 'white' : 'transparent';
@@ -4542,21 +4540,14 @@ function renderSocialSchedulerApp(activeBoard) {
                 let border = isActive ? '2px solid #f97316' : '2px solid #cbd5e0';
                 let shadow = isActive ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none';
                 let btnRadius = '9999px';
-                
-                let extraClasses = '';
-                if (isAgency) {
-                    extraClasses = isActive ? 'agency-premium-tab' : 'agency-premium-tab-inactive';
-                    btnRadius = '9999px';
-                }
 
                 return `
-                <div class="${extraClasses}" style="${isAgency ? '' : `background: ${bg}; border: ${border}; box-shadow: ${shadow};`} display:flex; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative;">
+                <div style="background: ${bg}; border: ${border}; box-shadow: ${shadow}; display:flex; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative;">
                     <button 
-                        ${isAgency ? 'class="sm-non-draggable"' : ''}
                         data-id="${b.id}"
                         onclick="window.switchSocialClient('${b.id}')" 
                         ondblclick="window.renameSocialClient(event, '${b.id}')"
-                        title="${isAgency ? 'هذه مساحة خاصة داخليّة بالوكالة' : 'انقر نقراً مزدوجاً لـتعديل اسم العميل'}"
+                        title="انقر نقراً مزدوجاً لـتعديل اسم العميل"
                         style="
                         flex-shrink: 0;
                         display: flex;
@@ -4572,7 +4563,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         cursor: pointer;
                         outline: none;
                     "
-                    ${isAgency ? '' : `onmousedown="this.parentElement.style.cursor='grabbing'; this.style.cursor='grabbing';" onmouseup="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';" onmouseleave="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';"`}>
+                    onmousedown="this.parentElement.style.cursor='grabbing'; this.style.cursor='grabbing';" onmouseup="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';" onmouseleave="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';">
                         ${b.title || 'Client '}
                     </button>
                 </div>
@@ -5670,13 +5661,17 @@ function renderSocialSchedulerApp(activeBoard) {
 
                 const draggedBoardId = evt.item.getAttribute('data-id');
                 
-                let currentSocials = boards.filter(b => b.type === 'social_scheduler');
-                const draggedBoard = currentSocials.find(b => b.id === draggedBoardId);
-                currentSocials = currentSocials.filter(b => b.id !== draggedBoardId);
-                currentSocials.splice(newIndex, 0, draggedBoard);
+                const allSocials = boards.filter(b => b.type === 'social_scheduler');
+                const agencySocials = allSocials.slice(0, 2);
+                let clientSocials = allSocials.slice(2);
+                
+                const draggedBoard = clientSocials.find(b => b.id === draggedBoardId);
+                if (!draggedBoard) return;
+                clientSocials = clientSocials.filter(b => b.id !== draggedBoardId);
+                clientSocials.splice(newIndex, 0, draggedBoard);
                 
                 const otherBoards = boards.filter(b => b.type !== 'social_scheduler');
-                boards = [...otherBoards, ...currentSocials];
+                boards = [...otherBoards, ...agencySocials, ...clientSocials];
                 
                 if (typeof saveState === 'function') saveState();
             }
