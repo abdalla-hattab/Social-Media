@@ -1248,12 +1248,22 @@ window.showCustomConfirm = function(title, message, confirmText, cancelText, onC
     };
 };
 
+window.getHiddenSocialEvents = function() {
+    const boardKey = `hiddenSocialEvents_${activeBoardId || 'default'}`;
+    const stored = localStorage.getItem(boardKey);
+    if (!stored) {
+        // By default, ALL events are hidden
+        return window.specialAwarenessDays.map(e => `${e.m}-${e.d}`);
+    }
+    return JSON.parse(stored);
+};
+
 window.hideSpecialEvent = function(e, eventId) {
     e.stopPropagation();
     const eventEl = e.currentTarget.closest('[data-special-event="true"]');
     
     const boardKey = `hiddenSocialEvents_${activeBoardId || 'default'}`;
-    let hidden = JSON.parse(localStorage.getItem(boardKey) || '[]');
+    let hidden = window.getHiddenSocialEvents();
     if (!hidden.includes(eventId)) {
         hidden.push(eventId);
         localStorage.setItem(boardKey, JSON.stringify(hidden));
@@ -1422,7 +1432,7 @@ window.specialAwarenessDays = [
 
 window.restoreMonthEvents = function(monthIndex) {
     const boardKey = `hiddenSocialEvents_${activeBoardId || 'default'}`;
-    let hidden = JSON.parse(localStorage.getItem(boardKey) || '[]');
+    let hidden = window.getHiddenSocialEvents();
     const originalLength = hidden.length;
     hidden = hidden.filter(id => !id.startsWith(`${monthIndex}-`));
     if (hidden.length !== originalLength) {
@@ -1434,7 +1444,7 @@ window.restoreMonthEvents = function(monthIndex) {
 
 window.hideAllMonthEvents = function(monthIndex) {
     const boardKey = `hiddenSocialEvents_${activeBoardId || 'default'}`;
-    let hidden = JSON.parse(localStorage.getItem(boardKey) || '[]');
+    let hidden = window.getHiddenSocialEvents();
     
     const monthEvents = window.specialAwarenessDays.filter(e => e.m === monthIndex);
     
@@ -4291,8 +4301,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 let specialEventHtml = '';
                 let hiddenEvents = [];
                 try { 
-                    const boardKey = `hiddenSocialEvents_${activeBoardId || 'default'}`;
-                    hiddenEvents = JSON.parse(localStorage.getItem(boardKey) || '[]'); 
+                    hiddenEvents = window.getHiddenSocialEvents(); 
                 } catch(e) {}
                 
                 const dayEvents = specialAwarenessDays.filter(e => e.m === currentMonth && e.d === dayCounter && !hiddenEvents.includes(`${e.m}-${e.d}`));
@@ -5051,8 +5060,7 @@ function renderSocialSchedulerApp(activeBoard) {
     };
 
     if (window.activeSocialTab === 'calendar') {
-        const boardKey = `hiddenSocialEvents_${activeBoardId || 'default'}`;
-        const hiddenEventsGlobal = JSON.parse(localStorage.getItem(boardKey) || '[]');
+        const hiddenEventsGlobal = window.getHiddenSocialEvents();
         const currentMonthEvents = window.specialAwarenessDays.filter(e => e.m === currentMonth && !hiddenEventsGlobal.includes(`${e.m}-${e.d}`));
         
         let monthEventsHtml = '';
