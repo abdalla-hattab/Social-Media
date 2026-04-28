@@ -4221,6 +4221,13 @@ window.generatePipelineHtml = function(board) {
     const entries = pl.stageEntries || {};
 
     let html = `<div class="sm-pipeline-wrapper" style="margin: 0 32px 16px 32px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
+    
+    html += `
+        <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 12px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        </button>
+    `;
+
     html += `<div class="sm-pipeline-container" style="flex: 1; display: flex; gap: 4px; overflow: hidden; border-radius: 6px;">`;
 
     stages.forEach((stage, index) => {
@@ -4241,26 +4248,19 @@ window.generatePipelineHtml = function(board) {
         }
 
         html += `
-            <div class="${className}" onclick="window.changePipelineStage(${index})" title="انتقال إلى ${stage}">
+            <div class="${className}" onclick="window.changePipelineStage('${board.id}', ${index})" title="انتقال إلى ${stage}">
                 ${stage}${timeStr}
             </div>
         `;
     });
 
     html += `</div>`; 
-
-    html += `
-        <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal()" title="تعديل المراحل" style="margin-right: 12px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-        </button>
-    `;
-
     html += `</div>`;
     return html;
 };
 
-window.changePipelineStage = function(index) {
-    const board = (window.boards || []).find(b => b.id === window.activeBoardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
+window.changePipelineStage = function(boardId, index) {
+    const board = (window.boards || []).find(b => b.id === boardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
     if (!board || !board.pipeline) return;
 
     board.pipeline.activeStageIndex = index;
@@ -4271,13 +4271,16 @@ window.changePipelineStage = function(index) {
     renderSocialSchedulerApp(board);
 };
 
-window.openPipelineEditModal = function() {
-    const board = (window.boards || []).find(b => b.id === window.activeBoardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
+window.openPipelineEditModal = function(boardId) {
+    const board = (window.boards || []).find(b => b.id === boardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
     if (!board || !board.pipeline) return;
 
     let stagesHtml = board.pipeline.stages.map((stage, i) => `
-        <div class="pipeline-stage-edit-row" style="display: flex; gap: 8px; margin-bottom: 8px;">
-            <input type="text" value="${stage}" data-index="${i}" class="pipeline-stage-input" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
+        <div class="pipeline-stage-edit-row" data-index="${i}" style="display: flex; gap: 8px; margin-bottom: 8px; background: #f8fafc; padding: 8px; border-radius: 6px; cursor: grab;">
+            <div style="display: flex; align-items: center; color: #94a3b8; cursor: grab;" class="drag-handle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+            </div>
+            <input type="text" value="${stage}" class="pipeline-stage-input" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
             <button onclick="this.parentElement.remove()" style="padding: 8px 12px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer;">X</button>
         </div>
     `).join('');
@@ -4293,18 +4296,29 @@ window.openPipelineEditModal = function() {
                 
                 <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
                     <button onclick="document.getElementById('pipelineEditModal').remove()" style="padding: 10px 16px; background: transparent; border: none; color: #64748b; cursor: pointer; font-weight: 600; outline: none;">إلغاء</button>
-                    <button onclick="window.savePipelineStages()" style="padding: 10px 16px; background: #ea580c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; outline: none;">حفظ المراحل</button>
+                    <button onclick="window.savePipelineStages('${boardId}')" style="padding: 10px 16px; background: #ea580c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; outline: none;">حفظ المراحل</button>
                 </div>
             </div>
         </div>
     `;
 
     document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Initialize Sortable for drag and drop
+    if (typeof Sortable !== 'undefined') {
+        new Sortable(document.getElementById('pipelineStagesList'), {
+            handle: '.drag-handle',
+            animation: 150
+        });
+    }
 };
 
 window.addPipelineStageRow = function() {
     const html = `
-        <div class="pipeline-stage-edit-row" style="display: flex; gap: 8px; margin-bottom: 8px;">
+        <div class="pipeline-stage-edit-row" style="display: flex; gap: 8px; margin-bottom: 8px; background: #f8fafc; padding: 8px; border-radius: 6px; cursor: grab;">
+            <div style="display: flex; align-items: center; color: #94a3b8; cursor: grab;" class="drag-handle">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+            </div>
             <input type="text" placeholder="اسم المرحلة" class="pipeline-stage-input" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
             <button onclick="this.parentElement.remove()" style="padding: 8px 12px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer;">X</button>
         </div>
@@ -4312,8 +4326,8 @@ window.addPipelineStageRow = function() {
     document.getElementById('pipelineStagesList').insertAdjacentHTML('beforeend', html);
 };
 
-window.savePipelineStages = function() {
-    const board = (window.boards || []).find(b => b.id === window.activeBoardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
+window.savePipelineStages = function(boardId) {
+    const board = (window.boards || []).find(b => b.id === boardId) || (typeof activeBoard !== 'undefined' ? activeBoard : null);
     if (!board) return;
 
     const inputs = document.querySelectorAll('#pipelineEditModal .pipeline-stage-input');
