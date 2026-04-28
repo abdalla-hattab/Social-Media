@@ -246,7 +246,8 @@ function ensureBoardStructure() {
     }
 
     if (!activeBoardId && boards.length > 0) {
-        activeBoardId = boards.length > 2 ? boards[2].id : boards[0].id;
+        const sBoards = boards.filter(b => b.type === 'social_scheduler');
+        activeBoardId = sBoards.length > 2 ? sBoards[2].id : boards[0].id;
     }
 }
 
@@ -3961,11 +3962,17 @@ function render() {
         return;
     }
 
-    if (!activeBoard) {
-        if (boards.length > 0) {
-            const fallbackIdx = boards.length > 2 ? 2 : 0;
-            activeBoardId = boards[fallbackIdx].id;
-            activeBoard = boards[fallbackIdx];
+    const socialBoardsGlobal = boards.filter(b => b.type === 'social_scheduler');
+    const isAgencyBoard = activeBoard && socialBoardsGlobal.length > 2 && (activeBoard.id === socialBoardsGlobal[0].id || activeBoard.id === socialBoardsGlobal[1].id);
+
+    if (!activeBoard || isAgencyBoard) {
+        if (socialBoardsGlobal.length > 2) {
+            activeBoardId = socialBoardsGlobal[2].id;
+            activeBoard = socialBoardsGlobal[2];
+            localStorage.setItem('ai_active_board', activeBoardId);
+        } else if (boards.length > 0) {
+            activeBoardId = boards[0].id;
+            activeBoard = boards[0];
             localStorage.setItem('ai_active_board', activeBoardId);
         } else {
             return;
