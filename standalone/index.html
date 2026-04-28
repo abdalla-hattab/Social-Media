@@ -1334,9 +1334,19 @@
                     </div>
 
                     <div class="sm-textarea-wrap" style="flex-shrink: 0; display: block; width: 100%; margin-bottom: 24px; background: white; padding: 16px; border: 1px solid #eaf0f6; border-radius: 12px; position: relative;">
-                        <div class="sm-textarea-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155;">المحتوى</h4>
-                            <button id="emojiPickerBtn" type="button" title="إضافة إيموجي" style="background:transparent; border:none; cursor:pointer; font-size:18px; padding:0; filter:grayscale(100%); transition:all 0.2s; opacity:0.6; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.6'">😀</button>
+                        <div class="sm-textarea-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+                                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155;">المحتوى</h4>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <button type="button" title="تراجع (Ctrl+Z)" onclick="const t = document.querySelector('.sm-textarea'); t.focus(); document.execCommand('undo'); t.dispatchEvent(new Event('input'));" style="background:transparent; border:none; cursor:pointer; padding:0; color:#94a3b8; transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#94a3b8'">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l-3 2.7"></path></svg>
+                                    </button>
+                                    <button type="button" title="إعادة (Ctrl+Shift+Z)" onclick="const t = document.querySelector('.sm-textarea'); t.focus(); document.execCommand('redo'); t.dispatchEvent(new Event('input'));" style="background:transparent; border:none; cursor:pointer; padding:0; color:#94a3b8; transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#94a3b8'">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <button id="emojiPickerBtn" type="button" title="إضافة إيموجي" style="background:transparent; border:none; cursor:pointer; font-size:18px; padding:0; filter:grayscale(100%); transition:all 0.2s; opacity:0.6; display: flex; align-items: center; justify-content: center; margin-top: 2px;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.6'">😀</button>
                         </div>
                         <textarea placeholder="ماذا يدور في بالك..." class="sm-textarea" style="width: 100%; min-height: 140px; display: block; padding: 16px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: vertical; font-family: inherit;" oninput="const c = document.querySelector('.sm-char-count'); if(c) c.innerText = this.value.length + ' حرف'; if(typeof window.updateLiveDiff === 'function') window.updateLiveDiff();"></textarea>
                         <div id="emojiPickerContainer" style="display:none; position:absolute; top:48px; left:16px; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.15); border-radius:8px;"></div>
@@ -1765,7 +1775,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-    <script src="app.js?v=57"></script>
+    <script src="app.js?v=58"></script>
     <!-- Global Confirmation Modal -->
     <div class="modal-overlay" id="globalConfirmModal" style="z-index: 9999;">
         <div class="modal-content" style="max-width: 350px; text-align: center; border-radius: 16px; padding: 32px 24px;">
