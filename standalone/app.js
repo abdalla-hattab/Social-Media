@@ -4225,7 +4225,7 @@ window.generatePipelineHtml = function(board) {
     const activeIndex = pl.activeStageIndex || 0;
     const entries = pl.stageEntries || {};
 
-    let html = `<div class="sm-pipeline-wrapper" style="margin: 0 32px 16px 32px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
+    let html = `<div class="sm-pipeline-wrapper" style="margin: 10px 32px 10px 32px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
     
     html += `
         <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 12px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
@@ -5271,11 +5271,11 @@ function renderSocialSchedulerApp(activeBoard) {
         }
     };
 
-    const headerPadding = (window.activeSocialTab === 'calendar' && !window.isClientView) ? '0 0 24px 0' : '24px 32px 24px 32px';
+    const headerPadding = (window.activeSocialTab === 'calendar' && !window.isClientView) ? '0 0 0 0' : '24px 32px 10px 32px';
     const universalHeaderHtml = `
         <div style="padding: ${headerPadding}; flex-shrink: 0;">
             <!-- Top Row: Title + Clients -->
-            <div style="margin-bottom: 24px;">
+            <div style="margin-bottom: 0;">
                 ${topRowHtml}
             </div>
             

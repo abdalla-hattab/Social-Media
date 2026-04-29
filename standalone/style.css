@@ -1068,7 +1068,7 @@ input[type=number] {
     border: 1px solid #edf2f7;
     border-radius: 8px;
     background: white;
-    margin-bottom: 24px;
+    margin-bottom: 0;
     overflow: hidden;
 }
 

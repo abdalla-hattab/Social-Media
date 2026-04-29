@@ -1,0 +1,351 @@
+{
+  "success": true,
+  "data": {
+    "updatedAt": "2026-04-19T00:42:14.796Z",
+    "createdAt": "2026-04-14T13:05:26.966Z",
+    "id": "2OKFZVXE7784sxyY",
+    "name": "Instagram Publishing",
+    "description": null,
+    "active": true,
+    "isArchived": false,
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "options": {},
+          "path": "publish-post",
+          "respondMode": "lastNode"
+        },
+        "id": "c2347c74-cdfb-4e26-b8f8-2c2cffe33490",
+        "name": "Webhook",
+        "position": [
+          144,
+          144
+        ],
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "webhookId": "52a108d5-42f9-4de0-ab65-de5b814f6939"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{ $json.body.post.mediaItems && $json.body.post.mediaItems[0] ? $json.body.post.mediaItems[0].type : 'none' }}",
+                "value2": "frame-io"
+              }
+            ]
+          }
+        },
+        "id": "if-frame-io",
+        "name": "Is Frame.io?",
+        "position": [
+          368,
+          144
+        ],
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "jsCode": "var items = $input.all();\n\nfor (var i = 0; i < items.length; i++) {\n  var item = items[i];\n  var url = item.json.body.post.mediaItems[0].url;\n\n  try {\n    var helper = this.helpers;\n    if (!helper && typeof $helpers !== \"undefined\") {\n      helper = $helpers;\n    }\n\n    var res = await helper.httpRequest({\n      url: url,\n      method: \"GET\",\n      resolveWithFullResponse: true,\n      simple: false,\n      followRedirect: true\n    });\n    \n    var finalUrl = \"\";\n    if (res.request && res.request.res && res.request.res.responseUrl) {\n      finalUrl = res.request.res.responseUrl;\n    } else if (res.request && res.request.responseURL) {\n      finalUrl = res.request.responseURL;\n    } else if (res.url) {\n      finalUrl = res.url;\n    } else if (res.request && res.request.href) {\n      finalUrl = res.request.href;\n    } else if (res.headers && res.headers.location) {\n      finalUrl = res.headers.location;\n    } else {\n      finalUrl = url;\n    }\n    \n    var shareId = finalUrl.split(\"share/\")[1];\n    if (shareId) {\n      shareId = shareId.split(\"/\")[0];\n    } else {\n      var reviewParts = finalUrl.split(\"review/\");\n      if (reviewParts.length > 1) {\n        shareId = reviewParts[1].split(\"/\")[0];\n      } else {\n        var urlParts = finalUrl.split(\"/\");\n        shareId = urlParts[urlParts.length - 1];\n      }\n    }\n\n    var publicRes = await helper.httpRequest({\n      url: \"https://next.frame.io/api/share/\" + shareId,\n      method: \"GET\",\n      json: true\n    });\n    \n    var videoUrl = null;\n    if (publicRes.shared_assets && publicRes.shared_assets.length > 0) {\n      var media = publicRes.shared_assets[0].assets || [];\n      var mp4 = media.find(function(m) { return m.ext === \"mp4\" || m.mime_type === \"video/mp4\"; });\n      if (!mp4) {\n        mp4 = publicRes.shared_assets[0];\n      }\n      videoUrl = mp4.url || mp4.master || mp4.h264_1080_download || publicRes.shared_assets[0].original_url;\n    }\n    item.json.finalMediaUrl = videoUrl; \n  } catch (e) {\n    item.json.frameIoError = e.message;\n    item.json.finalMediaUrl = item.json.body.post.mediaItems[0].dataUrl;\n  }\n}\n\nreturn items;"
+        },
+        "id": "frame-io-code",
+        "name": "Extract MP4 from Frame.io",
+        "position": [
+          576,
+          -16
+        ],
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nfor (let item of items) {\n  item.json.finalMediaUrl = item.json.body && item.json.body.post && item.json.body.post.mediaItems && item.json.body.post.mediaItems[0] ? item.json.body.post.mediaItems[0].dataUrl : '';\n}\nreturn items;"
+        },
+        "id": "standard-url",
+        "name": "Set Standard Upload URL",
+        "position": [
+          576,
+          304
+        ],
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "instagramAccounts": "={{ [$json.body.profileId] }}"
+        },
+        "type": "n8n-nodes-late.late",
+        "typeVersion": 1,
+        "position": [
+          944,
+          112
+        ],
+        "id": "891a29f2-2afd-4e1e-8149-149e4da82f15",
+        "name": "Create post",
+        "credentials": {
+          "lateApi": {
+            "id": "q4DzUwtlOEf5cf54",
+            "name": "Zernio account"
+          }
+        },
+        "continueOnFail": true
+      }
+    ],
+    "connections": {
+      "Extract MP4 from Frame.io": {
+        "main": [
+          [
+            {
+              "node": "Create post",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Frame.io?": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Extract MP4 from Frame.io",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "Set Standard Upload URL",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Set Standard Upload URL": {
+        "main": [
+          [
+            {
+              "node": "Create post",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Is Frame.io?",
+              "type": "main"
+            }
+          ]
+        ]
+      }
+    },
+    "settings": {
+      "executionOrder": "v1",
+      "binaryMode": "separate",
+      "availableInMCP": true,
+      "callerPolicy": "workflowsFromSameOwner"
+    },
+    "staticData": null,
+    "meta": {
+      "templateCredsSetupCompleted": true
+    },
+    "pinData": {},
+    "versionId": "5e958ad6-4785-4be0-95d6-fc69d1c40078",
+    "activeVersionId": "5e958ad6-4785-4be0-95d6-fc69d1c40078",
+    "versionCounter": 125,
+    "triggerCount": 1,
+    "shared": [
+      {
+        "updatedAt": "2026-04-14T13:05:26.970Z",
+        "createdAt": "2026-04-14T13:05:26.970Z",
+        "role": "workflow:owner",
+        "workflowId": "2OKFZVXE7784sxyY",
+        "projectId": "XAIc4xFDc1yhi5Or",
+        "project": {
+          "updatedAt": "2026-03-18T00:35:55.367Z",
+          "createdAt": "2026-03-18T00:33:34.542Z",
+          "id": "XAIc4xFDc1yhi5Or",
+          "name": "Abdalla hattab <abdulhadistore1@gmail.com>",
+          "type": "personal",
+          "icon": null,
+          "description": null,
+          "creatorId": "6aaae95b-6b12-440f-8365-832921af283e"
+        }
+      }
+    ],
+    "tags": [],
+    "activeVersion": {
+      "updatedAt": "2026-04-19T00:42:14.797Z",
+      "createdAt": "2026-04-19T00:42:14.797Z",
+      "versionId": "5e958ad6-4785-4be0-95d6-fc69d1c40078",
+      "workflowId": "2OKFZVXE7784sxyY",
+      "nodes": [
+        {
+          "parameters": {
+            "httpMethod": "POST",
+            "options": {},
+            "path": "publish-post",
+            "respondMode": "lastNode"
+          },
+          "id": "c2347c74-cdfb-4e26-b8f8-2c2cffe33490",
+          "name": "Webhook",
+          "position": [
+            144,
+            144
+          ],
+          "type": "n8n-nodes-base.webhook",
+          "typeVersion": 2.1,
+          "webhookId": "52a108d5-42f9-4de0-ab65-de5b814f6939"
+        },
+        {
+          "parameters": {
+            "conditions": {
+              "string": [
+                {
+                  "value1": "={{ $json.body.post.mediaItems && $json.body.post.mediaItems[0] ? $json.body.post.mediaItems[0].type : 'none' }}",
+                  "value2": "frame-io"
+                }
+              ]
+            }
+          },
+          "id": "if-frame-io",
+          "name": "Is Frame.io?",
+          "position": [
+            368,
+            144
+          ],
+          "type": "n8n-nodes-base.if",
+          "typeVersion": 1
+        },
+        {
+          "parameters": {
+            "jsCode": "var items = $input.all();\n\nfor (var i = 0; i < items.length; i++) {\n  var item = items[i];\n  var url = item.json.body.post.mediaItems[0].url;\n\n  try {\n    var helper = this.helpers;\n    if (!helper && typeof $helpers !== \"undefined\") {\n      helper = $helpers;\n    }\n\n    var res = await helper.httpRequest({\n      url: url,\n      method: \"GET\",\n      resolveWithFullResponse: true,\n      simple: false,\n      followRedirect: true\n    });\n    \n    var finalUrl = \"\";\n    if (res.request && res.request.res && res.request.res.responseUrl) {\n      finalUrl = res.request.res.responseUrl;\n    } else if (res.request && res.request.responseURL) {\n      finalUrl = res.request.responseURL;\n    } else if (res.url) {\n      finalUrl = res.url;\n    } else if (res.request && res.request.href) {\n      finalUrl = res.request.href;\n    } else if (res.headers && res.headers.location) {\n      finalUrl = res.headers.location;\n    } else {\n      finalUrl = url;\n    }\n    \n    var shareId = finalUrl.split(\"share/\")[1];\n    if (shareId) {\n      shareId = shareId.split(\"/\")[0];\n    } else {\n      var reviewParts = finalUrl.split(\"review/\");\n      if (reviewParts.length > 1) {\n        shareId = reviewParts[1].split(\"/\")[0];\n      } else {\n        var urlParts = finalUrl.split(\"/\");\n        shareId = urlParts[urlParts.length - 1];\n      }\n    }\n\n    var publicRes = await helper.httpRequest({\n      url: \"https://next.frame.io/api/share/\" + shareId,\n      method: \"GET\",\n      json: true\n    });\n    \n    var videoUrl = null;\n    if (publicRes.shared_assets && publicRes.shared_assets.length > 0) {\n      var media = publicRes.shared_assets[0].assets || [];\n      var mp4 = media.find(function(m) { return m.ext === \"mp4\" || m.mime_type === \"video/mp4\"; });\n      if (!mp4) {\n        mp4 = publicRes.shared_assets[0];\n      }\n      videoUrl = mp4.url || mp4.master || mp4.h264_1080_download || publicRes.shared_assets[0].original_url;\n    }\n    item.json.finalMediaUrl = videoUrl; \n  } catch (e) {\n    item.json.frameIoError = e.message;\n    item.json.finalMediaUrl = item.json.body.post.mediaItems[0].dataUrl;\n  }\n}\n\nreturn items;"
+          },
+          "id": "frame-io-code",
+          "name": "Extract MP4 from Frame.io",
+          "position": [
+            576,
+            -16
+          ],
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2
+        },
+        {
+          "parameters": {
+            "jsCode": "const items = $input.all();\nfor (let item of items) {\n  item.json.finalMediaUrl = item.json.body && item.json.body.post && item.json.body.post.mediaItems && item.json.body.post.mediaItems[0] ? item.json.body.post.mediaItems[0].dataUrl : '';\n}\nreturn items;"
+          },
+          "id": "standard-url",
+          "name": "Set Standard Upload URL",
+          "position": [
+            576,
+            304
+          ],
+          "type": "n8n-nodes-base.code",
+          "typeVersion": 2
+        },
+        {
+          "parameters": {
+            "instagramAccounts": "={{ [$json.body.profileId] }}"
+          },
+          "type": "n8n-nodes-late.late",
+          "typeVersion": 1,
+          "position": [
+            944,
+            112
+          ],
+          "id": "891a29f2-2afd-4e1e-8149-149e4da82f15",
+          "name": "Create post",
+          "credentials": {
+            "lateApi": {
+              "id": "q4DzUwtlOEf5cf54",
+              "name": "Zernio account"
+            }
+          },
+          "continueOnFail": true
+        }
+      ],
+      "connections": {
+        "Extract MP4 from Frame.io": {
+          "main": [
+            [
+              {
+                "node": "Create post",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Is Frame.io?": {
+          "main": [
+            [
+              {
+                "index": 0,
+                "node": "Extract MP4 from Frame.io",
+                "type": "main"
+              }
+            ],
+            [
+              {
+                "index": 0,
+                "node": "Set Standard Upload URL",
+                "type": "main"
+              }
+            ]
+          ]
+        },
+        "Set Standard Upload URL": {
+          "main": [
+            [
+              {
+                "node": "Create post",
+                "type": "main",
+                "index": 0
+              }
+            ]
+          ]
+        },
+        "Webhook": {
+          "main": [
+            [
+              {
+                "index": 0,
+                "node": "Is Frame.io?",
+                "type": "main"
+              }
+            ]
+          ]
+        }
+      },
+      "authors": "Abdalla hattab",
+      "name": null,
+      "description": null,
+      "autosaved": false,
+      "workflowPublishHistory": [
+        {
+          "createdAt": "2026-04-19T00:42:15.085Z",
+          "id": 77,
+          "workflowId": "2OKFZVXE7784sxyY",
+          "versionId": "5e958ad6-4785-4be0-95d6-fc69d1c40078",
+          "event": "activated",
+          "userId": "6aaae95b-6b12-440f-8365-832921af283e"
+        },
+        {
+          "createdAt": "2026-04-19T00:42:14.958Z",
+          "id": 76,
+          "workflowId": "2OKFZVXE7784sxyY",
+          "versionId": "5e958ad6-4785-4be0-95d6-fc69d1c40078",
+          "event": "deactivated",
+          "userId": "6aaae95b-6b12-440f-8365-832921af283e"
+        }
+      ]
+    }
+  }
+}
