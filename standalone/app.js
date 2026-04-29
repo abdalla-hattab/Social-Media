@@ -4603,6 +4603,15 @@ function renderSocialSchedulerApp(activeBoard) {
         
         document.getElementById('addClientConfirmBtn').onclick = () => {
             const title = input.value.trim() || 'Client ' + (boards.filter(b => b.type === 'social_scheduler').length + 1);
+            
+            // Prevent duplicate names
+            const nameExists = boards.some(b => b.type === 'social_scheduler' && b.title.toLowerCase() === title.toLowerCase());
+            if (nameExists) {
+                alert('عذراً، هذا الاسم موجود مسبقاً. يرجى اختيار اسم آخر.');
+                input.focus();
+                return;
+            }
+
             input.blur();
             addModal.classList.remove('active');
             
