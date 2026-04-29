@@ -6277,53 +6277,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 } else if (window.activePreviewPlatform) {
                     sidebarBody.innerHTML = `<div style="padding:40px 20px; text-align:center; color:#64748b; background:white; border-radius:12px; border:1px solid #e2e8f0; font-weight:600;">معاينة ${window.activePreviewPlatform} قيد التطوير...</div>`;
                 } else {
-                    if (todayPosts.length > 0) {
-                        sidebarBody.innerHTML = todayPosts.map(p => {
-                            const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
-                            let mediaHtmlStr = '';
-                            if (items.length > 0) {
-                                mediaHtmlStr = `<div style="display:flex; gap:4px; max-width:80px; flex-wrap:wrap; flex-shrink:0;">`;
-                                items.slice(0,4).forEach((it, idx) => {
-                                    let contentHtml = '';
-                                    if (it.dataUrl && (!it.type || it.type === 'image')) {
-                                        contentHtml = `<img src="${it.dataUrl}" style="width:100%; height:100%; object-fit:cover;">`;
-                                    } else if (it.thumbnail) {
-                                        contentHtml = `<img src="${it.thumbnail}" style="width:100%; height:100%; object-fit:cover;">`;
-                                    } else if (it.type === 'frame-io' || it.type === 'video' || (it.dataUrl && it.dataUrl.startsWith('data:video/'))) {
-                                        contentHtml = `<div style="width:100%; height:100%; background:#1e293b; color:white; display:flex; align-items:center; justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
-                                    } else {
-                                        contentHtml = `<div style="width:100%; height:100%; background:#f8fafc; display:flex; align-items:center; justify-content:center;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>`;
-                                    }
-                                    mediaHtmlStr += `<div style="position:relative; width:${items.length === 1 ? '56px' : '26px'}; height:${items.length === 1 ? '56px' : '26px'}; border-radius:8px; overflow:hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.06);">
-                                        ${contentHtml}
-                                        ${idx === 3 && items.length > 4 ? `<div style="position:absolute; top:0; right:0; width:100%; height:100%; background:rgba(0,0,0,0.6); color:white; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center;">+${items.length-4}</div>` : ''}
-                                    </div>`;
-                                });
-                                mediaHtmlStr += `</div>`;
-                            } else {
-                                if (p.postType === 'video') {
-                                    mediaHtmlStr = `<div style="width:56px; height:56px; border-radius:8px; background:#1e293b; color:white; border: 1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
-                                } else {
-                                    mediaHtmlStr = `<div style="width:56px; height:56px; border-radius:8px; background:#f8fafc; border: 1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>`;
-                                }
-                            }
-
-                            return `
-                            <div onclick="${window.isClientView ? '' : `window.openCreatePostModal('${p.id}')`}" style="${window.isClientView ? '' : 'cursor:pointer;'} background:white; border-radius:12px; padding:14px; margin-bottom:14px; border:1px solid #f1f5f9; box-shadow:0 3px 6px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04); display:flex; gap:14px; align-items:center; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); transform: translateY(0);" onmouseover="${window.isClientView ? '' : `this.style.boxShadow='0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04)'; this.style.transform='translateY(-2px)';`}" onmouseout="${window.isClientView ? '' : `this.style.boxShadow='0 3px 6px rgba(0,0,0,0.03), 0 1px 3px rgba(0,0,0,0.04)'; this.style.transform='translateY(0)';`}">
-                                ${mediaHtmlStr}
-                                <div style="flex-grow:1; overflow:hidden; display:flex; flex-direction:column; gap:6px;">
-                                    <p style="font-size:15px; font-weight:700; color:#0f172a; margin:0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${p.title || 'منشور بدون نص'}</p>
-                                    <span style="font-size:12px; background:#f3e8ff; color:#7e22ce; padding:4px 10px; border-radius:6px; font-weight:600; align-self:flex-start;">${p.status || 'مسودة'}</span>
-                                </div>
-                            </div>`;
-                        }).join('') + (window.isClientView ? '' : `
-                        <button onclick="window.openCreatePostModal()" style="width:100%; background:transparent; color:#ea580c; border:2px dashed #fdba74; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; transition:all 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px;" onmouseover="this.style.background='#fff7ed'; this.style.borderColor='#ea580c';" onmouseout="this.style.background='transparent'; this.style.borderColor='#fdba74';">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            إضافة منشور آخر
-                        </button>`);
-                    } else {
-                        sidebarBody.innerHTML = ``;
-                    }
+                    sidebarBody.innerHTML = ``;
                 }
             };
             
