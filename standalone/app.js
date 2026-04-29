@@ -4242,19 +4242,23 @@ window.generatePipelineHtml = function(board) {
         if (isActive) className += " active";
         else if (isPast) className += " past";
 
-        let timeStr = "";
+        let tooltipTimeStr = "";
         if (entries[index]) {
             const entryTime = entries[index];
             const endTime = (index < activeIndex && entries[index + 1]) ? entries[index + 1] : Date.now();
             const daysSpent = Math.floor((endTime - entryTime) / (1000 * 60 * 60 * 24));
             if (daysSpent >= 0) {
-                timeStr = ` <span style="font-size: 11px; opacity: 0.8; margin-right: 6px; font-weight: normal;">(${daysSpent}d)</span>`;
+                tooltipTimeStr = `<div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">متواجد هنا منذ ${daysSpent} ${daysSpent === 1 ? 'يوم' : daysSpent === 2 ? 'يومين' : (daysSpent > 2 && daysSpent <= 10) ? 'أيام' : 'يومًا'}</div>`;
             }
         }
 
         html += `
-            <div class="${className}" onclick="window.changePipelineStage('${board.id}', ${index})" title="انتقال إلى ${stage}">
-                ${stage}${timeStr}
+            <div class="${className}" onclick="window.changePipelineStage('${board.id}', ${index})">
+                ${stage}
+                <div class="sm-tooltip">
+                    <div style="font-weight: 600; color: white;">${stage}</div>
+                    ${tooltipTimeStr}
+                </div>
             </div>
         `;
     });
