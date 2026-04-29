@@ -4753,6 +4753,23 @@ function renderSocialSchedulerApp(activeBoard) {
                 let shadow = isActive ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none';
                 let btnRadius = '9999px';
 
+                if (b.clientSentiment && b.clientSentiment !== 'grey') {
+                    const sentimentColors = {
+                        happy: { bg: '#dcfce7', border: '#86efac', activeBorder: '#22c55e' },
+                        normal: { bg: '#fef3c7', border: '#fde68a', activeBorder: '#eab308' },
+                        sad: { bg: '#ffedd5', border: '#fdba74', activeBorder: '#f97316' },
+                        angry: { bg: '#fee2e2', border: '#fca5a5', activeBorder: '#ef4444' }
+                    };
+                    const sc = sentimentColors[b.clientSentiment];
+                    if (sc) {
+                        bg = sc.bg;
+                        border = isActive ? `2px solid ${sc.activeBorder}` : `2px solid ${sc.border}`;
+                        if (isActive) {
+                            shadow = `0 2px 4px ${sc.activeBorder}40`; // slight glow of the border color
+                        }
+                    }
+                }
+
                 // Ensure global helpers exist
                 window.getClientEmojiSvg = window.getClientEmojiSvg || function(type, size = 20) {
                     const s = size;
