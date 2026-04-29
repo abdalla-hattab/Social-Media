@@ -4260,16 +4260,10 @@ window.generatePipelineHtml = function(board) {
 };
 
 window.changePipelineStage = function(boardId, index) {
-    console.log("changePipelineStage clicked!", boardId, index);
-    
-    let board = null;
-    if (window.boards) {
-        board = window.boards.find(b => String(b.id) === String(boardId)) || 
-                window.boards.find(b => String(b.id) === String(window.activeBoardId));
-    }
-    if (!board && typeof window.activeBoard !== 'undefined') {
-        board = window.activeBoard;
-    }
+    const allBoards = typeof boards !== 'undefined' ? boards : [];
+    const globalActiveBoardId = typeof activeBoardId !== 'undefined' ? activeBoardId : null;
+    let board = allBoards.find(b => String(b.id) === String(boardId)) || 
+                allBoards.find(b => String(b.id) === String(globalActiveBoardId));
 
     if (!board || !board.pipeline) return;
 
@@ -4277,33 +4271,22 @@ window.changePipelineStage = function(boardId, index) {
     if (!board.pipeline.stageEntries) board.pipeline.stageEntries = {};
     board.pipeline.stageEntries[index] = Date.now();
 
-    saveState();
-    renderSocialSchedulerApp(board);
+    if (typeof saveState !== 'undefined') saveState();
+    if (typeof renderSocialSchedulerApp !== 'undefined') renderSocialSchedulerApp(board);
 };
 
 window.openPipelineEditModal = function(boardId) {
-    console.log("openPipelineEditModal clicked! boardId:", boardId);
-    
-    // Attempt multiple ways to find the board
-    let board = null;
-    if (window.boards) {
-        board = window.boards.find(b => String(b.id) === String(boardId)) || 
-                window.boards.find(b => String(b.id) === String(window.activeBoardId));
-    }
-    
-    // If we still can't find it and we have a global activeBoard
-    if (!board && typeof window.activeBoard !== 'undefined') {
-        board = window.activeBoard;
-    }
-    
-    console.log("Found board:", board);
+    const allBoards = typeof boards !== 'undefined' ? boards : [];
+    const globalActiveBoardId = typeof activeBoardId !== 'undefined' ? activeBoardId : null;
+    let board = allBoards.find(b => String(b.id) === String(boardId)) || 
+                allBoards.find(b => String(b.id) === String(globalActiveBoardId));
 
     if (!board) {
-        alert("لم يتم العثور على المشروع! Error code: 1. BoardId: " + boardId);
+        alert("لم يتم العثور على المشروع! Error code: 3. BoardId: " + boardId);
         return;
     }
     if (!board.pipeline) {
-        alert("لم يتم العثور على بيانات المراحل! Error code: 2");
+        alert("لم يتم العثور على بيانات المراحل! Error code: 4");
         return;
     }
 
@@ -4336,7 +4319,6 @@ window.openPipelineEditModal = function(boardId) {
 
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     
-    // Initialize Sortable for drag and drop
     if (typeof Sortable !== 'undefined') {
         new Sortable(document.getElementById('pipelineStagesList'), {
             handle: '.drag-handle',
@@ -4359,7 +4341,11 @@ window.addPipelineStageRow = function() {
 };
 
 window.savePipelineStages = function(boardId) {
-    const board = (window.boards || []).find(b => String(b.id) === String(boardId)) || window.activeBoard || null;
+    const allBoards = typeof boards !== 'undefined' ? boards : [];
+    const globalActiveBoardId = typeof activeBoardId !== 'undefined' ? activeBoardId : null;
+    let board = allBoards.find(b => String(b.id) === String(boardId)) || 
+                allBoards.find(b => String(b.id) === String(globalActiveBoardId));
+
     if (!board) return;
 
     const inputs = document.querySelectorAll('#pipelineEditModal .pipeline-stage-input');
