@@ -2514,13 +2514,10 @@ input[type=number] {
 }
 
 /* Pipeline Tooltip */
-.sm-pipeline-stage .sm-tooltip {
+.sm-tooltip {
     visibility: hidden;
     opacity: 0;
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
     background: #334155;
     color: white;
     padding: 10px 14px;
@@ -2528,7 +2525,7 @@ input[type=number] {
     font-size: 13px;
     font-weight: normal;
     white-space: nowrap;
-    z-index: 1000;
+    z-index: 100000;
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
     transition: opacity 0.2s, visibility 0.2s;
     line-height: 1.5;
@@ -2536,11 +2533,7 @@ input[type=number] {
     direction: rtl;
     pointer-events: none;
 }
-.sm-pipeline-stage:hover .sm-tooltip {
-    visibility: visible;
-    opacity: 1;
-}
-.sm-pipeline-stage .sm-tooltip::after {
+.sm-tooltip::after {
     content: '';
     position: absolute;
     bottom: 100%;

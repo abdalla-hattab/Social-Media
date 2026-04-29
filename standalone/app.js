@@ -4253,12 +4253,13 @@ window.generatePipelineHtml = function(board) {
         }
 
         html += `
-            <div class="${className}" onclick="window.changePipelineStage('${board.id}', ${index})">
+            <div class="${className}" 
+                 onclick="window.changePipelineStage('${board.id}', ${index})"
+                 data-stage="${stage}"
+                 data-time='${tooltipTimeStr}'
+                 onmouseenter="window.showSmTooltip(this)"
+                 onmouseleave="window.hideSmTooltip()">
                 ${stage}
-                <div class="sm-tooltip">
-                    <div style="font-weight: 600; color: white;">${stage}</div>
-                    ${tooltipTimeStr}
-                </div>
             </div>
         `;
     });
@@ -4266,6 +4267,35 @@ window.generatePipelineHtml = function(board) {
     html += `</div>`; 
     html += `</div>`;
     return html;
+};
+
+window.showSmTooltip = function(el) {
+    let tooltip = document.getElementById('sm-dynamic-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'sm-dynamic-tooltip';
+        tooltip.className = 'sm-tooltip';
+        document.body.appendChild(tooltip);
+    }
+    const stage = el.getAttribute('data-stage') || "";
+    const timeHtml = el.getAttribute('data-time') || "";
+    
+    tooltip.innerHTML = `<div style="font-weight: 600; color: white;">${stage}</div>${timeHtml}`;
+    tooltip.style.visibility = 'visible';
+    tooltip.style.opacity = '1';
+    
+    const rect = el.getBoundingClientRect();
+    tooltip.style.top = (rect.bottom + 8) + 'px';
+    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+    tooltip.style.transform = 'translateX(-50%)';
+};
+
+window.hideSmTooltip = function() {
+    let tooltip = document.getElementById('sm-dynamic-tooltip');
+    if (tooltip) {
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.opacity = '0';
+    }
 };
 
 window.changePipelineStage = function(boardId, index) {
