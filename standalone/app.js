@@ -4260,7 +4260,17 @@ window.generatePipelineHtml = function(board) {
 };
 
 window.changePipelineStage = function(boardId, index) {
-    const board = (window.boards || []).find(b => String(b.id) === String(boardId)) || window.activeBoard || null;
+    console.log("changePipelineStage clicked!", boardId, index);
+    
+    let board = null;
+    if (window.boards) {
+        board = window.boards.find(b => String(b.id) === String(boardId)) || 
+                window.boards.find(b => String(b.id) === String(window.activeBoardId));
+    }
+    if (!board && typeof window.activeBoard !== 'undefined') {
+        board = window.activeBoard;
+    }
+
     if (!board || !board.pipeline) return;
 
     board.pipeline.activeStageIndex = index;
@@ -4272,8 +4282,30 @@ window.changePipelineStage = function(boardId, index) {
 };
 
 window.openPipelineEditModal = function(boardId) {
-    const board = (window.boards || []).find(b => String(b.id) === String(boardId)) || window.activeBoard || null;
-    if (!board || !board.pipeline) return;
+    console.log("openPipelineEditModal clicked! boardId:", boardId);
+    
+    // Attempt multiple ways to find the board
+    let board = null;
+    if (window.boards) {
+        board = window.boards.find(b => String(b.id) === String(boardId)) || 
+                window.boards.find(b => String(b.id) === String(window.activeBoardId));
+    }
+    
+    // If we still can't find it and we have a global activeBoard
+    if (!board && typeof window.activeBoard !== 'undefined') {
+        board = window.activeBoard;
+    }
+    
+    console.log("Found board:", board);
+
+    if (!board) {
+        alert("لم يتم العثور على المشروع! Error code: 1. BoardId: " + boardId);
+        return;
+    }
+    if (!board.pipeline) {
+        alert("لم يتم العثور على بيانات المراحل! Error code: 2");
+        return;
+    }
 
     let stagesHtml = board.pipeline.stages.map((stage, i) => `
         <div class="pipeline-stage-edit-row" data-index="${i}" style="display: flex; gap: 8px; margin-bottom: 8px; background: #f8fafc; padding: 8px; border-radius: 6px; cursor: grab;">
