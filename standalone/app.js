@@ -4753,8 +4753,85 @@ function renderSocialSchedulerApp(activeBoard) {
                 let shadow = isActive ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none';
                 let btnRadius = '9999px';
 
+                // Ensure global helpers exist
+                window.getClientEmojiSvg = window.getClientEmojiSvg || function(type, size = 20) {
+                    const s = size;
+                    switch(type) {
+                        case 'happy': return `<svg width="${s}" height="${s}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#22c55e"/><circle cx="8.5" cy="10" r="1.5" fill="#1e293b"/><circle cx="15.5" cy="10" r="1.5" fill="#1e293b"/><path d="M7.5 14 Q12 18 16.5 14" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+                        case 'normal': return `<svg width="${s}" height="${s}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#facc15"/><circle cx="8.5" cy="10" r="1.5" fill="#1e293b"/><circle cx="15.5" cy="10" r="1.5" fill="#1e293b"/><line x1="8" y1="15" x2="16" y2="15" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+                        case 'sad': return `<svg width="${s}" height="${s}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#f97316"/><circle cx="8.5" cy="10" r="1.5" fill="#1e293b"/><circle cx="15.5" cy="10" r="1.5" fill="#1e293b"/><path d="M8 16 Q12 13 16 16" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/></svg>`;
+                        case 'angry': return `<svg width="${s}" height="${s}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#ef4444"/><circle cx="8.5" cy="11" r="1.5" fill="#1e293b"/><circle cx="15.5" cy="11" r="1.5" fill="#1e293b"/><path d="M8 16 Q12 13 16 16" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/><line x1="6.5" y1="7.5" x2="9.5" y2="9.5" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/><line x1="17.5" y1="7.5" x2="14.5" y2="9.5" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/></svg>`;
+                        case 'grey': 
+                        default: return `<svg width="${s}" height="${s}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/></svg>`;
+                    }
+                };
+
+                window.toggleClientEmojiPopup = window.toggleClientEmojiPopup || function(e, boardId) {
+                    e.stopPropagation();
+                    let existing = document.getElementById('clientEmojiPopup');
+                    if (existing) {
+                        existing.remove();
+                        if (existing.dataset.boardId === boardId) return;
+                    }
+
+                    const popup = document.createElement('div');
+                    popup.id = 'clientEmojiPopup';
+                    popup.dataset.boardId = boardId;
+                    popup.style.position = 'fixed';
+                    popup.style.background = 'white';
+                    popup.style.padding = '8px 12px';
+                    popup.style.borderRadius = '24px';
+                    popup.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05)';
+                    popup.style.display = 'flex';
+                    popup.style.gap = '10px';
+                    popup.style.zIndex = '100000';
+                    popup.style.border = '1px solid #e2e8f0';
+
+                    const emojis = ['grey', 'happy', 'normal', 'sad', 'angry'];
+                    emojis.forEach(type => {
+                        const btn = document.createElement('div');
+                        btn.innerHTML = window.getClientEmojiSvg(type, 24);
+                        btn.style.cursor = 'pointer';
+                        btn.style.display = 'flex';
+                        btn.style.alignItems = 'center';
+                        btn.style.transition = 'transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)';
+                        btn.onmouseover = () => btn.style.transform = 'scale(1.2)';
+                        btn.onmouseout = () => btn.style.transform = 'scale(1)';
+                        btn.onclick = (ev) => {
+                            ev.stopPropagation();
+                            const allBoards = typeof boards !== 'undefined' ? boards : [];
+                            const board = allBoards.find(b => String(b.id) === String(boardId));
+                            if (board) {
+                                board.clientSentiment = type;
+                                if (typeof saveState !== 'undefined') saveState();
+                                if (typeof renderSocialSchedulerApp !== 'undefined') renderSocialSchedulerApp(typeof activeBoard !== 'undefined' ? activeBoard : board);
+                            }
+                            popup.remove();
+                        };
+                        popup.appendChild(btn);
+                    });
+
+                    document.body.appendChild(popup);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    popup.style.top = (rect.bottom + 10) + 'px';
+                    popup.style.left = (rect.left + rect.width/2 - popup.offsetWidth/2) + 'px';
+                    
+                    setTimeout(() => {
+                        const closeHandler = (ev) => {
+                            if (!popup.contains(ev.target)) {
+                                popup.remove();
+                                document.removeEventListener('click', closeHandler);
+                            }
+                        };
+                        document.addEventListener('click', closeHandler);
+                    }, 10);
+                };
+
                 return `
-                <div style="background: ${bg}; border: ${border}; box-shadow: ${shadow}; display:flex; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative;">
+                <div style="background: ${bg}; border: ${border}; box-shadow: ${shadow}; display:flex; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 6px;">
+                    <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="window.toggleClientEmojiPopup(event, '${b.id}')" title="تحديد حالة العميل">
+                        ${window.getClientEmojiSvg(b.clientSentiment || 'grey', 18)}
+                    </div>
                     <button 
                         data-id="${b.id}"
                         onclick="window.switchSocialClient('${b.id}')" 
@@ -4765,7 +4842,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         display: flex;
                         align-items: center;
                         gap: 6px;
-                        padding: 6px 16px; 
+                        padding: 6px 16px 6px 10px; 
                         background: transparent; 
                         color: ${color}; 
                         border: none;
