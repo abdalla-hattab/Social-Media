@@ -4306,13 +4306,13 @@ window.openPipelineEditModal = function(boardId) {
     `).join('');
 
     const modalHtml = `
-        <div class="modal-overlay active" id="pipelineEditModal" style="z-index: 10000; align-items: flex-start; padding-top: 100px;">
-            <div class="modal-content" style="max-width: 400px; padding: 24px; border-radius: 12px; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <div class="modal-overlay active" id="pipelineEditModal" style="z-index: 10000; align-items: flex-start; padding-top: 100px; direction: rtl;">
+            <div class="modal-content" style="max-width: 400px; padding: 24px; border-radius: 12px; background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: right;">
                 <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 18px; color: #0f172a;">تعديل مراحل المشروع</h3>
-                <div id="pipelineStagesList" style="max-height: 400px; overflow-y: auto;">
+                <div id="pipelineStagesList" style="max-height: 400px; overflow-y: auto; overflow-x: hidden; padding-left: 4px;">
                     ${stagesHtml}
                 </div>
-                <button onclick="window.addPipelineStageRow()" style="width: 100%; padding: 10px; background: #f1f5f9; border: 1px dashed #cbd5e1; color: #64748b; border-radius: 6px; margin-bottom: 16px; cursor: pointer; font-weight: 600; outline: none; margin-top: 8px;">+ إضافة مرحلة جديدة</button>
+                <button onclick="window.addPipelineStageRow()" style="width: 100%; padding: 10px; background: #f1f5f9; border: 1px dashed #cbd5e1; color: #64748b; border-radius: 6px; margin-bottom: 16px; cursor: pointer; font-weight: 600; outline: none; margin-top: 8px; font-family: inherit;">+ إضافة مرحلة جديدة</button>
                 
                 <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px;">
                     <button onclick="document.getElementById('pipelineEditModal').remove()" style="padding: 10px 16px; background: transparent; border: none; color: #64748b; cursor: pointer; font-weight: 600; outline: none;">إلغاء</button>
@@ -4338,8 +4338,8 @@ window.addPipelineStageRow = function() {
             <div style="display: flex; align-items: center; color: #94a3b8; cursor: grab;" class="drag-handle">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
             </div>
-            <input type="text" placeholder="اسم المرحلة" class="pipeline-stage-input" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none;">
-            <button onclick="this.parentElement.remove()" style="padding: 8px 12px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer;">X</button>
+            <input type="text" placeholder="اسم المرحلة" class="pipeline-stage-input" style="flex: 1; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-family: inherit;">
+            <button onclick="this.parentElement.remove()" style="padding: 8px 12px; background: #fee2e2; color: #ef4444; border: none; border-radius: 6px; cursor: pointer; font-family: inherit;">X</button>
         </div>
     `;
     document.getElementById('pipelineStagesList').insertAdjacentHTML('beforeend', html);
