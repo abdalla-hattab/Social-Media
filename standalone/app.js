@@ -4205,8 +4205,13 @@ let animatingOutIds = new Set();
 let animatingOrigins = {};
 window.generatePipelineHtml = function(board) {
     if (!board.pipeline) {
+        // Find existing stages from any other board
+        const allBoards = typeof boards !== 'undefined' ? boards : [];
+        const existingBoard = allBoards.find(b => b.type === 'social_scheduler' && b.pipeline && b.pipeline.stages && b.pipeline.stages.length > 0);
+        const globalStages = existingBoard ? existingBoard.pipeline.stages : ["المرحلة 1", "المرحلة 2", "المرحلة 3"];
+
         board.pipeline = {
-            stages: ["المرحلة 1", "المرحلة 2", "المرحلة 3"],
+            stages: [...globalStages],
             activeStageIndex: 0,
             stageEntries: {
                 "0": Date.now()
@@ -4356,12 +4361,20 @@ window.savePipelineStages = function(boardId) {
         return;
     }
 
-    if (!board.pipeline) board.pipeline = {};
-    board.pipeline.stages = newStages;
-    
-    if (board.pipeline.activeStageIndex >= newStages.length) {
-        board.pipeline.activeStageIndex = newStages.length - 1;
-    }
+    // Apply the new stages to ALL social_scheduler boards
+    allBoards.forEach(b => {
+        if (b.type === 'social_scheduler') {
+            if (!b.pipeline) {
+                b.pipeline = { activeStageIndex: 0, stageEntries: {"0": Date.now()} };
+            }
+            b.pipeline.stages = [...newStages];
+            
+            // Re-bound the active index in case the new stages list is shorter
+            if (b.pipeline.activeStageIndex >= newStages.length) {
+                b.pipeline.activeStageIndex = newStages.length - 1;
+            }
+        }
+    });
 
     saveState();
     document.getElementById('pipelineEditModal').remove();
