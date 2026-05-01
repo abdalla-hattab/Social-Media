@@ -2442,7 +2442,7 @@ input[type=number] {
 
 .sm-pipeline-stage {
     position: relative;
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 120px;
     height: 32px;
     background: #3c424f;
@@ -2454,6 +2454,7 @@ input[type=number] {
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
+    white-space: nowrap;
     /* Left pointing chevron for RTL layout */
     clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%);
     margin-right: -10px; /* Overlap to hide the gaps */

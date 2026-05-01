@@ -4225,7 +4225,7 @@ window.generatePipelineHtml = function(board) {
     const activeIndex = pl.activeStageIndex || 0;
     const entries = pl.stageEntries || {};
 
-    let html = `<div class="sm-pipeline-wrapper" style="margin: 10px 32px 10px 32px; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
+    let html = `<div class="sm-pipeline-wrapper" style="margin: 0 0 16px 0; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
     
     html += `
         <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 12px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
