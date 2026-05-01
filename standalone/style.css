@@ -2447,7 +2447,7 @@ input[type=number] {
     position: relative;
     flex: 1 1 auto;
     min-width: 120px;
-    height: 32px;
+    height: 36px;
     background: #3c424f;
     color: #a0aab5;
     display: flex;
@@ -2458,6 +2458,8 @@ input[type=number] {
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     /* Left pointing chevron for RTL layout */
     clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%);
     margin-right: -10px; /* Overlap to hide the gaps */

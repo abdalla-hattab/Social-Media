@@ -4225,7 +4225,7 @@ window.generatePipelineHtml = function(board) {
     const activeIndex = pl.activeStageIndex || 0;
     const entries = pl.stageEntries || {};
 
-    let html = `<div class="sm-pipeline-wrapper" style="margin: 0 0 16px 0; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
+    let html = `<div class="sm-pipeline-wrapper" style="margin: 16px 0 24px 0; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
     
     html += `
         <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 12px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
@@ -5288,7 +5288,7 @@ function renderSocialSchedulerApp(activeBoard) {
             </div>
             
             <!-- Bottom Row: New Post Button + Tabs -->
-            <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: center;">
+            <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: flex-end;">
                 <button class="sm-primary-btn" style="padding: 10px 20px;" onclick="window.openCreatePostModal()">+ منشور جديد</button>
                 <div style="display: flex; gap: 8px;">
                     <button class="sm-action-btn" title="فتح مساحة العميل في صفحة جديدة" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.generateDirectShareLink('${activeBoard.id}', this, event)">
