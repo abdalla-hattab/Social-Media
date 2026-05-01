@@ -5045,14 +5045,14 @@ function renderSocialSchedulerApp(activeBoard) {
     const topRowHtml = `
         <div class="sm-header-banner" style="margin-bottom: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px;">
             <!-- Title & Icon -->
-            <button onclick="window.openSocialRulesModal()" title="انقر لضبط وتعديل قواعد النشر" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0; background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 8px; transition: background 0.2s; outline: none; box-shadow: none;" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'">
-                <div class="sm-title-icon">
+            <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding: 6px; border-radius: 8px; outline: none; box-shadow: none;">
+                <div class="sm-title-icon" onclick="window.openSocialRulesModal()" title="انقر لضبط وتعديل قواعد النشر" style="cursor: pointer; display: flex; align-items: center; padding: 4px; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.06)'" onmouseout="this.style.background='transparent'">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
                 </div>
                 <div class="sm-title-text" style="display: flex; align-items: center; gap: 8px;">
-                    <h2 style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0;">النشر على وسائل التواصل</h2>
+                    <h2 contenteditable="true" onblur="localStorage.setItem('sm_page_title', this.innerText.trim())" onkeydown="if(event.key==='Enter'){event.preventDefault(); this.blur();}" style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0; outline: none; padding: 2px 6px; border-radius: 4px; transition: background 0.2s;" onfocus="this.style.background='rgba(0,0,0,0.05)'" onmouseout="if(document.activeElement !== this) this.style.background='transparent'" onmouseover="if(document.activeElement !== this) this.style.background='rgba(0,0,0,0.02)'">${localStorage.getItem('sm_page_title') || 'النشر على وسائل التواصل'}</h2>
                 </div>
-            </button>
+            </div>
 
             <!-- Client Tabs below the title -->
             <div style="width: 100%; display: flex; flex-wrap: wrap;">
