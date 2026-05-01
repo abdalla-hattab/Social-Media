@@ -4243,9 +4243,9 @@ window.generatePipelineHtml = function(board) {
         else if (isPast) className += " past";
 
         let tooltipTimeStr = "";
-        if (entries[index]) {
+        if (index === activeIndex && entries[index]) {
             const entryTime = entries[index];
-            const endTime = (index < activeIndex && entries[index + 1]) ? entries[index + 1] : Date.now();
+            const endTime = Date.now();
             const diffMs = Math.max(0, endTime - entryTime);
             const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
             const d = Math.floor(totalHours / 24);
