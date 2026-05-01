@@ -4271,7 +4271,7 @@ window.generatePipelineHtml = function(board) {
             
             if (parts.length === 0) parts.push('أقل من ساعة');
             
-            tooltipTimeStr = `<div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">متواجد هنا منذ ${parts.join(' و ')}</div>`;
+            tooltipTimeStr = `<div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">${parts.join(' و ')}</div>`;
         }
 
         html += `
