@@ -6447,10 +6447,13 @@ window.showConfirmModal = function(callback, titleText, descText) {
 };
 
 window.editContract = function(year, month) {
-    if (!window.activeBoard) return;
+    if (typeof boards === 'undefined' || typeof activeBoardId === 'undefined') return;
+    const activeBoard = boards.find(b => b.id === activeBoardId);
+    if (!activeBoard) return;
+    
     const monthKey = `${year}-${month}`;
-    if (!window.activeBoard.monthlyContract) window.activeBoard.monthlyContract = {};
-    const currentContract = window.activeBoard.monthlyContract[monthKey] || { images: 0, videos: 0 };
+    if (!activeBoard.monthlyContract) activeBoard.monthlyContract = {};
+    const currentContract = activeBoard.monthlyContract[monthKey] || { images: 0, videos: 0 };
     
     const newImagesStr = prompt("كم عدد الصور المطلوبة في العقد هذا الشهر؟", currentContract.images);
     if (newImagesStr === null) return;
@@ -6460,7 +6463,7 @@ window.editContract = function(year, month) {
     if (newVideosStr === null) return;
     const newVideos = parseInt(newVideosStr);
     
-    window.activeBoard.monthlyContract[monthKey] = {
+    activeBoard.monthlyContract[monthKey] = {
         images: isNaN(newImages) ? 0 : newImages,
         videos: isNaN(newVideos) ? 0 : newVideos
     };
