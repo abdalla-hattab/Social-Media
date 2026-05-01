@@ -5464,7 +5464,7 @@ function renderSocialSchedulerApp(activeBoard) {
             });
         }
         
-        const monthStatsHtml = `<span style="font-size: 13px; font-weight: 600; color: #64748b; margin-left: 12px; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa;"><span>المنشورات: <strong style="color: #ea580c;">${currentMonthPosts}</strong></span><span style="color: #fed7aa;">|</span><span>🖼️ صور: <strong style="color: #ea580c;">${currentMonthImages}</strong></span><span style="color: #fed7aa;">|</span><span>▶️ فيديو: <strong style="color: #ea580c;">${currentMonthVideos}</strong></span></span>`;
+        const monthStatsHtml = `<div style="display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px;"><span style="font-size: 11px; font-weight: 700; color: #ea580c; margin-bottom: 2px;">عملنا</span><span style="font-size: 13px; font-weight: 600; color: #64748b; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa;"><span>🖼️ صور: <strong style="color: #ea580c;">${currentMonthImages}</strong></span><span style="color: #fed7aa;">|</span><span>▶️ فيديو: <strong style="color: #ea580c;">${currentMonthVideos}</strong></span></span></div>`;
 
         mainContentHtml = `
             <div class="sm-main-content" style="padding: 24px 32px 16px 32px;">
