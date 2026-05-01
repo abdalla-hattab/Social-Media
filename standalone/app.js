@@ -4751,7 +4751,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 border-color: rgba(167, 139, 250, 0.6) !important;
             }
         </style>
-        <div style="display: flex; gap: 8px; flex-wrap: nowrap; justify-content: space-between; width: 100%; padding: 2px 0; align-items: flex-start;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 2px 0; align-items: center; width: 100%;">
             <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1;">
             ${socialBoards.slice(2).map((b, idx) => {
                 const isActive = activeBoard.id === b.id;
@@ -4886,27 +4886,28 @@ function renderSocialSchedulerApp(activeBoard) {
                 </div>
                 `;
             }).join('')}
+                <button onclick="window.openAddClientModal();" style="
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 6px 16px; 
+                    background: transparent; 
+                    color: #718096; 
+                    border: 2px dashed #cbd5e0; 
+                    border-radius: 9999px; 
+                    font-weight: 600; 
+                    font-size: 13px; 
+                    white-space: nowrap; 
+                    cursor: pointer;
+                    transition: all 0.2s;
+                " onmouseover="this.style.background='#f7fafc'; this.style.color='#4a5568'; this.style.border='2px dashed #a0aec0';" onmouseout="this.style.background='transparent'; this.style.color='#718096'; this.style.border='2px dashed #cbd5e0';">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    إضافة عميل
+                </button>
             </div>
-            <button onclick="window.openAddClientModal();" style="
-                flex-shrink: 0;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                padding: 6px 16px; 
-                background: transparent; 
-                color: #718096; 
-                border: 2px dashed #cbd5e0; 
-                border-radius: 9999px; 
-                font-weight: 600; 
-                font-size: 13px; 
-                white-space: nowrap; 
-                cursor: pointer;
-                transition: all 0.2s;
-            " onmouseover="this.style.background='#f7fafc'; this.style.color='#4a5568'; this.style.border='2px dashed #a0aec0';" onmouseout="this.style.background='transparent'; this.style.color='#718096'; this.style.border='2px dashed #cbd5e0';">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                إضافة عميل
-            </button>
         </div>
+    `;
     `;
     
     window.generateDirectShareLink = window.generateDirectShareLink || function(boardId, btn, e) {
