@@ -5434,7 +5434,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
                     ${window.isClientView ? '' : universalHeaderHtml}
                     ${window.isClientView ? '' : window.generatePipelineHtml(activeBoard)}
-                    <div class="sm-calendar-wrap ${window.isLiveModeActive ? 'sm-calendar-live-active' : ''}" style="flex: 1; overflow: auto; margin-bottom: 0;">
+                    <div class="sm-calendar-wrap ${window.isLiveModeActive ? 'sm-calendar-live-active' : ''}" style="flex: 1; overflow: visible; margin-bottom: 0;">
                         <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 12px;">
                             <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}</h3>
                             <div class="sm-cal-nav" style="align-items: center;">
@@ -5966,7 +5966,7 @@ function renderSocialSchedulerApp(activeBoard) {
     };
 
     const html = `
-        <div class="sm-app-wrapper" style="display:flex; flex-direction:column; width:100%; height:100%; overflow:hidden; background:#f4f5f7; direction:rtl;">
+        <div class="sm-app-wrapper" style="display:flex; flex-direction:column; width:100%; min-height:100vh; overflow:visible; background:#f4f5f7; direction:rtl;">
             ${(window.isClientView || window.activeSocialTab === 'calendar') ? '' : universalHeaderHtml}
             ${mainContentHtml}
         </div>
