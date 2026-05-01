@@ -4758,23 +4758,22 @@ function renderSocialSchedulerApp(activeBoard) {
                 
                 let bg = isActive ? 'white' : 'transparent';
                 let color = '#1a202c';
-                let border = isActive ? '2px solid #f97316' : '2px solid #cbd5e0';
-                let shadow = isActive ? '0 2px 4px rgba(249, 115, 22, 0.15)' : 'none';
+                let border = isActive ? '2px solid #6366f1' : '2px solid #cbd5e0';
+                let shadow = isActive ? '0 2px 6px rgba(99, 102, 241, 0.25)' : 'none';
                 let btnRadius = '9999px';
 
                 if (b.clientSentiment && b.clientSentiment !== 'grey') {
                     const sentimentColors = {
-                        happy: { bg: '#dcfce7', border: '#86efac', activeBorder: '#22c55e' },
-                        normal: { bg: '#fef3c7', border: '#fde68a', activeBorder: '#eab308' },
-                        sad: { bg: '#ffedd5', border: '#fdba74', activeBorder: '#f97316' },
-                        angry: { bg: '#fee2e2', border: '#fca5a5', activeBorder: '#ef4444' }
+                        happy: { bg: '#dcfce7', border: '#86efac' },
+                        normal: { bg: '#fef3c7', border: '#fde68a' },
+                        sad: { bg: '#ffedd5', border: '#fdba74' },
+                        angry: { bg: '#fee2e2', border: '#fca5a5' }
                     };
                     const sc = sentimentColors[b.clientSentiment];
                     if (sc) {
-                        bg = sc.bg;
-                        border = isActive ? `2px solid ${sc.activeBorder}` : `2px solid ${sc.border}`;
-                        if (isActive) {
-                            shadow = `0 2px 4px ${sc.activeBorder}40`; // slight glow of the border color
+                        bg = sc.bg; // Keep the sentiment background
+                        if (!isActive) {
+                            border = `2px solid ${sc.border}`; // Only use sentiment border when inactive
                         }
                     }
                 }
