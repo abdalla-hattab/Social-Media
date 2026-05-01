@@ -5467,7 +5467,6 @@ function renderSocialSchedulerApp(activeBoard) {
         const monthKey = `${currentYear}-${currentMonth}`;
         const contractStats = (activeBoard.monthlyContract && activeBoard.monthlyContract[monthKey]) || { images: 0, videos: 0 };
         const contractHtml = `
-        const contractHtml = `
             <div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; margin-left: 16px; transition: all 0.2s; transform-origin: center;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
                 <span style="font-size: 12px; font-weight: 700; color: #2563eb; margin-bottom: 4px;">المطلوب في العقد</span>
                 <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe;">
