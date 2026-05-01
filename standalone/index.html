@@ -1791,5 +1791,32 @@
         </div>
     </div>
 
+    <!-- Contract Edit Modal -->
+    <div class="modal-overlay" id="contractEditModal" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 400px; border-radius: 16px; padding: 32px 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h3 style="margin: 0; font-size: 18px; color: #1e293b; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">📝</span> المطلوب في العقد
+                </h3>
+                <button onclick="document.getElementById('contractEditModal').classList.remove('active')" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; line-height: 1;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 20px; text-align: right;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">عدد الصور</label>
+                <input type="number" id="contractImagesInput" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 15px; box-sizing: border-box; text-align: right;" min="0">
+            </div>
+            
+            <div style="margin-bottom: 24px; text-align: right;">
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">عدد الفيديوهات</label>
+                <input type="number" id="contractVideosInput" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 15px; box-sizing: border-box; text-align: right;" min="0">
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button onclick="document.getElementById('contractEditModal').classList.remove('active')" style="flex:1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; color: #475569; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">إلغاء</button>
+                <button id="saveContractBtn" style="flex:1; padding: 12px; border-radius: 8px; border: none; background: #2563eb; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

@@ -6455,21 +6455,31 @@ window.editContract = function(year, month) {
     if (!activeBoard.monthlyContract) activeBoard.monthlyContract = {};
     const currentContract = activeBoard.monthlyContract[monthKey] || { images: 0, videos: 0 };
     
-    const newImagesStr = prompt("كم عدد الصور المطلوبة في العقد هذا الشهر؟", currentContract.images);
-    if (newImagesStr === null) return;
-    const newImages = parseInt(newImagesStr);
+    const modal = document.getElementById('contractEditModal');
+    if (!modal) return;
     
-    const newVideosStr = prompt("كم عدد الفيديوهات المطلوبة في العقد هذا الشهر؟", currentContract.videos);
-    if (newVideosStr === null) return;
-    const newVideos = parseInt(newVideosStr);
+    document.getElementById('contractImagesInput').value = currentContract.images;
+    document.getElementById('contractVideosInput').value = currentContract.videos;
     
-    activeBoard.monthlyContract[monthKey] = {
-        images: isNaN(newImages) ? 0 : newImages,
-        videos: isNaN(newVideos) ? 0 : newVideos
+    const saveBtn = document.getElementById('saveContractBtn');
+    const newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    
+    newSaveBtn.onclick = function() {
+        const newImages = parseInt(document.getElementById('contractImagesInput').value);
+        const newVideos = parseInt(document.getElementById('contractVideosInput').value);
+        
+        activeBoard.monthlyContract[monthKey] = {
+            images: isNaN(newImages) ? 0 : newImages,
+            videos: isNaN(newVideos) ? 0 : newVideos
+        };
+        
+        window.saveState();
+        window.renderDashboard();
+        modal.classList.remove('active');
     };
     
-    window.saveState();
-    window.renderDashboard();
+    modal.classList.add('active');
 };
 
 window.handleCalDragStart = function(event, postId) {
