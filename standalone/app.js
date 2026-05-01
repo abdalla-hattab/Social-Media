@@ -5991,10 +5991,6 @@ function renderSocialSchedulerApp(activeBoard) {
 
         new window.Sortable(socialClientTabsEl, {
             animation: 150,
-            direction: 'horizontal',
-            forceFallback: true, // Fixes HTML5 drag issues with RTL horizontal flex containers
-            fallbackClass: "sortable-fallback",
-            ghostClass: "sortable-ghost",
             fallbackTolerance: 5, // Prevent accidental drags when just clicking
             filter: ".sm-non-draggable",
             onMove: function (evt) {
