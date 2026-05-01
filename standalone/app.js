@@ -4908,7 +4908,6 @@ function renderSocialSchedulerApp(activeBoard) {
             </div>
         </div>
     `;
-    `;
     
     window.generateDirectShareLink = window.generateDirectShareLink || function(boardId, btn, e) {
         if (e) e.stopPropagation();
