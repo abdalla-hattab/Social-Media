@@ -4246,10 +4246,25 @@ window.generatePipelineHtml = function(board) {
         if (entries[index]) {
             const entryTime = entries[index];
             const endTime = (index < activeIndex && entries[index + 1]) ? entries[index + 1] : Date.now();
-            const daysSpent = Math.floor((endTime - entryTime) / (1000 * 60 * 60 * 24));
-            if (daysSpent >= 0) {
-                tooltipTimeStr = `<div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">متواجد هنا منذ ${daysSpent} ${daysSpent === 1 ? 'يوم' : daysSpent === 2 ? 'يومين' : (daysSpent > 2 && daysSpent <= 10) ? 'أيام' : 'يومًا'}</div>`;
-            }
+            const diffMs = Math.max(0, endTime - entryTime);
+            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const d = Math.floor(totalHours / 24);
+            const h = totalHours % 24;
+            
+            let parts = [];
+            if (d === 1) parts.push('يوم');
+            else if (d === 2) parts.push('يومين');
+            else if (d > 2 && d <= 10) parts.push(d + ' أيام');
+            else if (d > 10) parts.push(d + ' يومًا');
+            
+            if (h === 1) parts.push('ساعة');
+            else if (h === 2) parts.push('ساعتين');
+            else if (h > 2 && h <= 10) parts.push(h + ' ساعات');
+            else if (h > 10) parts.push(h + ' ساعة');
+            
+            if (parts.length === 0) parts.push('أقل من ساعة');
+            
+            tooltipTimeStr = `<div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">متواجد هنا منذ ${parts.join(' و ')}</div>`;
         }
 
         html += `
