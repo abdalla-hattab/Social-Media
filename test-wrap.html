@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.sm-pipeline-wrapper {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.sm-pipeline-container {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap; /* NEW */
+}
+
+.sm-pipeline-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 120px;
+    height: 36px;
+    background: #3c424f;
+    color: #a0aab5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%);
+    margin-right: -10px;
+    padding-right: 20px;
+    padding-left: 16px;
+    margin-bottom: 4px; /* Space between rows */
+}
+
+.sm-pipeline-stage:first-child {
+    clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%);
+    margin-right: 0;
+    padding-right: 12px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.sm-pipeline-stage:last-child {
+    clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%, calc(100% - 12px) 50%);
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+</style>
+</head>
+<body dir="rtl">
+    <div class="sm-pipeline-wrapper">
+        <div class="sm-pipeline-container">
+            <div class="sm-pipeline-stage">Stage 1</div>
+            <div class="sm-pipeline-stage">Stage 2</div>
+            <div class="sm-pipeline-stage">Stage 3</div>
+            <div class="sm-pipeline-stage">Stage 4</div>
+            <div class="sm-pipeline-stage">Stage 5</div>
+            <div class="sm-pipeline-stage">Stage 6</div>
+            <div class="sm-pipeline-stage">Stage 7</div>
+            <div class="sm-pipeline-stage">Stage 8</div>
+            <div class="sm-pipeline-stage">Stage 9</div>
+            <div class="sm-pipeline-stage">Stage 10</div>
+        </div>
+    </div>
+</body>
+</html>

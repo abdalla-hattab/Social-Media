@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.sm-pipeline-wrapper {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.sm-pipeline-container {
+    flex: 1;
+    display: flex;
+    gap: 4px;
+    overflow: hidden; /* truncates */
+}
+
+.sm-pipeline-stage {
+    position: relative;
+    flex: 1 1 0; /* Changed from 1 1 auto to 1 1 0 so it shrinks evenly */
+    /* removed min-width: 120px to allow shrinking */
+    min-width: 0; 
+    height: 36px;
+    background: #3c424f;
+    color: #a0aab5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%, calc(100% - 12px) 50%);
+    margin-right: -10px;
+    padding-right: 20px;
+    padding-left: 16px;
+}
+
+.sm-pipeline-stage:first-child {
+    clip-path: polygon(100% 0, 12px 0, 0 50%, 12px 100%, 100% 100%);
+    margin-right: 0;
+    padding-right: 12px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.sm-pipeline-stage:last-child {
+    clip-path: polygon(100% 0, 0 0, 0 100%, 100% 100%, calc(100% - 12px) 50%);
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+</style>
+</head>
+<body dir="rtl">
+    <div class="sm-pipeline-wrapper" style="width: 800px;">
+        <div class="sm-pipeline-container">
+            <div class="sm-pipeline-stage">رؤية الشكل النهائي للمنصة</div>
+            <div class="sm-pipeline-stage">تسوية المحتوى</div>
+            <div class="sm-pipeline-stage">تسوية التصاميم</div>
+            <div class="sm-pipeline-stage">الموافقة على الخطة</div>
+            <div class="sm-pipeline-stage">مشاركة الخطة</div>
+            <div class="sm-pipeline-stage">تسوية الخطة</div>
+            <div class="sm-pipeline-stage">الموافقة على الخطة</div>
+            <div class="sm-pipeline-stage">مشاركة الخطة</div>
+        </div>
+    </div>
+</body>
+</html>
