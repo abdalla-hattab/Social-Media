@@ -1124,10 +1124,6 @@ input[type=number] {
     flex-direction: column;
     flex-shrink: 0;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: sticky;
-    top: 24px;
-    height: calc(100vh - 48px);
-    overflow-y: auto;
 }
 
 .sm-mobile-overlay {
