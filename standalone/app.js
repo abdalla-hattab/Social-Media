@@ -4758,8 +4758,8 @@ function renderSocialSchedulerApp(activeBoard) {
                 
                 let bg = isActive ? 'white' : 'transparent';
                 let color = '#1a202c';
-                let border = isActive ? '2px solid #6366f1' : '2px solid #cbd5e0';
-                let shadow = isActive ? '0 2px 6px rgba(99, 102, 241, 0.25)' : 'none';
+                let border = isActive ? '2px solid #1e293b' : '2px solid #cbd5e0';
+                let shadow = isActive ? '0 2px 6px rgba(30, 41, 59, 0.25)' : 'none';
                 let btnRadius = '9999px';
 
                 if (b.clientSentiment && b.clientSentiment !== 'grey') {
