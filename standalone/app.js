@@ -5466,9 +5466,28 @@ function renderSocialSchedulerApp(activeBoard) {
         
         const monthKey = `${currentYear}-${currentMonth}`;
         const contractStats = (activeBoard.monthlyContract && activeBoard.monthlyContract[monthKey]) || { images: 0, videos: 0 };
-        const contractHtml = `<div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"><span style="font-size: 11px; font-weight: 700; color: #2563eb; margin-bottom: 2px;">المطلوب في العقد</span><span style="font-size: 13px; font-weight: 600; color: #64748b; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe;"><span>🖼️ صور: <strong style="color: #2563eb;">${contractStats.images}</strong></span><span style="color: #bfdbfe;">|</span><span>▶️ فيديو: <strong style="color: #2563eb;">${contractStats.videos}</strong></span></span></div>`;
+        const contractHtml = `
+            <div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; margin-left: 20px; transition: all 0.2s; transform-origin: center;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
+                <span style="font-size: 13px; font-weight: 800; color: #2563eb; margin-bottom: 6px; letter-spacing: 0.2px;">المطلوب في العقد</span>
+                <span style="font-size: 14px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 12px; background: #eff6ff; padding: 6px 16px; border-radius: 24px; border: 1.5px solid #bfdbfe; box-shadow: 0 1px 2px rgba(37,99,235,0.05);">
+                    <span style="display:flex; align-items:center; gap:6px;">🖼️ صور: <strong style="color: #2563eb; font-size: 15px; font-weight: 800;">${contractStats.images}</strong></span>
+                    <span style="color: #93c5fd; font-weight: 300;">|</span>
+                    <span style="display:flex; align-items:center; gap:6px;">▶️ فيديو: <strong style="color: #2563eb; font-size: 15px; font-weight: 800;">${contractStats.videos}</strong></span>
+                </span>
+            </div>
+        `;
 
-        const monthStatsHtml = `${contractHtml}<div style="display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px;"><span style="font-size: 11px; font-weight: 700; color: #ea580c; margin-bottom: 2px;">عملنا</span><span style="font-size: 13px; font-weight: 600; color: #64748b; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa;"><span>🖼️ صور: <strong style="color: #ea580c;">${currentMonthImages}</strong></span><span style="color: #fed7aa;">|</span><span>▶️ فيديو: <strong style="color: #ea580c;">${currentMonthVideos}</strong></span></span></div>`;
+        const monthStatsHtml = `
+            ${contractHtml}
+            <div style="display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px;">
+                <span style="font-size: 13px; font-weight: 800; color: #ea580c; margin-bottom: 6px; letter-spacing: 0.2px;">عملنا</span>
+                <span style="font-size: 14px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 12px; background: #fffcf8; padding: 6px 16px; border-radius: 24px; border: 1.5px solid #fed7aa; box-shadow: 0 1px 2px rgba(234,88,12,0.05);">
+                    <span style="display:flex; align-items:center; gap:6px;">🖼️ صور: <strong style="color: #ea580c; font-size: 15px; font-weight: 800;">${currentMonthImages}</strong></span>
+                    <span style="color: #fdba74; font-weight: 300;">|</span>
+                    <span style="display:flex; align-items:center; gap:6px;">▶️ فيديو: <strong style="color: #ea580c; font-size: 15px; font-weight: 800;">${currentMonthVideos}</strong></span>
+                </span>
+            </div>
+        `;
 
         mainContentHtml = `
             <div class="sm-main-content" style="padding: 24px 32px 16px 32px;">
