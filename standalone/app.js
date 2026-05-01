@@ -5464,7 +5464,11 @@ function renderSocialSchedulerApp(activeBoard) {
             });
         }
         
-        const monthStatsHtml = `<div style="display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px;"><span style="font-size: 11px; font-weight: 700; color: #ea580c; margin-bottom: 2px;">عملنا</span><span style="font-size: 13px; font-weight: 600; color: #64748b; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa;"><span>🖼️ صور: <strong style="color: #ea580c;">${currentMonthImages}</strong></span><span style="color: #fed7aa;">|</span><span>▶️ فيديو: <strong style="color: #ea580c;">${currentMonthVideos}</strong></span></span></div>`;
+        const monthKey = `${currentYear}-${currentMonth}`;
+        const contractStats = (activeBoard.monthlyContract && activeBoard.monthlyContract[monthKey]) || { images: 0, videos: 0 };
+        const contractHtml = `<div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'"><span style="font-size: 11px; font-weight: 700; color: #2563eb; margin-bottom: 2px;">المطلوب في العقد</span><span style="font-size: 13px; font-weight: 600; color: #64748b; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe;"><span>🖼️ صور: <strong style="color: #2563eb;">${contractStats.images}</strong></span><span style="color: #bfdbfe;">|</span><span>▶️ فيديو: <strong style="color: #2563eb;">${contractStats.videos}</strong></span></span></div>`;
+
+        const monthStatsHtml = `${contractHtml}<div style="display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px;"><span style="font-size: 11px; font-weight: 700; color: #ea580c; margin-bottom: 2px;">عملنا</span><span style="font-size: 13px; font-weight: 600; color: #64748b; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa;"><span>🖼️ صور: <strong style="color: #ea580c;">${currentMonthImages}</strong></span><span style="color: #fed7aa;">|</span><span>▶️ فيديو: <strong style="color: #ea580c;">${currentMonthVideos}</strong></span></span></div>`;
 
         mainContentHtml = `
             <div class="sm-main-content" style="padding: 24px 32px 16px 32px;">
@@ -6440,6 +6444,29 @@ window.showConfirmModal = function(callback, titleText, descText) {
     if(newBtnCancel) newBtnCancel.onclick = function() {
         modal.classList.remove('active');
     };
+};
+
+window.editContract = function(year, month) {
+    if (!window.activeBoard) return;
+    const monthKey = `${year}-${month}`;
+    if (!window.activeBoard.monthlyContract) window.activeBoard.monthlyContract = {};
+    const currentContract = window.activeBoard.monthlyContract[monthKey] || { images: 0, videos: 0 };
+    
+    const newImagesStr = prompt("كم عدد الصور المطلوبة في العقد هذا الشهر؟", currentContract.images);
+    if (newImagesStr === null) return;
+    const newImages = parseInt(newImagesStr);
+    
+    const newVideosStr = prompt("كم عدد الفيديوهات المطلوبة في العقد هذا الشهر؟", currentContract.videos);
+    if (newVideosStr === null) return;
+    const newVideos = parseInt(newVideosStr);
+    
+    window.activeBoard.monthlyContract[monthKey] = {
+        images: isNaN(newImages) ? 0 : newImages,
+        videos: isNaN(newVideos) ? 0 : newVideos
+    };
+    
+    window.saveState();
+    window.renderDashboard();
 };
 
 window.handleCalDragStart = function(event, postId) {
