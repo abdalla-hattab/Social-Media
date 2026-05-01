@@ -5518,7 +5518,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 </div>
                 <div class="sm-mobile-overlay" onclick="document.querySelector('.sm-sidebar').classList.remove('active')"></div>
 
-                <div class="sm-sidebar" style="height: 100%;">
+                <div class="sm-sidebar">
                     <div class="sm-sidebar-header" style="display:flex; align-items:flex-start; justify-content:space-between; border-bottom:2px solid #f1f5f9; padding-bottom:20px; margin-bottom:20px;">
                         <button class="sm-close-sidebar" onclick="document.querySelector('.sm-sidebar').classList.remove('active')" style="background: none; border: none; color: #475569; font-size: 24px; cursor: pointer; padding: 0 0 12px 12px; margin-left: auto;">&times;</button>
                         <div class="sm-selected-date-text" style="display:flex; flex-direction:column; gap:4px; align-items:flex-start; text-align:right;">
