@@ -6474,9 +6474,9 @@ window.editContract = function(year, month) {
             videos: isNaN(newVideos) ? 0 : newVideos
         };
         
+        modal.classList.remove('active');
         window.saveState();
         window.renderDashboard();
-        modal.classList.remove('active');
     };
     
     modal.classList.add('active');
