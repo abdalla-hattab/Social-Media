@@ -5041,7 +5041,7 @@ function renderSocialSchedulerApp(activeBoard) {
     }
 
     const topRowHtml = `
-        <div class="sm-header-banner" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: flex-start; gap: 24px;">
+        <div class="sm-header-banner" style="margin-bottom: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px;">
             <!-- Title & Icon -->
             <button onclick="window.openSocialRulesModal()" title="انقر لضبط وتعديل قواعد النشر" style="display: flex; align-items: center; gap: 12px; flex-shrink: 0; background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 8px; transition: background 0.2s; outline: none; box-shadow: none;" onmouseover="this.style.background='rgba(0,0,0,0.04)'" onmouseout="this.style.background='transparent'">
                 <div class="sm-title-icon">
@@ -5052,8 +5052,10 @@ function renderSocialSchedulerApp(activeBoard) {
                 </div>
             </button>
 
-            <!-- Client Tabs injected directly to the left of the title -->
-            ${clientTabsHtml}
+            <!-- Client Tabs below the title -->
+            <div style="width: 100%; display: flex; flex-wrap: wrap;">
+                ${clientTabsHtml}
+            </div>
         </div>
     `;
     window.activeSocialTab = window.activeSocialTab || 'calendar';
