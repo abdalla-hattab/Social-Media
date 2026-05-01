@@ -4751,8 +4751,8 @@ function renderSocialSchedulerApp(activeBoard) {
                 border-color: rgba(167, 139, 250, 0.6) !important;
             }
         </style>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 2px 0; align-items: center;">
-            <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+        <div style="display: flex; gap: 8px; flex-wrap: nowrap; justify-content: space-between; width: 100%; padding: 2px 0; align-items: flex-start;">
+            <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1;">
             ${socialBoards.slice(2).map((b, idx) => {
                 const isActive = activeBoard.id === b.id;
                 
