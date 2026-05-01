@@ -4243,10 +4243,17 @@ window.generatePipelineHtml = function(board) {
         else if (isPast) className += " past";
 
         let tooltipTimeStr = "";
-        if (index === activeIndex && entries[index]) {
-            const entryTime = entries[index];
-            const endTime = Date.now();
-            const diffMs = Math.max(0, endTime - entryTime);
+        
+        let accumulatedMs = (pl.stageAccumulated && pl.stageAccumulated[index]) ? pl.stageAccumulated[index] : 0;
+        let diffMs = accumulatedMs;
+        
+        if (isActive && entries[index]) {
+            diffMs += Math.max(0, Date.now() - entries[index]);
+        } else if (diffMs === 0 && !isActive && entries[index] && entries[index+1] && isPast) {
+            diffMs = Math.max(0, entries[index+1] - entries[index]);
+        }
+        
+        if (diffMs > 0 || isActive) {
             const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
             const d = Math.floor(totalHours / 24);
             const h = totalHours % 24;
@@ -4321,8 +4328,19 @@ window.changePipelineStage = function(boardId, index) {
 
     if (!board || !board.pipeline) return;
 
-    board.pipeline.activeStageIndex = index;
+    const oldIndex = board.pipeline.activeStageIndex !== undefined ? board.pipeline.activeStageIndex : 0;
+    
     if (!board.pipeline.stageEntries) board.pipeline.stageEntries = {};
+    if (!board.pipeline.stageAccumulated) board.pipeline.stageAccumulated = {};
+    
+    if (oldIndex !== index) {
+        if (board.pipeline.stageEntries[oldIndex]) {
+            const timeSpent = Date.now() - board.pipeline.stageEntries[oldIndex];
+            board.pipeline.stageAccumulated[oldIndex] = (board.pipeline.stageAccumulated[oldIndex] || 0) + timeSpent;
+        }
+    }
+
+    board.pipeline.activeStageIndex = index;
     board.pipeline.stageEntries[index] = Date.now();
 
     if (typeof saveState !== 'undefined') saveState();
