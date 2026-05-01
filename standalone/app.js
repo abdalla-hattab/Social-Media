@@ -4225,15 +4225,15 @@ window.generatePipelineHtml = function(board) {
     const activeIndex = pl.activeStageIndex || 0;
     const entries = pl.stageEntries || {};
 
-    let html = `<div class="sm-pipeline-wrapper" style="margin: 16px 0 24px 0; padding: 12px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
+    let html = `<div class="sm-pipeline-wrapper" style="margin: 16px 0 24px 0; padding: 20px 24px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
     
     html += `
-        <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 12px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
+        <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 16px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
         </button>
     `;
 
-    html += `<div class="sm-pipeline-container" style="flex: 1; display: flex; gap: 4px; overflow: hidden; border-radius: 6px;">`;
+    html += `<div class="sm-pipeline-container" style="flex: 1; display: flex; gap: 4px; overflow: hidden; border-radius: 4px;">`;
 
     stages.forEach((stage, index) => {
         const isActive = index === activeIndex;
