@@ -4751,8 +4751,8 @@ function renderSocialSchedulerApp(activeBoard) {
                 border-color: rgba(167, 139, 250, 0.6) !important;
             }
         </style>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 2px 0; align-items: center; width: 100%;">
-            <div id="socialClientTabs" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1;">
+        <div style="display: flex; gap: 8px; padding: 2px 0; align-items: flex-start; width: 100%;">
+            <div id="socialClientTabs" style="flex: 1; text-align: right;">
             ${socialBoards.slice(2).map((b, idx) => {
                 const isActive = activeBoard.id === b.id;
                 
@@ -4853,7 +4853,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 };
 
                 return `
-                <div data-id="${b.id}" style="background: ${bg}; border: ${border}; box-shadow: ${shadow}; display:flex; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 12px;">
+                <div data-id="${b.id}" style="display: inline-flex; margin-left: 8px; margin-bottom: 8px; vertical-align: top; background: ${bg}; border: ${border}; box-shadow: ${shadow}; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 12px;">
                     <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="window.toggleClientEmojiPopup(event, '${b.id}')" title="تحديد حالة العميل">
                         ${window.getClientEmojiSvg(b.clientSentiment || 'grey', 18)}
                     </div>
@@ -4887,8 +4887,10 @@ function renderSocialSchedulerApp(activeBoard) {
                 `;
             }).join('')}
                 <button class="sm-non-draggable" onclick="window.openAddClientModal();" style="
+                    display: inline-flex; 
+                    margin-bottom: 8px;
+                    vertical-align: top;
                     flex-shrink: 0;
-                    display: flex;
                     align-items: center;
                     gap: 6px;
                     padding: 6px 16px; 
