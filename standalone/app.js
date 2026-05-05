@@ -6043,7 +6043,7 @@ function renderSocialSchedulerApp(activeBoard) {
     };
 
     const html = `
-        <div class="sm-app-wrapper" style="display:flex; flex-direction:column; width:100%; min-height:100vh; overflow:visible; background:#f4f5f7; direction:rtl;">
+        <div class="sm-app-wrapper" style="display:flex; flex-direction:column; width:100%; height:100vh; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; transform:translateZ(0); -webkit-transform:translateZ(0); background:#f4f5f7; direction:rtl;">
             ${(window.isClientView || window.activeSocialTab === 'calendar') ? '' : universalHeaderHtml}
             ${mainContentHtml}
         </div>
