@@ -5676,7 +5676,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                     let actionBtnHtml = '';
                                     if (hasLink) {
                                         actionBtnHtml = `<div onclick="window.smHandleSocialActionClick(event, '${platform}', true, '${storageKey}', '${savedLink}')" style="width:16px; height:16px; border-radius:50%; background:#dbeafe; color:#2563eb; border:1px solid #bfdbfe; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-top:-6px; z-index:2; position:relative; font-weight:bold;" title="الذهاب للرابط">
-                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                                         </div>`;
                                     } else {
                                         actionBtnHtml = `<div onclick="window.smHandleSocialActionClick(event, '${platform}', false, '${storageKey}', '')" style="width:16px; height:16px; border-radius:50%; background:#f1f5f9; color:#64748b; border:1px solid #cbd5e0; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-top:-6px; z-index:2; position:relative; font-weight:bold;" title="إضافة رابط">
