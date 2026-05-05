@@ -5481,14 +5481,14 @@ function renderSocialSchedulerApp(activeBoard) {
         if (!window.isClientView) {
             contractHtml = `
                 <div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; margin-left: 16px; transition: all 0.2s; transform-origin: center;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
-                    <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
+                    <div style="display: flex; align-items: baseline; margin-bottom: 4px; white-space: nowrap;">
                         <span style="font-size: 12px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
                         ${contractSubtitle}
                     </div>
-                    <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe;">
-                        <span style="display:flex; align-items:center; gap:4px;">🖼️ صور: <strong style="color: #2563eb; font-size: 14px; font-weight: 800;">${contractStats.images}</strong></span>
+                    <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe; white-space: nowrap;">
+                        <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">🖼️ صور: <strong style="color: #2563eb; font-size: 14px; font-weight: 800;">${contractStats.images}</strong></span>
                         <span style="color: #bfdbfe; font-weight: 400;">|</span>
-                        <span style="display:flex; align-items:center; gap:4px;">▶️ فيديو: <strong style="color: #2563eb; font-size: 14px; font-weight: 800;">${contractStats.videos}</strong></span>
+                        <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">▶️ فيديو: <strong style="color: #2563eb; font-size: 14px; font-weight: 800;">${contractStats.videos}</strong></span>
                     </span>
                 </div>
             `;
@@ -5497,11 +5497,11 @@ function renderSocialSchedulerApp(activeBoard) {
         const monthStatsHtml = `
             ${contractHtml}
             <div style="display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px;">
-                <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px;">تم تسوية</span>
-                <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa;">
-                    <span style="display:flex; align-items:center; gap:4px;">🖼️ صور: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthImages}</strong></span>
+                <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px; white-space: nowrap;">تم تسوية</span>
+                <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa; white-space: nowrap;">
+                    <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">🖼️ صور: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthImages}</strong></span>
                     <span style="color: #fed7aa; font-weight: 400;">|</span>
-                    <span style="display:flex; align-items:center; gap:4px;">▶️ فيديو: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthVideos}</strong></span>
+                    <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">▶️ فيديو: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthVideos}</strong></span>
                 </span>
             </div>
         `;
