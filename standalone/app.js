@@ -4254,9 +4254,10 @@ window.generatePipelineHtml = function(board) {
         }
         
         if (diffMs > 0 || isActive) {
-            const totalHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const d = Math.floor(totalHours / 24);
-            const h = totalHours % 24;
+            const totalMinutes = Math.floor(diffMs / (1000 * 60));
+            const d = Math.floor(totalMinutes / (24 * 60));
+            const h = Math.floor((totalMinutes % (24 * 60)) / 60);
+            const m = totalMinutes % 60;
             
             let parts = [];
             if (d === 1) parts.push('يوم');
@@ -4269,7 +4270,12 @@ window.generatePipelineHtml = function(board) {
             else if (h > 2 && h <= 10) parts.push(h + ' ساعات');
             else if (h > 10) parts.push(h + ' ساعة');
             
-            if (parts.length === 0) parts.push('أقل من ساعة');
+            if (m === 1) parts.push('دقيقة');
+            else if (m === 2) parts.push('دقيقتين');
+            else if (m > 2 && m <= 10) parts.push(m + ' دقائق');
+            else if (m > 10) parts.push(m + ' دقيقة');
+            
+            if (parts.length === 0) parts.push('أقل من دقيقة');
             
             tooltipTimeStr = `<div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">${parts.join(' و ')}</div>`;
         }
