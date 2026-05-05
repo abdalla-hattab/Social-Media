@@ -5089,7 +5089,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
                 </div>
                 <div class="sm-title-text" style="display: flex; align-items: center; gap: 8px;">
-                    <h2 contenteditable="true" onblur="localStorage.setItem('sm_page_title', this.innerText.trim())" onkeydown="if(event.key==='Enter'){event.preventDefault(); this.blur();}" style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0; outline: none; padding: 2px 6px; border-radius: 4px; transition: background 0.2s;" onfocus="this.style.background='rgba(0,0,0,0.05)'" onmouseout="if(document.activeElement !== this) this.style.background='transparent'" onmouseover="if(document.activeElement !== this) this.style.background='rgba(0,0,0,0.02)'">${localStorage.getItem('sm_page_title') || 'النشر على وسائل التواصل'}</h2>
+                    <h2 style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0; outline: none; padding: 2px 6px; border-radius: 4px;">لوحة تنظيم خدمة السوشال ميديا</h2>
                 </div>
             </div>
 
