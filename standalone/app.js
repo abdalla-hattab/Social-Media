@@ -5497,7 +5497,7 @@ function renderSocialSchedulerApp(activeBoard) {
         const monthStatsHtml = `
             ${contractHtml}
             <div style="display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px;">
-                <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px;">عملنا</span>
+                <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px;">تم تسوية</span>
                 <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa;">
                     <span style="display:flex; align-items:center; gap:4px;">🖼️ صور: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthImages}</strong></span>
                     <span style="color: #fed7aa; font-weight: 400;">|</span>
