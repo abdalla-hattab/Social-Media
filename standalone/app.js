@@ -5475,12 +5475,12 @@ function renderSocialSchedulerApp(activeBoard) {
         let contractSubtitle = '';
         if (activeBoard.contractStartDate) {
             const d = activeBoard.contractDurationMonths ? ` (${activeBoard.contractDurationMonths} أشهر)` : '';
-            contractSubtitle = `<span style="font-size: 10px; color: #94a3b8; font-weight: 500; margin-top: 2px;">بداية العقد: ${activeBoard.contractStartDate}${d}</span>`;
+            contractSubtitle = `<span style="font-size: 9px; color: #94a3b8; font-weight: 500; margin-right: 6px;">بداية العقد: ${activeBoard.contractStartDate}${d}</span>`;
         }
 
         const contractHtml = `
             <div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; margin-left: 16px; transition: all 0.2s; transform-origin: center;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
-                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 4px;">
+                <div style="display: flex; align-items: baseline; margin-bottom: 4px;">
                     <span style="font-size: 12px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
                     ${contractSubtitle}
                 </div>
