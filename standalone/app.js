@@ -6110,7 +6110,14 @@ function renderSocialSchedulerApp(activeBoard) {
             if (!url.startsWith('http://') && !url.startsWith('https://')) { 
                 url = 'https://' + url; 
             }
-            window.open(url, '_blank');
+            const newWin = window.open(url, '_blank');
+            if (newWin) {
+                // Attempt to keep focus on the current window
+                setTimeout(() => {
+                    newWin.blur();
+                    window.focus();
+                }, 10);
+            }
         } else {
             const platformNames = { facebook: 'فيسبوك', instagram: 'إنستغرام', twitter: 'تويتر', linkedin: 'لينكد إن', tiktok: 'تيك توك', snapchat: 'سناب شات' };
             const pName = platformNames[platform] || platform;
