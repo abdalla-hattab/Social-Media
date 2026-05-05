@@ -6486,6 +6486,9 @@ window.editContract = function(year, month) {
     document.getElementById('contractImagesInput').value = currentContract.images;
     document.getElementById('contractVideosInput').value = currentContract.videos;
     
+    document.getElementById('contractStartDateInput').value = activeBoard.contractStartDate || '';
+    document.getElementById('contractDurationInput').value = activeBoard.contractDurationMonths || '';
+    
     const saveBtn = document.getElementById('saveContractBtn');
     const newSaveBtn = saveBtn.cloneNode(true);
     saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
@@ -6493,11 +6496,15 @@ window.editContract = function(year, month) {
     newSaveBtn.onclick = function() {
         const newImages = parseInt(document.getElementById('contractImagesInput').value);
         const newVideos = parseInt(document.getElementById('contractVideosInput').value);
+        const newDuration = parseInt(document.getElementById('contractDurationInput').value);
         
         activeBoard.monthlyContract[monthKey] = {
             images: isNaN(newImages) ? 0 : newImages,
             videos: isNaN(newVideos) ? 0 : newVideos
         };
+        
+        activeBoard.contractStartDate = document.getElementById('contractStartDateInput').value;
+        activeBoard.contractDurationMonths = isNaN(newDuration) ? null : newDuration;
         
         modal.classList.remove('active');
         window.saveState();
