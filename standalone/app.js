@@ -5505,6 +5505,95 @@ function renderSocialSchedulerApp(activeBoard) {
                 </span>
             </div>
         `;
+        let clientFeedHtml = '';
+        if (window.isClientView) {
+            let postsByDate = {};
+            if (activeBoard.cards) {
+                activeBoard.cards.forEach(c => {
+                    if (c.dateStr && c.dateStr.startsWith(`${currentYear}-${currentMonth}-`) && (window.smShowClientEditsToggle !== false || !c.isClientDayNote)) {
+                        if (!postsByDate[c.dateStr]) postsByDate[c.dateStr] = [];
+                        postsByDate[c.dateStr].push(c);
+                    }
+                });
+            }
+            
+            const sortedDates = Object.keys(postsByDate).sort((a,b) => parseInt(a.split('-')[2]) - parseInt(b.split('-')[2]));
+            
+            clientFeedHtml = `<div class="sm-client-feed-view" style="padding-top: 12px;">`;
+            if (sortedDates.length === 0) {
+                clientFeedHtml += `<div style="text-align:center; padding:32px; color:#94a3b8; font-weight:600; font-size: 15px;">لا يوجد منشورات في هذا الشهر.</div>`;
+            } else {
+                sortedDates.forEach(dateStr => {
+                    const dayNum = parseInt(dateStr.split('-')[2]);
+                    const dayObj = new Date(currentYear, currentMonth, dayNum);
+                    const dayName = dayNamesArabic[dayObj.getDay()];
+                    
+                    clientFeedHtml += `<div class="sm-feed-day-card" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 16px;">`;
+                    clientFeedHtml += `<div style="font-weight: 800; font-size: 16px; color: #0f172a; margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
+                        <span style="background:#ea580c; color:white; border-radius:8px; padding:4px 12px; font-size: 15px;">${dayNum} ${monthNamesArabic[currentMonth]}</span>
+                        <span style="color: #64748b; font-weight: 600; font-size: 14px;">${dayName}</span>
+                    </div>`;
+                    
+                    clientFeedHtml += `<div style="display:flex; flex-direction:column; gap:12px;">`;
+                    postsByDate[dateStr].forEach(p => {
+                        const safeFullText = p.fullText ? window.smEscapeHTML(p.fullText) : '';
+                        const safeDesc = p.description ? window.smEscapeHTML(p.description) : '';
+                        const textSnippetRaw = p.fullText ? p.fullText.substring(0, 150) + '...' : (p.description ? p.description.substring(0, 150) + '...' : 'مسودة منشور...');
+                        const textSnippet = window.smEscapeHTML(textSnippetRaw);
+                        const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
+                        
+                        const defaultIcon = p.postType === 'video' ? '▶️' : '🖼️';
+                        let mediaThumb = `<div style="font-size:24px; margin-left:12px; flex-shrink:0; background: #f1f5f9; width: 64px; height: 64px; display:flex; align-items:center; justify-content:center; border-radius: 8px;">${defaultIcon}</div>`;
+                        if (items.length > 0) {
+                            const m = items[0];
+                            if (m.dataUrl && (!m.type || m.type === 'image')) {
+                                mediaThumb = `<img class="sm-thumb-icon" src="${m.dataUrl}" style="width:64px; height:64px; border-radius:8px; object-fit:cover; margin-left:12px; flex-shrink:0; border:1px solid #e2e8f0;">`;
+                            } else if (m.thumbnail) {
+                                mediaThumb = `<img class="sm-thumb-icon" src="${m.thumbnail}" style="width:64px; height:64px; border-radius:8px; object-fit:cover; margin-left:12px; flex-shrink:0; border:1px solid #e2e8f0;">`;
+                            } else if (m.type === 'frame-io' || m.type === 'video' || (m.dataUrl && m.dataUrl.startsWith('data:video/'))) {
+                                mediaThumb = `<div class="sm-thumb-icon" style="width:64px; height:64px; border-radius:8px; background:#1e293b; color:white; display:flex; align-items:center; justify-content:center; margin-left:12px; flex-shrink:0; border:1px solid #e2e8f0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
+                            }
+                        }
+                        
+                        let bg = '#ffffff';
+                        let border = '1px solid #e2e8f0';
+                        let accentColor = '#94a3b8'; // draft gray
+                        
+                        if (p.status === 'فوري') { bg = '#f0fdf4'; border = '1px solid #bbf7d0'; accentColor = '#22c55e'; }
+                        else if (p.status === 'جدولة') { bg = '#fffbeb'; border = '1px solid #fde68a'; accentColor = '#f59e0b'; }
+                        
+                        if (window.smShowClientEditsToggle !== false && p.clientModified) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
+                        
+                        let platformsHtml = '';
+                        if (p.platforms && p.platforms.length > 0) {
+                            const icons = p.platforms.map(plat => {
+                                let c = '#94a3b8';
+                                if(plat === 'instagram') c='#e1306c';
+                                if(plat === 'facebook') c='#1877f2';
+                                if(plat === 'snapchat') c='#ca8a04';
+                                if(plat === 'twitter') c='#0f1419';
+                                if(plat === 'linkedin') c='#0a66c2';
+                                if(plat === 'tiktok') c='#000000';
+                                return `<div style="width:12px; height:12px; border-radius:50%; background:${c}; margin-right:4px;"></div>`;
+                            }).join('');
+                            platformsHtml = `<div style="display:flex; margin-top:8px;">${icons}</div>`;
+                        }
+
+                        clientFeedHtml += `
+                        <div class="sm-cal-draggable-post" onclick="window.openCreatePostModal('${p.id}');" style="padding: 16px; border-radius: 12px; background: ${bg}; border: ${border}; border-right: 4px solid ${accentColor}; color: #1e293b; cursor: pointer; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; width: 100%; box-sizing: border-box;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
+                            <div style="display:flex; align-items:flex-start; width: 100%; justify-content: flex-start;">
+                                ${mediaThumb}
+                                <div class="sm-thumb-text" style="padding-right: 8px; flex:1; font-weight:600; font-size: 14px; color: #334155; pointer-events:none; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;">${textSnippet}</div>
+                            </div>
+                            ${platformsHtml}
+                            ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تعديله من العميل${p.clientEdits ? `<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
+                        </div>`;
+                    });
+                    clientFeedHtml += `</div></div>`;
+                });
+            }
+            clientFeedHtml += `</div>`;
+        }
 
         mainContentHtml = `
             <div class="sm-main-content" style="padding: 24px 32px 16px 32px;">
@@ -5545,15 +5634,17 @@ function renderSocialSchedulerApp(activeBoard) {
                                 `}
                             </div>
                         </div>
-                        
-                        <div class="sm-cal-days-header">
-                            ${dayNamesArabic.map(d => `<span>${d}</span>`).join('')}
+                        <div class="sm-client-calendar-view">
+                            <div class="sm-cal-days-header">
+                                ${dayNamesArabic.map(d => `<span>${d}</span>`).join('')}
+                            </div>
+                            
+                            <div class="sm-cal-grid">
+                                ${calendarHtml}
+                            </div>
+                            ${legendHtml}
                         </div>
-                        
-                        <div class="sm-cal-grid">
-                            ${calendarHtml}
-                        </div>
-                        ${legendHtml}
+                        ${clientFeedHtml}
                     </div>
                 </div>
                 <div class="sm-mobile-overlay" onclick="document.querySelector('.sm-sidebar').classList.remove('active')"></div>

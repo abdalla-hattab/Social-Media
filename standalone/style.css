@@ -2542,3 +2542,17 @@ input[type=number] {
     border-style: solid;
     border-color: transparent transparent #334155 transparent;
 }
+
+/* Client Feed View Toggle for Mobile */
+.sm-client-feed-view {
+    display: none;
+}
+@media (max-width: 900px) {
+    .sm-client-calendar-view {
+        display: none !important;
+    }
+    .sm-client-feed-view {
+        display: flex !important;
+        flex-direction: column;
+    }
+}
