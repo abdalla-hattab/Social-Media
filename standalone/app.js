@@ -1753,7 +1753,7 @@ window.openCreatePostModal = function(postId = null) {
                                     if (plat === 'snapchat') fillCol = '#ca8a04';
                                     if (plat === 'twitter') fillCol = '#0f1419';
                                     if (plat === 'linkedin') fillCol = '#0a66c2';
-                                    const isIconConnected = liveIcon.getAttribute('onclick') && liveIcon.getAttribute('onclick').includes('toggleLivePlatform');
+                                    const isIconConnected = liveIcon && liveIcon.getAttribute('onclick') && liveIcon.getAttribute('onclick').includes('toggleLivePlatform');
                                     if (isIconConnected && liveIcon.getAttribute('data-active') !== 'true') {
                                         window.toggleLivePlatform(liveIcon, fillCol, plat);
                                     }
