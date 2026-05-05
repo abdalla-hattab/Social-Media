@@ -6112,11 +6112,11 @@ function renderSocialSchedulerApp(activeBoard) {
                 }
                 window.open(url, '_blank');
             }));
-            menu.appendChild(createMenuItem('إدارة الروابط', () => {
+            menu.appendChild(createMenuItem('تعديل الرابط', () => {
                 window.openAllSocialLinksModal();
             }));
         } else {
-            menu.appendChild(createMenuItem('إدارة الروابط', () => {
+            menu.appendChild(createMenuItem('إضافة رابط', () => {
                 window.openAllSocialLinksModal();
             }));
         }
