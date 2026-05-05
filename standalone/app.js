@@ -4616,7 +4616,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         </button>
                     </div>
                     <div class="modal-body" style="padding-top: 12px;">
-                        <input type="text" id="addClientInput" class="modal-input" placeholder="اسم العميل (مثال: Client 2)..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
+                        <input type="text" id="addClientInput" class="modal-input" placeholder="اسم العميل" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
                     </div>
                     <div class="modal-footer" style="padding-top: 16px; margin-top: 16px; border-top: 1px solid #edf2f7; display: flex; justify-content: flex-end; gap: 8px;">
                         <button id="addClientConfirmBtn" style="padding: 8px 16px; border-radius: 6px; border: none; background: #ea580c; color: white; cursor: pointer; font-weight: 600;">إضافة</button>
