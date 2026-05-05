@@ -1141,15 +1141,11 @@ input[type=number] {
         padding: 12px !important;
         flex-direction: column;
         overflow-x: hidden;
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
     }
     .sm-calendar-wrap {
         width: 100%;
         overflow-x: hidden;
         padding: 12px;
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
     }
     .sm-cal-grid {
         min-width: 0; /* Allow infinite shrinking for phones */
@@ -1418,8 +1414,6 @@ input[type=number] {
     user-select: none;
     -webkit-user-select: none;
     min-width: 0;
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
 }
 
 .sm-cal-cell:not(.empty):hover {
