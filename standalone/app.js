@@ -5849,7 +5849,7 @@ function renderSocialSchedulerApp(activeBoard) {
         `;
     }
     window.activePreviewPlatform = window.activePreviewPlatform || null;
-    window.openSocialLinkModal = function(title, defaultValue, onSave) {
+    window.openAllSocialLinksModal = function() {
         const existing = document.getElementById('social-link-modal-overlay');
         if (existing) existing.remove();
 
@@ -5876,17 +5876,18 @@ function renderSocialSchedulerApp(activeBoard) {
             borderRadius: '16px',
             padding: '24px',
             width: '90%',
-            maxWidth: '380px',
+            maxWidth: '400px',
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
             transform: 'scale(0.95)',
             transition: 'transform 0.2s ease',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px'
+            gap: '16px',
+            maxHeight: '90vh'
         });
 
         const header = document.createElement('h3');
-        header.textContent = title;
+        header.textContent = 'إدارة روابط منصات التواصل';
         Object.assign(header.style, {
             margin: '0',
             fontSize: '18px',
@@ -5894,38 +5895,74 @@ function renderSocialSchedulerApp(activeBoard) {
             color: '#0f172a'
         });
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = defaultValue || '';
-        input.placeholder = 'https://...';
-        input.dir = 'ltr';
-        Object.assign(input.style, {
-            width: '100%',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            border: '2px solid #e2e8f0',
-            fontSize: '15px',
-            outline: 'none',
-            boxSizing: 'border-box',
-            transition: 'border-color 0.2s'
+        const inputsContainer = document.createElement('div');
+        Object.assign(inputsContainer.style, {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            overflowY: 'auto',
+            paddingRight: '4px',
+            marginRight: '-4px'
         });
-        input.onfocus = () => input.style.borderColor = '#ea580c';
-        input.onblur = () => input.style.borderColor = '#e2e8f0';
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter') {
-                onSave(input.value);
-                close();
-            } else if (e.key === 'Escape') {
-                close();
-            }
-        };
+
+        const platforms = ['facebook', 'instagram', 'twitter', 'linkedin', 'tiktok', 'snapchat'];
+        const platformNames = { facebook: 'فيسبوك', instagram: 'إنستغرام', twitter: 'تويتر', linkedin: 'لينكد إن', tiktok: 'تيك توك', snapchat: 'سناب شات' };
+        const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
+        const inputElements = {};
+
+        platforms.forEach(platform => {
+            const pName = platformNames[platform];
+            const storageKey = `social_link_${boardPrefix}_${platform}`;
+            const savedLink = localStorage.getItem(storageKey) || '';
+
+            const fieldWrapper = document.createElement('div');
+            Object.assign(fieldWrapper.style, {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+            });
+
+            const label = document.createElement('label');
+            label.textContent = `رابط ${pName}`;
+            Object.assign(label.style, {
+                fontSize: '13px',
+                fontWeight: '600',
+                color: '#475569'
+            });
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = savedLink;
+            input.placeholder = 'https://...';
+            input.dir = 'ltr';
+            Object.assign(input.style, {
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: '2px solid #e2e8f0',
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                transition: 'border-color 0.2s'
+            });
+            input.onfocus = () => input.style.borderColor = '#ea580c';
+            input.onblur = () => input.style.borderColor = '#e2e8f0';
+            
+            inputElements[storageKey] = input;
+
+            fieldWrapper.appendChild(label);
+            fieldWrapper.appendChild(input);
+            inputsContainer.appendChild(fieldWrapper);
+        });
 
         const btnWrapper = document.createElement('div');
         Object.assign(btnWrapper.style, {
             display: 'flex',
             gap: '12px',
             justifyContent: 'flex-end',
-            marginTop: '4px'
+            marginTop: '8px',
+            paddingTop: '16px',
+            borderTop: '1px solid #f1f5f9'
         });
 
         const cancelBtn = document.createElement('button');
@@ -5943,7 +5980,6 @@ function renderSocialSchedulerApp(activeBoard) {
         });
         cancelBtn.onmouseover = () => cancelBtn.style.background = '#e2e8f0';
         cancelBtn.onmouseout = () => cancelBtn.style.background = '#f1f5f9';
-        cancelBtn.onclick = () => close();
 
         const saveBtn = document.createElement('button');
         saveBtn.textContent = 'حفظ';
@@ -5967,32 +6003,43 @@ function renderSocialSchedulerApp(activeBoard) {
             saveBtn.style.background = '#ea580c';
             saveBtn.style.transform = 'none';
         };
-        saveBtn.onclick = () => {
-            onSave(input.value);
-            close();
-        };
 
-        function close() {
+        function closeModal() {
             overlay.style.opacity = '0';
             modal.style.transform = 'scale(0.95)';
             setTimeout(() => overlay.remove(), 200);
         }
 
+        cancelBtn.onclick = () => closeModal();
+        saveBtn.onclick = () => {
+            Object.keys(inputElements).forEach(key => {
+                const val = inputElements[key].value.trim();
+                if (val) {
+                    localStorage.setItem(key, val);
+                } else {
+                    localStorage.removeItem(key);
+                }
+            });
+            window.activePreviewPlatform = null;
+            closeModal();
+            setTimeout(() => {
+                window.renderMainContent();
+            }, 210);
+        };
+
         btnWrapper.appendChild(cancelBtn);
         btnWrapper.appendChild(saveBtn);
+        
         modal.appendChild(header);
-        modal.appendChild(input);
+        modal.appendChild(inputsContainer);
         modal.appendChild(btnWrapper);
+        
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
         requestAnimationFrame(() => {
             overlay.style.opacity = '1';
             modal.style.transform = 'scale(1)';
-            input.focus();
-            if (input.value) {
-                input.setSelectionRange(0, input.value.length);
-            }
         });
     };
 
@@ -6065,20 +6112,12 @@ function renderSocialSchedulerApp(activeBoard) {
                 }
                 window.open(url, '_blank');
             }));
-            menu.appendChild(createMenuItem('تعديل الرابط', () => {
-                window.openSocialLinkModal(`تعديل رابط ${pName}`, savedLink, (newLink) => {
-                    if (newLink !== null) {
-                        localStorage.setItem(storageKey, newLink.trim());
-                    }
-                });
+            menu.appendChild(createMenuItem('إدارة الروابط', () => {
+                window.openAllSocialLinksModal();
             }));
         } else {
-            menu.appendChild(createMenuItem('إضافة رابط', () => {
-                window.openSocialLinkModal(`إضافة رابط لـ ${pName}`, '', (newLink) => {
-                    if (newLink && newLink.trim() !== '') {
-                        localStorage.setItem(storageKey, newLink.trim());
-                    }
-                });
+            menu.appendChild(createMenuItem('إدارة الروابط', () => {
+                window.openAllSocialLinksModal();
             }));
         }
 
@@ -6119,16 +6158,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 }, 10);
             }
         } else {
-            const platformNames = { facebook: 'فيسبوك', instagram: 'إنستغرام', twitter: 'تويتر', linkedin: 'لينكد إن', tiktok: 'تيك توك', snapchat: 'سناب شات' };
-            const pName = platformNames[platform] || platform;
-            
-            window.openSocialLinkModal('إضافة رابط لـ ' + pName, '', (newLink) => { 
-                if(newLink && newLink.trim() !== '') { 
-                    localStorage.setItem(storageKey, newLink.trim()); 
-                    window.activePreviewPlatform = null; 
-                    window.renderMainContent(); 
-                } 
-            });
+            window.openAllSocialLinksModal();
         }
     };
 
