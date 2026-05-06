@@ -29,64 +29,92 @@ let activeTargetListId = null;
 let isGlobalDragging = false;
 let isApplyingFirebaseSync = false;
 
+window.isCloudDataLoaded = false;
+window.fullCloudDataLoaded = false;
+window.fastFetchBoard = function() {
+    if (window.isClientView && activeBoardId && !window.fullCloudDataLoaded) {
+        fetch(`https://socail-media-creation-default-rtdb.firebaseio.com/ai_social_lists.json?orderBy="id"&equalTo="${activeBoardId}"`)
+            .then(res => res.json())
+            .then(data => {
+                if (data && !data.error && !window.fullCloudDataLoaded) {
+                    cloudBoards = Object.values(data);
+                    window.isCloudDataLoaded = true;
+                    if (typeof syncBoardsArray === 'function') {
+                        syncBoardsArray();
+                        if (typeof ensureBoardStructure === 'function') ensureBoardStructure();
+                    } else {
+                        boards = [...cloudBoards];
+                    }
+                    if (typeof render === 'function') render();
+                } else if (data && data.error) {
+                    console.warn("Firebase indexing error, falling back to full WebSocket sync:", data.error);
+                }
+            })
+            .catch(err => console.error("Fast fetch error:", err));
+    }
+};
+
 const superShortId = smUrlParams.get('id');
 if (superShortId) {
     window.isClientView = true;
     window.isResolvingShortLink = true;
-    const ref = db.ref('sm_short_links/' + superShortId);
     
     // Fallback timeout bumped to 10 seconds to accommodate slower client connections
     const timeout = setTimeout(() => {
-        ref.off('value');
         window.isResolvingShortLink = false;
         if (typeof render === 'function') render();
     }, 10000);
 
-    ref.on('value', snap => {
-        const fullC = snap.val();
-        if (fullC) {
+    // Use REST API for much faster initial resolution before Firebase SDK fully connects
+    fetch(`https://socail-media-creation-default-rtdb.firebaseio.com/sm_short_links/${superShortId}.json`)
+        .then(res => res.json())
+        .then(fullC => {
             clearTimeout(timeout);
-            ref.off('value'); // Stop listening once we successfully fetch the board
-            
-            let parts;
-            if (fullC.includes('|')) {
-                parts = fullC.split('|');
-            } else {
-                // Fallback for old links with hyphens
-                let tempParts = fullC.split('-');
-                if (tempParts.length >= 3) {
-                    let yr = tempParts.pop();
-                    let mo = tempParts.pop();
-                    let bId = tempParts.join('-');
-                    parts = [bId, mo, yr];
+            if (fullC) {
+                let parts;
+                if (fullC.includes('|')) {
+                    parts = fullC.split('|');
                 } else {
-                    parts = tempParts;
+                    // Fallback for old links with hyphens
+                    let tempParts = fullC.split('-');
+                    if (tempParts.length >= 3) {
+                        let yr = tempParts.pop();
+                        let mo = tempParts.pop();
+                        let bId = tempParts.join('-');
+                        parts = [bId, mo, yr];
+                    } else {
+                        parts = tempParts;
+                    }
                 }
-            }
 
-            if (parts.length >= 1) {
-                activeBoardId = parts[0];
-                localStorage.setItem('ai_active_board', activeBoardId);
+                if (parts.length >= 1) {
+                    activeBoardId = parts[0];
+                    localStorage.setItem('ai_active_board', activeBoardId);
+                }
+                if (parts.length >= 2) window.shortClientMonth = parts[1];
+                if (parts.length >= 3) window.shortClientYear = parts[2];
+                
+                if (window.shortClientMonth && window.shortClientYear) {
+                    window.activeSocialMonthView = { year: parseInt(window.shortClientYear, 10), month: parseInt(window.shortClientMonth, 10) };
+                    window.activeSocialDateOptions = { year: parseInt(window.shortClientYear, 10), month: parseInt(window.shortClientMonth, 10), date: 1 };
+                }
+                
+                window.isResolvingShortLink = false;
+                window.fastFetchBoard();
+                // Delay rendering slightly just to allow other synchronous listeners to trigger
+                setTimeout(() => { if (typeof render === 'function') render(); }, 50);
+            } else {
+                // Short link does not exist in DB (invalid link)
+                window.isResolvingShortLink = false;
+                if (typeof render === 'function') render();
             }
-            if (parts.length >= 2) window.shortClientMonth = parts[1];
-            if (parts.length >= 3) window.shortClientYear = parts[2];
-            
-            if (window.shortClientMonth && window.shortClientYear) {
-                window.activeSocialMonthView = { year: parseInt(window.shortClientYear, 10), month: parseInt(window.shortClientMonth, 10) };
-                window.activeSocialDateOptions = { year: parseInt(window.shortClientYear, 10), month: parseInt(window.shortClientMonth, 10), date: 1 };
-            }
-            
-            window.isResolvingShortLink = false;
-            // Delay rendering slightly just to allow other synchronous listeners to trigger
-            setTimeout(() => { if (typeof render === 'function') render(); }, 50);
-        } else if (fullC === null) {
-            // Short link does not exist in DB (invalid link)
+        })
+        .catch(err => {
+            console.error('Error fetching short link:', err);
             clearTimeout(timeout);
-            ref.off('value');
             window.isResolvingShortLink = false;
             if (typeof render === 'function') render();
-        }
-    });
+        });
 }
 
 const shortC = smUrlParams.get('c');
@@ -102,6 +130,7 @@ if (shortC) {
         activeBoardId = parts[0];
         localStorage.setItem('ai_active_board', activeBoardId);
     }
+    window.fastFetchBoard();
 }
 
 if (window.isClientView) {
@@ -254,10 +283,10 @@ function ensureBoardStructure() {
 ensureBoardStructure();
 
 // Setup Firebase real-time listener for Social Scheduler ONLY
-window.isCloudDataLoaded = false;
 db.ref('ai_social_lists').on('value', (snapshot) => {
     isApplyingFirebaseSync = true;
     window.isCloudDataLoaded = true;
+    window.fullCloudDataLoaded = true;
     const data = snapshot.val();
     if (data) {
         cloudBoards = data;
@@ -284,6 +313,11 @@ db.ref('ai_social_lists').on('value', (snapshot) => {
 
 function saveState() {
     if (isApplyingFirebaseSync) return; 
+    
+    if (window.isClientView && !window.fullCloudDataLoaded) {
+        alert("جاري الاتصال بقاعدة البيانات، يرجى المحاولة بعد قليل...");
+        return;
+    }
     
     cloudBoards = boards.filter(b => b.type === 'social_scheduler');
 
@@ -6226,13 +6260,18 @@ function renderSocialSchedulerApp(activeBoard) {
     };
 
     const html = `
-        <div class="sm-app-wrapper" style="display:flex; flex-direction:column; width:100%; height:100vh; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; background:#f4f5f7; direction:rtl;">
+        <div class="sm-app-wrapper" style="display:flex; flex-direction:column; width:100%; height:100%; min-height:100vh; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; background:#f4f5f7; direction:rtl; transform:translateZ(0);">
             ${(window.isClientView || window.activeSocialTab === 'calendar') ? '' : universalHeaderHtml}
             ${mainContentHtml}
         </div>
     `;
 
     appContainer.innerHTML = html;
+
+    // Force browser repaint/reflow to fix mobile white-screen bug
+    appContainer.style.display = 'none';
+    void appContainer.offsetHeight; 
+    appContainer.style.display = '';
 
     const socialClientTabsEl = document.getElementById('socialClientTabs');
     if (socialClientTabsEl && window.Sortable && !window.isClientView) {

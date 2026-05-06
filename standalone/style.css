@@ -1227,8 +1227,19 @@ input[type=number] {
         padding: 2px 4px;
     }
     .sm-mobile-toggle-sidebar {
-        display: flex !important;
-        margin-bottom: 0px;
+        display: none !important;
+    }
+    .sm-calendar-header {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .sm-cal-month-title {
+        justify-content: center;
+    }
+    .sm-cal-nav {
+        justify-content: center;
     }
     .sm-close-sidebar {
         display: block !important;
