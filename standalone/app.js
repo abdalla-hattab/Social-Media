@@ -5679,8 +5679,8 @@ function renderSocialSchedulerApp(activeBoard) {
                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
                                         </div>`;
                                     } else {
-                                        actionBtnHtml = `<div onclick="window.smHandleSocialActionClick(event, '${platform}', false, '${storageKey}', '')" style="width:16px; height:16px; border-radius:50%; background:#f1f5f9; color:#64748b; border:1px solid #cbd5e0; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-top:-6px; z-index:2; position:relative; font-weight:bold;" title="إضافة رابط">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                        actionBtnHtml = `<div onclick="window.smHandleSocialActionClick(event, '${platform}', false, '${storageKey}', '')" style="width:16px; height:16px; border-radius:50%; background:#fef3c7; border:1px solid #fcd34d; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-top:-6px; z-index:2; position:relative; font-size:10px; font-weight:bold;" title="إضافة رابط">
+                                            ⚠️
                                         </div>`;
                                     }
 
