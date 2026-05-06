@@ -5098,13 +5098,23 @@ function renderSocialSchedulerApp(activeBoard) {
     const topRowHtml = `
         <div class="sm-header-banner" style="margin-bottom: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px;">
             <!-- Title & Icon -->
-            <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0; padding: 6px; border-radius: 8px; outline: none; box-shadow: none;">
-                <div class="sm-title-icon" onclick="window.openSocialRulesModal()" title="انقر لضبط وتعديل قواعد النشر" style="cursor: pointer; display: flex; align-items: center; padding: 4px; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.06)'" onmouseout="this.style.background='transparent'">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 6px; border-radius: 8px; outline: none; box-shadow: none;">
+                <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
+                    <div class="sm-title-icon" onclick="window.openSocialRulesModal()" title="انقر لضبط وتعديل قواعد النشر" style="cursor: pointer; display: flex; align-items: center; padding: 4px; border-radius: 50%; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.06)'" onmouseout="this.style.background='transparent'">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+                    </div>
+                    <div class="sm-title-text" style="display: flex; align-items: center; gap: 8px;">
+                        <h2 style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0; outline: none; padding: 2px 6px; border-radius: 4px;">لوحة تنظيم خدمة السوشال ميديا</h2>
+                    </div>
                 </div>
-                <div class="sm-title-text" style="display: flex; align-items: center; gap: 8px;">
-                    <h2 style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0; outline: none; padding: 2px 6px; border-radius: 4px;">لوحة تنظيم خدمة السوشال ميديا</h2>
-                </div>
+                <!-- Frame.io Button -->
+                <a href="https://next.frame.io/" target="_blank" style="display: flex; align-items: center; gap: 8px; background: #0f172a; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='translateY(0)'" title="الذهاب إلى Frame.io">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="2.5" ry="2.5"></rect>
+                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                    </svg>
+                    Frame.io
+                </a>
             </div>
 
             <!-- Client Tabs below the title -->
