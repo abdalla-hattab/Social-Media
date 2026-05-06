@@ -4680,6 +4680,20 @@ function renderSocialSchedulerApp(activeBoard) {
         if (typeof render === 'function') render();
     };
 
+    window.handleEmojiClick = function(event, boardId) {
+        event.stopPropagation();
+        if (window._emojiClickTimer) {
+            clearTimeout(window._emojiClickTimer);
+            window._emojiClickTimer = null;
+            window.toggleClientEmojiPopup(event, boardId);
+        } else {
+            window._emojiClickTimer = setTimeout(() => {
+                window._emojiClickTimer = null;
+                window.switchSocialClient(boardId);
+            }, 250);
+        }
+    };
+
     window.renameSocialClient = function(e, id) {
         e.stopPropagation();
         const board = boards.find(b => b.id === id);
@@ -4893,7 +4907,7 @@ function renderSocialSchedulerApp(activeBoard) {
 
                 return `
                 <div data-id="${b.id}" style="display: inline-flex; margin-left: 8px; margin-bottom: 8px; vertical-align: top; background: ${bg}; border: ${border}; box-shadow: ${shadow}; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 12px;">
-                    <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="window.toggleClientEmojiPopup(event, '${b.id}')" title="تحديد حالة العميل">
+                    <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="window.handleEmojiClick(event, '${b.id}')" title="تحديد حالة العميل">
                         ${window.getClientEmojiSvg(b.clientSentiment || 'grey', 18)}
                     </div>
                     <button 
