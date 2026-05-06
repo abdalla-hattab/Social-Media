@@ -5612,9 +5612,20 @@ function renderSocialSchedulerApp(activeBoard) {
                     const dayName = dayNamesArabic[dayObj.getDay()];
                     
                     clientFeedHtml += `<div class="sm-feed-day-card" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 16px;">`;
+                    let frameIoLink = null;
+                    postsByDate[dateStr].forEach(p => {
+                        const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
+                        items.forEach(m => {
+                            if (m.type === 'frame-io' && m.url) {
+                                frameIoLink = m.url;
+                            }
+                        });
+                    });
+
                     clientFeedHtml += `<div style="font-weight: 800; font-size: 16px; color: #0f172a; margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
                         <span style="background:#ea580c; color:white; border-radius:8px; padding:4px 12px; font-size: 15px;">${dayNum} ${monthNamesArabic[currentMonth]}</span>
                         <span style="color: #64748b; font-weight: 600; font-size: 14px;">${dayName}</span>
+                        ${frameIoLink ? `<div style="flex-grow: 1;"></div><a href="${frameIoLink}" target="_blank" style="background: #1e293b; color: white; border-radius: 8px; padding: 4px 12px; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                     </div>`;
                     
                     clientFeedHtml += `<div style="display:flex; flex-direction:column; gap:12px;">`;
