@@ -5489,6 +5489,8 @@ function renderSocialSchedulerApp(activeBoard) {
         if (activeBoard.contractStartDate) {
             const d = activeBoard.contractDurationMonths ? ` (${activeBoard.contractDurationMonths} أشهر)` : '';
             contractSubtitle = `<span style="font-size: 9px; color: #94a3b8; font-weight: 500; margin-right: 6px;">بداية العقد: ${activeBoard.contractStartDate}${d}</span>`;
+        } else {
+            contractSubtitle = `<span style="font-size: 12px; margin-right: 6px;" title="الرجاء تحديد تاريخ بداية العقد">⚠️</span>`;
         }
 
         let contractHtml = '';
