@@ -5931,8 +5931,8 @@ function renderSocialSchedulerApp(activeBoard) {
             marginRight: '-4px'
         });
 
-        const platforms = ['facebook', 'instagram', 'twitter', 'linkedin', 'tiktok', 'snapchat'];
-        const platformNames = { facebook: 'فيسبوك', instagram: 'إنستغرام', twitter: 'تويتر', linkedin: 'لينكد إن', tiktok: 'تيك توك', snapchat: 'سناب شات' };
+        const platforms = ['phone', 'website', 'facebook', 'instagram', 'twitter', 'linkedin', 'tiktok', 'snapchat'];
+        const platformNames = { phone: 'رقم الهاتف', website: 'رابط الموقع', facebook: 'رابط فيسبوك', instagram: 'رابط إنستغرام', twitter: 'رابط تويتر', linkedin: 'رابط لينكد إن', tiktok: 'رابط تيك توك', snapchat: 'رابط سناب شات' };
         const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
         const inputElements = {};
 
@@ -5949,7 +5949,7 @@ function renderSocialSchedulerApp(activeBoard) {
             });
 
             const label = document.createElement('label');
-            label.textContent = `رابط ${pName}`;
+            label.textContent = pName;
             Object.assign(label.style, {
                 fontSize: '13px',
                 fontWeight: '600',
@@ -5959,7 +5959,7 @@ function renderSocialSchedulerApp(activeBoard) {
             const input = document.createElement('input');
             input.type = 'text';
             input.value = savedLink;
-            input.placeholder = 'https://...';
+            input.placeholder = platform === 'phone' ? '+966...' : 'https://...';
             input.dir = 'ltr';
             Object.assign(input.style, {
                 width: '100%',
