@@ -4966,25 +4966,48 @@ function renderSocialSchedulerApp(activeBoard) {
     
     window.generateDirectShareLink = window.generateDirectShareLink || function(boardId, btn, e) {
         if (e) e.stopPropagation();
+        if(btn) {
+            btn.style.opacity = '0.5';
+            btn.style.pointerEvents = 'none';
+        }
+        
         let m = window.activeSocialMonthView ? window.activeSocialMonthView.month : new Date().getMonth();
         let y = window.activeSocialMonthView ? window.activeSocialMonthView.year : new Date().getFullYear();
         
-        const targetUrl = window.location.href.split('?')[0] + '?c=' + boardId + '-' + m + '-' + y;
+        const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
+        const shareData = `${boardId}|${m}|${y}`;
         
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(targetUrl).then(() => {
-                if(btn) {
-                    const oldHtml = btn.innerHTML;
-                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-                    setTimeout(() => { btn.innerHTML = oldHtml; }, 2000);
-                } else {
-                    // silent fallback
-                }
-            });
+        const newTab = window.open('about:blank', '_blank');
+        if (newTab) {
+            newTab.document.write('<div style="font-family:sans-serif; text-align:center; padding:50px; color:#64748b; font-weight:bold; font-size:18px;">جاري تأمين الرابط المختصر...</div>');
         }
         
-        // Open the link in a new tab
-        window.open(targetUrl, '_blank');
+        firebase.database().ref('sm_short_links/' + shortCode).set(shareData).then(() => {
+            if(btn) {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+                const oldHtml = btn.innerHTML;
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => { btn.innerHTML = oldHtml; }, 2000);
+            }
+            
+            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(targetUrl).catch(err => console.error("Clipboard copy failed", err));
+            }
+            
+            if (newTab) newTab.location.href = targetUrl;
+            else window.location.href = targetUrl;
+        }).catch(err => {
+            console.error(err);
+            if(btn) {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = 'auto';
+            }
+            alert('حدث خطأ أثناء إنشاء الرابط. يرجى المحاولة مرة أخرى.');
+            if(newTab) newTab.close();
+        });
     };
 
     if (!window.openSocialRulesModal) {
@@ -5283,7 +5306,7 @@ function renderSocialSchedulerApp(activeBoard) {
             btn.style.opacity = '0.5';
             btn.style.pointerEvents = 'none';
         }
-        const shortCode = Math.random().toString(36).substr(2,4).toUpperCase();
+        const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
         const shareData = `${boardId}|${month}|${year}`;
         
         // Open the tab synchronously to bypass popup blockers
