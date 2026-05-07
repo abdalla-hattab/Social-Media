@@ -5588,16 +5588,16 @@ function renderSocialSchedulerApp(activeBoard) {
         let contractSubtitle = '';
         if (activeBoard.contractStartDate) {
             const d = activeBoard.contractDurationMonths ? ` (${activeBoard.contractDurationMonths} أشهر)` : '';
-            contractSubtitle = `<span style="font-size: 9px; color: #94a3b8; font-weight: 500; margin-right: 6px;">بداية العقد: ${activeBoard.contractStartDate}${d}</span>`;
+            contractSubtitle = `<span style="font-size: 9px; color: #94a3b8; font-weight: 500;">بداية العقد: ${activeBoard.contractStartDate}${d}</span>`;
         } else {
-            contractSubtitle = `<span style="font-size: 12px; margin-right: 6px;" title="الرجاء تحديد تاريخ بداية العقد">⚠️</span>`;
+            contractSubtitle = `<span style="font-size: 12px;" title="الرجاء تحديد تاريخ بداية العقد">⚠️</span>`;
         }
 
         let contractHtml = '';
         if (!window.isClientView) {
             contractHtml = `
-                <div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; margin-left: 16px; transition: all 0.2s; transform-origin: center;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
-                    <div style="display: flex; align-items: baseline; margin-bottom: 4px; white-space: nowrap;">
+                <div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; transition: all 0.2s; transform-origin: center;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
+                    <div style="display: flex; align-items: center; margin-bottom: 4px; white-space: nowrap; gap: 6px;">
                         <span style="font-size: 12px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
                         ${contractSubtitle}
                     </div>
@@ -5611,14 +5611,16 @@ function renderSocialSchedulerApp(activeBoard) {
         }
 
         const monthStatsHtml = `
-            ${contractHtml}
-            <div style="display: inline-flex; flex-direction: column; align-items: center; margin-left: 12px;">
-                <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px; white-space: nowrap;">تم تسوية</span>
-                <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa; white-space: nowrap;">
-                    <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">🖼️ صور: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthImages}</strong></span>
-                    <span style="color: #fed7aa; font-weight: 400;">|</span>
-                    <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">▶️ فيديو: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthVideos}</strong></span>
-                </span>
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px;">
+                ${contractHtml}
+                <div style="display: inline-flex; flex-direction: column; align-items: center;">
+                    <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px; white-space: nowrap;">تم تسوية</span>
+                    <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa; white-space: nowrap;">
+                        <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">🖼️ صور: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthImages}</strong></span>
+                        <span style="color: #fed7aa; font-weight: 400;">|</span>
+                        <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">▶️ فيديو: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthVideos}</strong></span>
+                    </span>
+                </div>
             </div>
         `;
         let clientFeedHtml = '';
@@ -5728,7 +5730,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     <div class="sm-calendar-wrap ${window.isLiveModeActive ? 'sm-calendar-live-active' : ''}" style="flex: 1; overflow: visible; margin-bottom: 0;">
                         <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 12px;">
                             <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}</h3>
-                            <div class="sm-cal-nav" style="align-items: center;">
+                            <div class="sm-cal-nav" style="align-items: center; flex-wrap: wrap; gap: 12px; justify-content: center;">
                                 ${monthStatsHtml}
                                 <button class="sm-mobile-toggle-sidebar" onclick="document.querySelector('.sm-sidebar').classList.add('active')" style="background: #ea580c; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; align-items: center; gap: 6px;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
