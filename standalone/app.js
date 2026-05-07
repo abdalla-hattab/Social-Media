@@ -5678,7 +5678,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                         عرض المحتوى
                                     </button>
                                 </div>
-                                <div style="display:flex; justify-content:center; align-items:center; position:relative; z-index:1;" onclick="window.openCreatePostModal('${p.id}'); cursor:pointer;">
+                                <div style="display:flex; justify-content:center; align-items:center; position:relative; z-index:1; cursor:pointer;" onclick="window.openCreatePostModal('${p.id}');">
                                     ${mediaThumb}
                                 </div>
                                 <div style="flex: 1; display:flex; justify-content: flex-end;">
