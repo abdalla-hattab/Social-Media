@@ -5612,20 +5612,9 @@ function renderSocialSchedulerApp(activeBoard) {
                     const dayName = dayNamesArabic[dayObj.getDay()];
                     
                     clientFeedHtml += `<div class="sm-feed-day-card" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 16px;">`;
-                    let frameIoLink = null;
-                    postsByDate[dateStr].forEach(p => {
-                        const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
-                        items.forEach(m => {
-                            if (m.type === 'frame-io' && m.url) {
-                                frameIoLink = m.url;
-                            }
-                        });
-                    });
-
                     clientFeedHtml += `<div style="font-weight: 800; font-size: 16px; color: #0f172a; margin-bottom: 16px; display:flex; align-items:center; gap:8px;">
                         <span style="background:#ea580c; color:white; border-radius:8px; padding:4px 12px; font-size: 15px;">${dayNum} ${monthNamesArabic[currentMonth]}</span>
                         <span style="color: #64748b; font-weight: 600; font-size: 14px;">${dayName}</span>
-                        ${frameIoLink ? `<div style="flex-grow: 1;"></div><a href="${frameIoLink}" target="_blank" style="background: #1e293b; color: white; border-radius: 8px; padding: 4px 12px; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                     </div>`;
                     
                     clientFeedHtml += `<div style="display:flex; flex-direction:column; gap:12px;">`;
@@ -5638,7 +5627,14 @@ function renderSocialSchedulerApp(activeBoard) {
                         
                         const defaultIcon = p.postType === 'video' ? '▶️' : '🖼️';
                         let mediaThumb = `<div style="font-size:24px; margin-left:12px; flex-shrink:0; background: #f1f5f9; width: 64px; height: 64px; display:flex; align-items:center; justify-content:center; border-radius: 8px;">${defaultIcon}</div>`;
+                        let postFrameIoLink = null;
                         if (items.length > 0) {
+                            items.forEach(m => {
+                                if (m.type === 'frame-io' && m.url) {
+                                    postFrameIoLink = m.url;
+                                }
+                            });
+                            
                             const m = items[0];
                             if (m.dataUrl && (!m.type || m.type === 'image')) {
                                 mediaThumb = `<img class="sm-thumb-icon" src="${m.dataUrl}" style="width:64px; height:64px; border-radius:8px; object-fit:cover; margin-left:12px; flex-shrink:0; border:1px solid #e2e8f0;">`;
@@ -5674,10 +5670,11 @@ function renderSocialSchedulerApp(activeBoard) {
                         }
 
                         clientFeedHtml += `
-                        <div class="sm-cal-draggable-post" onclick="window.openCreatePostModal('${p.id}');" style="padding: 16px; border-radius: 12px; background: ${bg}; border: ${border}; border-right: 4px solid ${accentColor}; color: #1e293b; cursor: pointer; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; width: 100%; box-sizing: border-box;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
-                            <div style="display:flex; align-items:flex-start; width: 100%; justify-content: flex-start;">
+                        <div class="sm-cal-draggable-post" onclick="window.openCreatePostModal('${p.id}');" style="padding: 16px; border-radius: 12px; background: ${bg}; border: ${border}; border-right: 4px solid ${accentColor}; color: #1e293b; cursor: pointer; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; width: 100%; box-sizing: border-box; margin-bottom: 12px;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
+                            <div style="display:flex; align-items:flex-start; width: 100%; justify-content: flex-start; gap: 12px;">
                                 ${mediaThumb}
-                                <div class="sm-thumb-text" style="padding-right: 8px; flex:1; font-weight:600; font-size: 14px; color: #334155; pointer-events:none; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;">${textSnippet}</div>
+                                <div class="sm-thumb-text" style="flex:1; font-weight:600; font-size: 14px; color: #334155; pointer-events:none; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;">${textSnippet}</div>
+                                ${postFrameIoLink ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 8px; padding: 6px 12px; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 4px; flex-shrink: 0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                             </div>
                             ${platformsHtml}
                             ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تعديله من العميل${p.clientEdits ? `<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
