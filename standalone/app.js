@@ -5795,7 +5795,10 @@ function renderSocialSchedulerApp(activeBoard) {
                                     
                                     const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
                                     const storageKey = `social_link_${boardPrefix}_${platform}`;
-                                    const savedLink = localStorage.getItem(storageKey);
+                                    let savedLink = localStorage.getItem(storageKey);
+                                    if (typeof activeBoard !== 'undefined' && activeBoard && activeBoard.socialLinks && activeBoard.socialLinks[platform]) {
+                                        savedLink = activeBoard.socialLinks[platform];
+                                    }
                                     const hasLink = savedLink && savedLink.trim() !== '';
 
                                     let actionBtnHtml = '';
@@ -6034,11 +6037,15 @@ function renderSocialSchedulerApp(activeBoard) {
         const platformNames = { phone: 'رقم الهاتف', website: 'رابط الموقع', facebook: 'رابط فيسبوك', instagram: 'رابط إنستغرام', twitter: 'رابط تويتر', linkedin: 'رابط لينكد إن', tiktok: 'رابط تيك توك', snapchat: 'رابط سناب شات' };
         const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
         const inputElements = {};
+        const currentBoard = typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined' ? boards.find(b => b.id === activeBoardId) : null;
 
         platforms.forEach(platform => {
             const pName = platformNames[platform];
             const storageKey = `social_link_${boardPrefix}_${platform}`;
-            const savedLink = localStorage.getItem(storageKey) || '';
+            let savedLink = localStorage.getItem(storageKey) || '';
+            if (currentBoard && currentBoard.socialLinks && currentBoard.socialLinks[platform]) {
+                savedLink = currentBoard.socialLinks[platform];
+            }
 
             const fieldWrapper = document.createElement('div');
             Object.assign(fieldWrapper.style, {
@@ -6073,7 +6080,7 @@ function renderSocialSchedulerApp(activeBoard) {
             input.onfocus = () => input.style.borderColor = '#ea580c';
             input.onblur = () => input.style.borderColor = '#e2e8f0';
             
-            inputElements[storageKey] = input;
+            inputElements[platform] = input;
 
             fieldWrapper.appendChild(label);
             fieldWrapper.appendChild(input);
@@ -6137,14 +6144,22 @@ function renderSocialSchedulerApp(activeBoard) {
 
         cancelBtn.onclick = () => closeModal();
         saveBtn.onclick = () => {
-            Object.keys(inputElements).forEach(key => {
-                const val = inputElements[key].value.trim();
+            if (currentBoard) {
+                if (!currentBoard.socialLinks) currentBoard.socialLinks = {};
+            }
+            Object.keys(inputElements).forEach(platform => {
+                const val = inputElements[platform].value.trim();
+                const storageKey = `social_link_${boardPrefix}_${platform}`;
                 if (val) {
-                    localStorage.setItem(key, val);
+                    if (currentBoard) currentBoard.socialLinks[platform] = val;
+                    localStorage.setItem(storageKey, val);
                 } else {
-                    localStorage.removeItem(key);
+                    if (currentBoard && currentBoard.socialLinks) delete currentBoard.socialLinks[platform];
+                    localStorage.removeItem(storageKey);
                 }
             });
+            if (currentBoard && typeof window.saveState === 'function') window.saveState();
+            
             window.activePreviewPlatform = null;
             closeModal();
             setTimeout(() => {
@@ -6184,7 +6199,11 @@ function renderSocialSchedulerApp(activeBoard) {
         // Get saved link per board
         const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
         const storageKey = `social_link_${boardPrefix}_${platform}`;
-        const savedLink = localStorage.getItem(storageKey);
+        const currentBoard = typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined' ? boards.find(b => b.id === activeBoardId) : null;
+        let savedLink = localStorage.getItem(storageKey);
+        if (currentBoard && currentBoard.socialLinks && currentBoard.socialLinks[platform]) {
+            savedLink = currentBoard.socialLinks[platform];
+        }
         
         // Platform Arabic names
         const platformNames = {
