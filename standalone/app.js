@@ -1642,9 +1642,9 @@ window.openCreatePostModal = function(postId = null) {
         
         if (livePlatformsSection) {
             if (window.isLiveModeActive) {
-                livePlatformsSection.style.display = 'block';
+                if (!window.isClientView) livePlatformsSection.style.display = 'block';
                 if (smPlatformsSection) {
-                    smPlatformsSection.style.display = 'block';
+                    if (!window.isClientView) smPlatformsSection.style.display = 'block';
                     smPlatformsSection.style.pointerEvents = 'none';
                     smPlatformsSection.style.opacity = '0.7';
                 }
@@ -1689,11 +1689,11 @@ window.openCreatePostModal = function(postId = null) {
             } else {
                 livePlatformsSection.style.display = 'none';
                 if (smPlatformsSection) {
-                    smPlatformsSection.style.display = 'block';
+                    if (!window.isClientView) smPlatformsSection.style.display = 'block';
                     smPlatformsSection.style.pointerEvents = 'auto';
                     smPlatformsSection.style.opacity = '1';
                 }
-                if (formatSelectorsWrapper) formatSelectorsWrapper.style.display = 'grid';
+                if (formatSelectorsWrapper && !window.isClientView) formatSelectorsWrapper.style.display = 'grid';
             }
         }
         if (window.clearMediaUpload) window.clearMediaUpload(); // clears gallery
@@ -2101,7 +2101,7 @@ window.openCreatePostModal = function(postId = null) {
                     html += `</div>`;
                     
                     existingPostsArea.innerHTML = html;
-                    existingPostsArea.style.display = 'block';
+                    if (!window.isClientView) existingPostsArea.style.display = 'block';
                     
                     setTimeout(() => {
                         const listEl = document.getElementById('smModalPostsList');
