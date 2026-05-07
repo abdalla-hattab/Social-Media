@@ -1607,6 +1607,21 @@ window.openCreatePostModal = function(postId = null) {
             if (agencyEditsContainer) {
                 agencyEditsContainer.style.setProperty("display", "none", "important");
             }
+            
+            // Hide unnecessary sections for client view
+            const elementsToHide = [
+                'smPlatformsSection',
+                'smLivePlatformsSection',
+                'publishSection',
+                'sm-optional-fields-wrapper',
+                'smModalExistingPostsArea',
+                'frameIoContainer',
+                'formatSelectorsWrapper'
+            ];
+            elementsToHide.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.setProperty('display', 'none', 'important');
+            });
         }
         
         const localBoard = boards.find(b => b.id === activeBoardId);
