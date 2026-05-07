@@ -145,7 +145,8 @@ if (window.isClientView) {
         .sm-upload-prompt-dashed,
         #smUploadPrompt,
         #frameIoLabel,
-        #frameIoContainer {
+        #frameIoContainer,
+        #smUploadZone {
             display: none !important;
         }
     `;
@@ -1621,7 +1622,8 @@ window.openCreatePostModal = function(postId = null) {
                 'sm-optional-fields-wrapper',
                 'smModalExistingPostsArea',
                 'frameIoContainer',
-                'formatSelectorsWrapper'
+                'formatSelectorsWrapper',
+                'smUploadZone'
             ];
             elementsToHide.forEach(id => {
                 const el = document.getElementById(id);
@@ -2231,7 +2233,7 @@ window.openCreatePostModal = function(postId = null) {
             if (window.isClientView) {
                 const zone = document.getElementById("smUploadZone");
                 if (zone) zone.style.setProperty("margin-bottom", "0px", "important");
-                if (zone) zone.style.setProperty("display", "block", "important"); // Keep media visible
+                if (zone) zone.style.setProperty("display", "none", "important"); // Hide media completely for client
                 
                 const prompt = document.getElementById("smUploadPrompt");
                 if (prompt) {
