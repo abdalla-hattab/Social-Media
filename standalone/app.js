@@ -5728,10 +5728,12 @@ function renderSocialSchedulerApp(activeBoard) {
                     ${window.isClientView ? '' : universalHeaderHtml}
                     ${window.isClientView ? '' : window.generatePipelineHtml(activeBoard)}
                     <div class="sm-calendar-wrap ${window.isLiveModeActive ? 'sm-calendar-live-active' : ''}" style="flex: 1; overflow: visible; margin-bottom: 0;">
-                        <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 12px;">
-                            <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}</h3>
-                            <div class="sm-cal-nav" style="align-items: center; flex-wrap: wrap; gap: 12px; justify-content: center;">
+                        <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 16px; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center;">
+                                <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;">${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}</h3>
                                 ${monthStatsHtml}
+                            </div>
+                            <div class="sm-cal-nav" style="align-items: center; flex-wrap: wrap; gap: 12px; justify-content: center;">
                                 <button class="sm-mobile-toggle-sidebar" onclick="document.querySelector('.sm-sidebar').classList.add('active')" style="background: #ea580c; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; align-items: center; gap: 6px;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                                     معلومات وتفاصيل اليوم
