@@ -5626,7 +5626,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
                         
                         const defaultIcon = p.postType === 'video' ? '▶️' : '🖼️';
-                        let mediaThumb = `<div style="font-size:24px; flex-shrink:0; background: #f1f5f9; width: 48px; height: 48px; display:flex; align-items:center; justify-content:center; border-radius: 8px;">${defaultIcon}</div>`;
+                        let mediaThumb = `<div style="font-size:24px; flex-shrink:0; background: #f1f5f9; width: 50px; height: 50px; display:flex; align-items:center; justify-content:center; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">${defaultIcon}</div>`;
                         let postFrameIoLink = null;
                         if (items.length > 0) {
                             items.forEach(m => {
@@ -5637,11 +5637,11 @@ function renderSocialSchedulerApp(activeBoard) {
                             
                             const m = items[0];
                             if (m.dataUrl && (!m.type || m.type === 'image')) {
-                                mediaThumb = `<img class="sm-thumb-icon" src="${m.dataUrl}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid #e2e8f0;">`;
+                                mediaThumb = `<img class="sm-thumb-icon" src="${m.dataUrl}" style="width:50px; height:50px; border-radius:12px; object-fit:cover; flex-shrink:0; border:1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">`;
                             } else if (m.thumbnail) {
-                                mediaThumb = `<img class="sm-thumb-icon" src="${m.thumbnail}" style="width:48px; height:48px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid #e2e8f0;">`;
+                                mediaThumb = `<img class="sm-thumb-icon" src="${m.thumbnail}" style="width:50px; height:50px; border-radius:12px; object-fit:cover; flex-shrink:0; border:1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">`;
                             } else if (m.type === 'frame-io' || m.type === 'video' || (m.dataUrl && m.dataUrl.startsWith('data:video/'))) {
-                                mediaThumb = `<div class="sm-thumb-icon" style="width:48px; height:48px; border-radius:8px; background:#1e293b; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid #e2e8f0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
+                                mediaThumb = `<div class="sm-thumb-icon" style="width:50px; height:50px; border-radius:12px; background:#1e293b; color:white; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>`;
                             }
                         }
                         
@@ -5670,19 +5670,19 @@ function renderSocialSchedulerApp(activeBoard) {
                         }
 
                         clientFeedHtml += `
-                        <div class="sm-feed-post-card" style="padding: 12px 16px; border-radius: 12px; background: ${bg}; border: ${border}; border-right: 4px solid ${accentColor}; color: #1e293b; display: flex; flex-direction: column; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; width: 100%; box-sizing: border-box; margin-bottom: 12px;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
+                        <div class="sm-feed-post-card" style="position: relative; padding: 14px 16px; border-radius: 16px; background: ${bg}; border: ${border}; border-right: 4px solid ${accentColor}; color: #1e293b; display: flex; flex-direction: column; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; direction: rtl; width: 100%; box-sizing: border-box; margin-bottom: 12px;" onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.02)'; this.style.transform='none';">
                             <div style="display:flex; align-items:center; justify-content:space-between; width: 100%;">
                                 <div style="flex: 1; display:flex; justify-content: flex-start;">
-                                    <button onclick="window.openCreatePostModal('${p.id}');" style="background: white; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); white-space: nowrap;">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                    <button onclick="window.openCreatePostModal('${p.id}');" style="background: white; color: #334155; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.color='#334155';">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                                         عرض المحتوى
                                     </button>
                                 </div>
-                                <div style="display:flex; justify-content:center; align-items:center; position:relative; z-index:1; cursor:pointer;" onclick="window.openCreatePostModal('${p.id}');">
+                                <div style="display:flex; justify-content:center; align-items:center; position:relative; z-index:1; cursor:pointer; transition: transform 0.2s ease;" onmouseover="this.style.transform='scale(1.05)';" onmouseout="this.style.transform='none';" onclick="window.openCreatePostModal('${p.id}');">
                                     ${mediaThumb}
                                 </div>
                                 <div style="flex: 1; display:flex; justify-content: flex-end;">
-                                    ${postFrameIoLink ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight:700; text-decoration: none; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
+                                    ${postFrameIoLink ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#0f172a'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.background='#1e293b'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                                 </div>
                             </div>
                             ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تعديله من العميل${p.clientEdits ? `<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
