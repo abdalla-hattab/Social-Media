@@ -1775,7 +1775,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-    <script src="app.js?v=101"></script>
+    <script src="app.js?v=100"></script>
     <!-- Global Confirmation Modal -->
     <div class="modal-overlay" id="globalConfirmModal" style="z-index: 9999;">
         <div class="modal-content" style="max-width: 350px; text-align: center; border-radius: 16px; padding: 32px 24px;">
@@ -1794,11 +1794,11 @@
     <!-- Contract Edit Modal -->
     <div class="modal-overlay" id="contractEditModal" style="z-index: 9999;">
         <div class="modal-content" style="max-width: 400px; border-radius: 16px; padding: 32px 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 24px; position: relative;">
                 <h3 style="margin: 0; font-size: 18px; color: #1e293b; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 20px;">📝</span> المطلوب في العقد
+                    <span style="font-size: 20px;">📝</span> المطلوب في العقد هذا الشهر
                 </h3>
-                <button onclick="document.getElementById('contractEditModal').classList.remove('active')" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; line-height: 1;">&times;</button>
+                <button onclick="document.getElementById('contractEditModal').classList.remove('active')" style="position: absolute; left: 0; background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; line-height: 1;">&times;</button>
             </div>
             
             <div style="margin-bottom: 20px; text-align: right;">
@@ -1816,10 +1816,6 @@
                 <input type="date" id="contractStartDateInput" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 15px; box-sizing: border-box; text-align: right; font-family: inherit;">
             </div>
 
-            <div style="margin-bottom: 32px; text-align: right;">
-                <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">مدة العقد (بالأشهر)</label>
-                <input type="number" id="contractDurationInput" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 15px; box-sizing: border-box; text-align: right;" min="1" placeholder="مثال: 6">
-            </div>
             
             <div style="display: flex; gap: 12px; justify-content: center;">
                 <button onclick="document.getElementById('contractEditModal').classList.remove('active')" style="flex:1; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; color: #475569; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">إلغاء</button>
