@@ -146,7 +146,8 @@ if (window.isClientView) {
         #smUploadPrompt,
         #frameIoLabel,
         #frameIoContainer,
-        #smUploadZone {
+        #smUploadZone,
+        .sm-textarea-header button {
             display: none !important;
         }
     `;
@@ -1794,6 +1795,16 @@ window.openCreatePostModal = function(postId = null) {
                         textArea.value = post.fullText || post.description || '';
                         const cc = document.querySelector('.sm-char-count');
                         if (cc) cc.innerText = textArea.value.length + ' حرف';
+                        
+                        if (window.isClientView) {
+                            textArea.readOnly = true;
+                            textArea.style.setProperty('outline', 'none', 'important');
+                            textArea.style.height = 'auto';
+                            setTimeout(() => {
+                                textArea.style.height = textArea.scrollHeight + 'px';
+                                textArea.style.overflow = 'hidden';
+                            }, 100);
+                        }
                     }
                     
                     // Restore Platforms
