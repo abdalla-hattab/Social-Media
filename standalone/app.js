@@ -19,6 +19,11 @@ let cloudBoards = [];
 const smUrlParams = new URLSearchParams(window.location.search);
 
 window.isClientView = smUrlParams.get('client_view') === 'true';
+if (window.isClientView) {
+    const clientStyle = document.createElement('style');
+    clientStyle.innerHTML = '.sm-gallery-badge { display: none !important; }';
+    document.head.appendChild(clientStyle);
+}
 window.shortClientMonth = null;
 window.shortClientYear = null;
 window.isResolvingShortLink = false;
