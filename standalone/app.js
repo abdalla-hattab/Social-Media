@@ -4046,7 +4046,7 @@ function render() {
         }
     }
     if (!window.isClientView) {
-        document.title = `Social Media Manager`;
+        document.title = `خدمة السوشيال ميديا`;
     }
 
     appContainer.classList.remove('managing-view');
