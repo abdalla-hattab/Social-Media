@@ -2404,14 +2404,28 @@ if (closeCreatePostModal && createPostModal) {
 
     // Also bind Cancel button inside modal body
     const cancelBtn = createPostModal.querySelector('.sm-btn-cancel');
-    if (cancelBtn) if(cancelBtn) cancelBtn.onclick = window.handleModalDismiss;
+    if (cancelBtn) {
+        cancelBtn.onclick = window.handleModalDismiss;
+        if (window.isClientView) {
+            cancelBtn.style.display = 'none';
+        } else {
+            cancelBtn.style.display = '';
+        }
+    }
 
     // Bind Publish Mode toggles
     const publishToggles = createPostModal.querySelectorAll('.sm-toggle-btn');
     const optionalWrapper = document.getElementById('sm-optional-fields-wrapper');
     const primaryActionBtn = document.getElementById('sm-primary-action-btn');
     if (primaryActionBtn) {
-        if(primaryActionBtn) primaryActionBtn.onclick = () => window.saveSocialDraft();
+        if (window.isClientView) {
+            primaryActionBtn.textContent = 'إغلاق';
+            primaryActionBtn.style.width = '100%';
+            primaryActionBtn.onclick = () => window.handleModalDismiss();
+        } else {
+            primaryActionBtn.style.width = '';
+            primaryActionBtn.onclick = () => window.saveSocialDraft();
+        }
     }
 
     if (publishToggles.length > 0) {
@@ -2424,13 +2438,13 @@ if (closeCreatePostModal && createPostModal) {
                 
                 if (mode === 'مسودة') {
                     if (optionalWrapper) optionalWrapper.classList.add('collapsed');
-                    if (primaryActionBtn) primaryActionBtn.textContent = 'حفظ كمسودة';
+                    if (primaryActionBtn && !window.isClientView) primaryActionBtn.textContent = 'حفظ كمسودة';
                 } else if (mode === 'فوري') {
                     if (optionalWrapper) optionalWrapper.classList.add('collapsed');
-                    if (primaryActionBtn) primaryActionBtn.textContent = 'نشر الآن';
+                    if (primaryActionBtn && !window.isClientView) primaryActionBtn.textContent = 'نشر الآن';
                 } else {
                     if (optionalWrapper) optionalWrapper.classList.remove('collapsed');
-                    if (primaryActionBtn) primaryActionBtn.textContent = 'جدولة المنشور';
+                    if (primaryActionBtn && !window.isClientView) primaryActionBtn.textContent = 'جدولة المنشور';
                     
                     const dateInput = createPostModal.querySelector('.sm-date-input');
                     const timeInput = createPostModal.querySelector('.sm-time-input');
