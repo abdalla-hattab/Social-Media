@@ -1601,6 +1601,23 @@ window.openCreatePostModal = function(postId = null) {
             if (clientEditsContainer) clientEditsContainer.style.setProperty("display", "none", "important");
             if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "none", "important");
             
+            const t = document.getElementById('createPostModalTitle');
+            if (t) t.style.display = '';
+            const s = document.getElementById('createPostSubtitle');
+            if (s) s.style.display = '';
+            
+            const h4s = document.querySelectorAll('#createPostModal .sm-textarea-header h4');
+            h4s.forEach(h4 => {
+                h4.style.textAlign = '';
+                if(h4.parentElement) {
+                    h4.parentElement.style.alignItems = 'flex-start';
+                    h4.parentElement.style.width = '';
+                    if(h4.parentElement.parentElement) {
+                        h4.parentElement.parentElement.style.justifyContent = 'space-between';
+                    }
+                }
+            });
+            
             if (agencyEditsContainer && agencyEditsInput) {
                 if (window.smShowClientEditsToggle !== false && isClientModified) {
                     agencyEditsContainer.style.display = 'block';
@@ -1627,6 +1644,24 @@ window.openCreatePostModal = function(postId = null) {
                 if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "flex", "important");
             }
             
+            const t = document.getElementById('createPostModalTitle');
+            if (t) t.style.display = 'none';
+            const s = document.getElementById('createPostSubtitle');
+            if (s) s.style.display = 'none';
+            
+            const h4s = document.querySelectorAll('#createPostModal .sm-textarea-header h4');
+            h4s.forEach(h4 => {
+                h4.style.textAlign = 'center';
+                h4.style.width = '100%';
+                if(h4.parentElement) {
+                    h4.parentElement.style.alignItems = 'center';
+                    h4.parentElement.style.width = '100%';
+                    if(h4.parentElement.parentElement) {
+                        h4.parentElement.parentElement.style.justifyContent = 'center';
+                    }
+                }
+            });
+            
             // Hide Agency container entirely for Client
             if (agencyEditsContainer) {
                 agencyEditsContainer.style.setProperty("display", "none", "important");
@@ -1645,7 +1680,8 @@ window.openCreatePostModal = function(postId = null) {
                 'smPostTypeSelector',
                 'emojiPickerBtn',
                 'emojiPickerBtn-idea',
-                'emojiPickerBtn-design'
+                'emojiPickerBtn-design',
+                'post-content-wrap'
             ];
             elementsToHide.forEach(id => {
                 const el = document.getElementById(id);
@@ -5687,7 +5723,7 @@ function renderSocialSchedulerApp(activeBoard) {
             <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px;">
                 ${contractHtml}
                 <div style="display: inline-flex; flex-direction: column; align-items: center;">
-                    <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px; white-space: nowrap;">تم تسوية</span>
+                    <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px; white-space: nowrap;">${window.isClientView ? 'سيتم تسوية' : 'تم تسوية'}</span>
                     <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa; white-space: nowrap;">
                         <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">🖼️ صور: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthImages}</strong></span>
                         <span style="color: #fed7aa; font-weight: 400;">|</span>
@@ -5816,7 +5852,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     <div class="sm-calendar-wrap ${window.isLiveModeActive ? 'sm-calendar-live-active' : ''}" style="flex: 1; overflow: visible; margin-bottom: 0;">
                         <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 16px; justify-content: space-between;">
                             <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center;">
-                                <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;">${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}</h3>
+                                <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;">${window.isClientView ? `خطة المحتوى - ${activeBoard.title}` : `${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}`}</h3>
                                 ${monthStatsHtml}
                             </div>
                             <div class="sm-cal-nav" style="align-items: center; flex-wrap: wrap; gap: 12px; justify-content: center;">
