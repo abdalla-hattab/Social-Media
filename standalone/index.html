@@ -1847,7 +1847,7 @@
                     <div id="clientEditsContainer" style="display: none; width: 100%; max-width: 100%; flex-direction: column;">
                         <div id="clientEditsButtons" style="display: none; gap: 8px; width: 100%; margin-bottom: 16px;">
                             <button onclick="document.getElementById('clientEditsInputWrapper').style.setProperty('display', 'flex', 'important');" style="background: white; color: #f59e0b; border: 1px solid #fde68a; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 12px; font-size: 15px; font-weight:700; flex:1;" onmouseover="this.style.background='#fef3c7'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='white'; this.style.borderColor='#fde68a';">يوجد تعديل</button>
-                            <button id="modalClientApproveBtn" onclick="if(window.currentEditingSocialPostId) { window.approveClientPost(window.currentEditingSocialPostId, this); const closeBtn = document.getElementById('closeCreatePostModal'); if(closeBtn) closeBtn.click(); }" style="background: white; color: #10b981; border: 1px solid #bbf7d0; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 12px; font-size: 15px; font-weight:700; flex:1;" onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';">موافق</button>
+                            <button id="modalClientApproveBtn" onclick="if(window.currentEditingSocialPostId) { window.approveClientPost(window.currentEditingSocialPostId, this); }" style="background: white; color: #10b981; border: 1px solid #bbf7d0; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 12px; font-size: 15px; font-weight:700; flex:1;" onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';">موافق</button>
                         </div>
                         <div id="clientEditsInputWrapper" style="display: none; flex-direction: column; width: 100%;">
                             <textarea id="clientEditsInput" oninput="if(typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) window.saveSocialDraft(true); if(typeof window.updateLiveDiff === 'function') setTimeout(window.updateLiveDiff, 50);" placeholder="اكتب ملاحظاتك أو طلبات التعديل هنا..." style="width:100%; min-height: 80px; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 6px; padding: 12px; font-size: 13px; outline:none; resize: vertical;"></textarea>
@@ -1899,7 +1899,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-    <script src="app.js?v=122"></script>
+    <script src="app.js?v=123"></script>
     <!-- Global Confirmation Modal -->
     <div class="modal-overlay" id="globalConfirmModal" style="z-index: 9999;">
         <div class="modal-content" style="max-width: 350px; text-align: center; border-radius: 16px; padding: 32px 24px;">

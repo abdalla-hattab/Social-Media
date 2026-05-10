@@ -7888,9 +7888,19 @@ window.approveClientPost = function(postId, btnEl) {
             post.clientEdits = "تمت الموافقة ✅";
         }
         
+        const clientEditsInput = document.getElementById('clientEditsInput');
+        if (clientEditsInput) {
+            clientEditsInput.value = post.clientEdits;
+        }
+        
         window.suppressRenderForClientApprove = true;
         if (typeof window.saveState === 'function') window.saveState();
         setTimeout(() => { window.suppressRenderForClientApprove = false; }, 3000);
+        
+        if (btnEl && btnEl.id === 'modalClientApproveBtn') {
+            const closeBtn = document.getElementById('closeCreatePostModal');
+            if (closeBtn) closeBtn.click();
+        }
         
         if (btnEl) {
             const card = btnEl.closest('.sm-feed-post-card') || document.querySelector(`.sm-feed-post-card button[onclick*="approveClientPost"][onclick*="${postId}"]`)?.closest('.sm-feed-post-card');
