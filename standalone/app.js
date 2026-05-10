@@ -7976,25 +7976,18 @@ window.approveClientPost = function(postId, btnEl) {
     };
 
     if (!isApproved && hasUnapprovedEdits) {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'هل أنت متأكد؟',
-                text: 'سيتم مسح التعديلات التي طلبتها في حال الموافقة على المنشور.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#10b981',
-                cancelButtonColor: '#64748b',
-                confirmButtonText: 'نعم، موافق',
-                cancelButtonText: 'إلغاء'
-            }).then((result) => {
-                if (result.isConfirmed) {
+        if (typeof window.showCustomConfirm === 'function') {
+            window.showCustomConfirm(
+                'تأكيد الموافقة',
+                'سيتم مسح التعديلات التي طلبتها في حال الموافقة على المنشور. هل أنت متأكد؟',
+                'نعم، موافق',
+                'إلغاء',
+                () => {
                     performApproval();
                 }
-            });
-        } else {
-            if (confirm('سيتم مسح التعديلات التي طلبتها في حال الموافقة على المنشور. هل أنت متأكد؟')) {
-                performApproval();
-            }
+            );
+        } else if (confirm('سيتم مسح التعديلات التي طلبتها في حال الموافقة على المنشور. هل أنت متأكد؟')) {
+            performApproval();
         }
     } else {
         performApproval();
