@@ -1845,10 +1845,16 @@
                     </div>
                     
                     <div id="clientEditsContainer" style="display: none; width: 100%; max-width: 100%; flex-direction: column;">
-                        <div id="clientEditsLabel" style="display: none; color: #22c55e; font-size: 15px; font-weight: 600; align-items: center; gap: 8px; margin-bottom: 8px; width: 100%; text-align: right;">
-                            هل هناك تعديلات؟
+                        <div id="clientEditsButtons" style="display: none; gap: 8px; width: 100%; margin-bottom: 16px;">
+                            <button onclick="if(window.currentEditingSocialPostId) { window.approveClientPost(window.currentEditingSocialPostId, this); window.closeCreatePostModal(); }" style="background: white; color: #10b981; border: 1px solid #bbf7d0; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 12px; font-size: 15px; font-weight:700; flex:1;" onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';">موافق</button>
+                            <button onclick="document.getElementById('clientEditsInputWrapper').style.setProperty('display', 'flex', 'important');" style="background: white; color: #f59e0b; border: 1px solid #fde68a; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 12px; font-size: 15px; font-weight:700; flex:1;" onmouseover="this.style.background='#fef3c7'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='white'; this.style.borderColor='#fde68a';">يوجد تعديل</button>
                         </div>
-                        <textarea id="clientEditsInput" oninput="if(typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) window.saveSocialDraft(true); if(typeof window.updateLiveDiff === 'function') setTimeout(window.updateLiveDiff, 50);" placeholder="اكتب ملاحظاتك أو طلبات التعديل هنا..." style="width:100%; min-height: 80px; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 6px; padding: 12px; font-size: 13px; outline:none; resize: vertical;"></textarea>
+                        <div id="clientEditsInputWrapper" style="display: none; flex-direction: column; width: 100%;">
+                            <div id="clientEditsLabel" style="color: #22c55e; font-size: 15px; font-weight: 600; align-items: center; gap: 8px; margin-bottom: 8px; width: 100%; text-align: right;">
+                                هل هناك تعديلات؟
+                            </div>
+                            <textarea id="clientEditsInput" oninput="if(typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) window.saveSocialDraft(true); if(typeof window.updateLiveDiff === 'function') setTimeout(window.updateLiveDiff, 50);" placeholder="اكتب ملاحظاتك أو طلبات التعديل هنا..." style="width:100%; min-height: 80px; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 6px; padding: 12px; font-size: 13px; outline:none; resize: vertical;"></textarea>
+                        </div>
                     </div>
                     <div id="agencyClientEditsContainer" style="display: none; margin-bottom: 8px; width: 100%;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">

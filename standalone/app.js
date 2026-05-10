@@ -1641,7 +1641,17 @@ window.openCreatePostModal = function(postId = null) {
                 clientEditsContainer.style.setProperty("display", "flex", "important");
                 clientEditsContainer.style.setProperty("flex-direction", "column", "important");
                 clientEditsInput.value = editsVal;
-                if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "flex", "important");
+                
+                const btns = document.getElementById('clientEditsButtons');
+                const wrapper = document.getElementById('clientEditsInputWrapper');
+                
+                if (btns) btns.style.setProperty("display", "flex", "important");
+                
+                if (isClientModified || editsVal.length > 0) {
+                    if (wrapper) wrapper.style.setProperty("display", "flex", "important");
+                } else {
+                    if (wrapper) wrapper.style.setProperty("display", "none", "important");
+                }
             }
             
             const t = document.getElementById('createPostModalTitle');
