@@ -5725,7 +5725,11 @@ function renderSocialSchedulerApp(activeBoard) {
                                 </button>
                                 ${postFrameIoLink ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#0f172a'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.background='#1e293b'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                             </div>
-                            ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تعديله من العميل${p.clientEdits ? `<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
+                            <div style="display:flex; justify-content:center; gap: 8px; margin-top: 12px; width: 100%;">
+                                <button onclick="window.requestClientEdit('${p.id}')" style="background: white; color: #f59e0b; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#fef3c7'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='white'; this.style.borderColor='#fde68a';">يوجد تعديل</button>
+                                <button onclick="window.approveClientPost('${p.id}')" style="background: white; color: #10b981; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';">موافق</button>
+                            </div>
+                            ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة${p.clientEdits ? `<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
                         </div>`;
                     });
                     clientFeedHtml += `</div></div>`;
@@ -7716,5 +7720,30 @@ window.updatePublishTogglesVisibility = function(isInitialOpen = false) {
                 if (schedBtn) schedBtn.click();
             }
         }
+    }
+};
+
+window.approveClientPost = function(postId) {
+    if (!window.activeBoard || !window.activeBoard.cards) return;
+    const post = window.activeBoard.cards.find(c => c.id === postId);
+    if (!post) return;
+    
+    post.clientModified = true;
+    post.clientEdits = "تمت الموافقة ✅";
+    
+    if (typeof window.saveState === 'function') window.saveState();
+    if (typeof window.render === 'function') window.render();
+};
+
+window.requestClientEdit = function(postId) {
+    if (typeof window.openCreatePostModal === 'function') {
+        window.openCreatePostModal(postId);
+        setTimeout(() => {
+            const input = document.getElementById('clientEditsInput');
+            if (input) {
+                input.focus();
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 300); // Wait for modal animation
     }
 };
