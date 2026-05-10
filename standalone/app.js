@@ -7946,7 +7946,8 @@ window.approveClientPost = function(postId, btnEl) {
                     // Actually, if render wasn't called, it's just display='none'. If render was called, it might be omitted from HTML completely!
                     // If it's omitted from HTML, the easiest is to just let the normal view logic handle it or just do a manual refresh if needed. 
                     // But we can just create it dynamically:
-                    const btnContainer = btnEl.parentElement;
+                    const insertTarget = feedBtn || btnEl;
+                    const btnContainer = insertTarget.parentElement;
                     if (!card.querySelector('button[onclick^="window.requestClientEdit"]')) {
                         const newEditBtn = document.createElement('button');
                         newEditBtn.setAttribute('onclick', `window.requestClientEdit('${postId}')`);
@@ -7954,7 +7955,9 @@ window.approveClientPost = function(postId, btnEl) {
                         newEditBtn.onmouseover = function() { this.style.background='#fef3c7'; this.style.borderColor='#f59e0b'; };
                         newEditBtn.onmouseout = function() { this.style.background='white'; this.style.borderColor='#fde68a'; };
                         newEditBtn.innerText = 'يوجد تعديل';
-                        btnContainer.insertBefore(newEditBtn, btnEl);
+                        if (btnContainer) {
+                            btnContainer.insertBefore(newEditBtn, insertTarget);
+                        }
                     }
                 }
                 
