@@ -1937,6 +1937,25 @@ window.openCreatePostModal = function(postId = null) {
                                         </div>
                                         ${window.isClientView ? '' : `<button onclick="event.stopPropagation(); window.removeMediaItem(this)" style="position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,0.95); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#e53e3e; font-weight:bold; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.2); z-index:10; line-height: 1;">×</button>`}
                                     `;
+                                } else if (mi.type === 'product-link') {
+                                    wrap.className = 'product-link-media';
+                                    wrap.setAttribute('data-url', mi.url);
+                                    wrap.style.cssText = "position: relative; width: 100%; max-width: 160px; border-radius: 8px; overflow: hidden; border: 1px solid #edf2f7; background: #fff; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);";
+                                    
+                                    wrap.innerHTML = `
+                                        <div style="width: 100%; aspect-ratio: 9/16; background: #ecfdf5; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                                            ${badge}
+                                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M13.25 2.5l7.5 7.5a2 2 0 0 1 0 2.83l-7.5 7.5a2 2 0 0 1-2.83 0l-7.5-7.5a2 2 0 0 1 0-2.83l7.5-7.5a2 2 0 0 1 2.83 0z"></path></svg>
+                                            <span style="font-size:14px; font-weight:700; color:#10b981; margin-top:12px;">رابط المنتج</span>
+                                        </div>
+                                        <div style="padding: 10px; background: #ffffff; display: flex; justify-content: center; border-top: 1px solid #edf2f7;">
+                                            <button onclick="event.stopPropagation(); window.open('${mi.url}', '_blank')" style="display:flex; align-items:center; justify-content:center; gap:6px; width: 100%; background: #10b981; color: white; border: none; border-radius: 6px; padding: 8px 0; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                                عرض المنتج
+                                            </button>
+                                        </div>
+                                        ${window.isClientView ? '' : `<button onclick="event.stopPropagation(); window.removeMediaItem(this)" style="position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,0.95); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#e53e3e; font-weight:bold; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.2); z-index:10; line-height: 1;">×</button>`}
+                                    `;
                                 } else {
                                     wrap.className = 'sm-media-item-container';
                                     wrap.style.cssText = 'position: relative; width: 100%; max-width: 160px; border-radius: 8px; overflow: hidden; border: 1px solid #edf2f7; background: #fff; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);';
@@ -6424,6 +6443,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         allBoardPosts = activeBoard.cards.filter(p => {
                             let hasMedia = (p.mediaItems && p.mediaItems.length > 0 && p.mediaItems[0].dataUrl && p.mediaItems[0].dataUrl !== 'undefined') || 
                                            (p.mediaItems && p.mediaItems.length > 0 && p.mediaItems[0].type === 'frame-io') ||
+                                           (p.mediaItems && p.mediaItems.length > 0 && p.mediaItems[0].type === 'product-link') ||
                                            (p.mediaObj && p.mediaObj.dataUrl && p.mediaObj.dataUrl !== 'undefined') ||
                                            (p.cover && (p.cover.scaled || typeof p.cover === 'string'));
                             if (window.smShowClientEditsToggle === false && p.isClientDayNote) return false;
@@ -6455,6 +6475,8 @@ function renderSocialSchedulerApp(activeBoard) {
                                 itemMedia = p.mediaItems[0].dataUrl;
                             } else if (p.mediaItems && p.mediaItems.length > 0 && p.mediaItems[0].type === 'frame-io') {
                                 itemMedia = p.mediaItems[0].thumbnail || 'FRAME_IO';
+                            } else if (p.mediaItems && p.mediaItems.length > 0 && p.mediaItems[0].type === 'product-link') {
+                                itemMedia = 'PRODUCT_LINK';
                             } else if (p.mediaObj && p.mediaObj.dataUrl && p.mediaObj.dataUrl !== 'undefined') {
                                 itemMedia = p.mediaObj.dataUrl;
                             } else if (p.cover && p.cover.scaled && p.cover.scaled.length > 0) {
@@ -6467,6 +6489,11 @@ function renderSocialSchedulerApp(activeBoard) {
                                 gridItemsHtml += `<div style="aspect-ratio:1/1; position:relative; background:#1e293b; color:#e2e8f0; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;" onclick="window.openCreatePostModal('${p.id}')">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
                                     <span style="font-size:10px; margin-top:8px; font-weight:bold;">Frame.io</span>
+                                </div>`;
+                            } else if (itemMedia === 'PRODUCT_LINK') {
+                                gridItemsHtml += `<div style="aspect-ratio:1/1; position:relative; background:#ecfdf5; color:#10b981; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer;" onclick="window.openCreatePostModal('${p.id}')">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13.25 2.5l7.5 7.5a2 2 0 0 1 0 2.83l-7.5 7.5a2 2 0 0 1-2.83 0l-7.5-7.5a2 2 0 0 1 0-2.83l7.5-7.5a2 2 0 0 1 2.83 0z"></path></svg>
+                                    <span style="font-size:10px; margin-top:8px; font-weight:bold;">Product</span>
                                 </div>`;
                             } else if (itemMedia) {
                                 gridItemsHtml += `<div style="aspect-ratio:1/1; position:relative; background:#f0f0f0; cursor:pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" onclick="window.openCreatePostModal('${p.id}')">
@@ -6959,14 +6986,14 @@ window.removeMediaItem = function(elem) {
         if (!elem) return;
         
         // Also support if elem is already the wrapper, or inside it
-        let wrap = elem.closest ? (elem.closest('.frame-io-media') || elem.closest('.sm-media-item')) : null;
+        let wrap = elem.closest ? (elem.closest('.frame-io-media') || elem.closest('.sm-media-item') || elem.closest('.product-link-media')) : null;
         
         if (!wrap && elem.parentElement && elem.parentElement.parentElement) {
             wrap = elem.parentElement.parentElement;
         }
         
         // Final fallback: if elem is a wrapper itself
-        if (!wrap && (elem.classList && (elem.classList.contains('frame-io-media') || elem.classList.contains('sm-media-item')))) {
+        if (!wrap && (elem.classList && (elem.classList.contains('frame-io-media') || elem.classList.contains('sm-media-item') || elem.classList.contains('product-link-media')))) {
             wrap = elem;
         }
         
@@ -7032,8 +7059,9 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         const hasInputFiles = input && input.files && input.files.length > 0;
         const nodes = gallery ? gallery.querySelectorAll('.sm-gallery-img, .sm-gallery-vid') : [];
         const frameIoNodes = gallery ? gallery.querySelectorAll('.frame-io-media') : [];
+        const productLinkNodes = gallery ? gallery.querySelectorAll('.product-link-media') : [];
         
-        if (hasInputFiles || nodes.length > 0 || frameIoNodes.length > 0) {
+        if (hasInputFiles || nodes.length > 0 || frameIoNodes.length > 0 || productLinkNodes.length > 0) {
             if (gallery) {
                 if (nodes.length > 0) {
                     const MAX_THUMB_SIZE = 1200;
@@ -7089,6 +7117,18 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                                 thumbnail: urlThumb || null,
                                 mediaType: mediaType || null,
                                 duration: duration || null
+                            });
+                        }
+                    }
+                }
+                
+                if (productLinkNodes.length > 0) {
+                    for (let i = 0; i < productLinkNodes.length; i++) {
+                        const urlAttr = productLinkNodes[i].getAttribute('data-url');
+                        if (urlAttr) {
+                            mediaItems.push({ 
+                                type: 'product-link', 
+                                url: urlAttr
                             });
                         }
                     }
