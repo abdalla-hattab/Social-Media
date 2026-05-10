@@ -299,7 +299,7 @@ db.ref('ai_social_lists').on('value', (snapshot) => {
         cloudBoards = data;
         syncBoardsArray();
         ensureBoardStructure();
-        if (typeof render === 'function') render();
+        if (typeof render === 'function' && !window.suppressRenderForClientApprove) render();
     } else {
         // Initial Firebase migration (extract from old local database and push)
         if (rawOldListsData) {
@@ -313,7 +313,7 @@ db.ref('ai_social_lists').on('value', (snapshot) => {
         }
         syncBoardsArray();
         ensureBoardStructure();
-        if (typeof render === 'function') render();
+        if (typeof render === 'function' && !window.suppressRenderForClientApprove) render();
     }
     setTimeout(() => { isApplyingFirebaseSync = false; }, 500); 
 });
@@ -7731,7 +7731,9 @@ window.approveClientPost = function(postId, btnEl) {
     post.clientModified = true;
     post.clientEdits = "تمت الموافقة ✅";
     
+    window.suppressRenderForClientApprove = true;
     if (typeof window.saveState === 'function') window.saveState();
+    setTimeout(() => { window.suppressRenderForClientApprove = false; }, 3000);
     
     if (btnEl) {
         const card = btnEl.closest('.sm-feed-post-card');
