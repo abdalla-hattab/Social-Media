@@ -7972,6 +7972,7 @@ window.approveClientPost = function(postId, btnEl) {
                 }
             }
         }
+    }
     };
 
     if (!isApproved && hasUnapprovedEdits) {
