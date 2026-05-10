@@ -1389,9 +1389,19 @@
                         <div class="sm-textarea-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
                                 <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155;">الفكرة</h4>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <button type="button" title="تراجع (Ctrl+Z)" onclick="const t = document.querySelector('.sm-textarea-idea'); t.focus(); document.execCommand('undo'); t.dispatchEvent(new Event('input'));" style="background:transparent; border:none; cursor:pointer; padding:0; color:#94a3b8; transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#94a3b8'">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l-3 2.7"></path></svg>
+                                    </button>
+                                    <button type="button" title="إعادة (Ctrl+Shift+Z)" onclick="const t = document.querySelector('.sm-textarea-idea'); t.focus(); document.execCommand('redo'); t.dispatchEvent(new Event('input'));" style="background:transparent; border:none; cursor:pointer; padding:0; color:#94a3b8; transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#94a3b8'">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path></svg>
+                                    </button>
+                                </div>
                             </div>
+                            <button id="emojiPickerBtn-idea" type="button" title="إضافة إيموجي" style="background:transparent; border:none; cursor:pointer; font-size:18px; padding:0; filter:grayscale(100%); transition:all 0.2s; opacity:0.6; display: flex; align-items: center; justify-content: center; margin-top: 2px;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.6'">😀</button>
                         </div>
                         <textarea placeholder="أدخل فكرة المنشور هنا..." class="sm-textarea-idea" style="width: 100%; min-height: 80px; display: block; padding: 16px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: vertical; font-family: inherit;" oninput="if(typeof window.updateLiveDiff === 'function') window.updateLiveDiff();"></textarea>
+                        <div id="emojiPickerContainer-idea" style="display:none; position:absolute; top:48px; left:16px; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.15); border-radius:8px;"></div>
                     </div>
 
                     <!-- Box 2: محتوى التصميم -->
@@ -1399,9 +1409,19 @@
                         <div class="sm-textarea-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
                                 <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155;">محتوى التصميم</h4>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <button type="button" title="تراجع (Ctrl+Z)" onclick="const t = document.querySelector('.sm-textarea-design'); t.focus(); document.execCommand('undo'); t.dispatchEvent(new Event('input'));" style="background:transparent; border:none; cursor:pointer; padding:0; color:#94a3b8; transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#94a3b8'">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l-3 2.7"></path></svg>
+                                    </button>
+                                    <button type="button" title="إعادة (Ctrl+Shift+Z)" onclick="const t = document.querySelector('.sm-textarea-design'); t.focus(); document.execCommand('redo'); t.dispatchEvent(new Event('input'));" style="background:transparent; border:none; cursor:pointer; padding:0; color:#94a3b8; transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#94a3b8'">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"></path><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"></path></svg>
+                                    </button>
+                                </div>
                             </div>
+                            <button id="emojiPickerBtn-design" type="button" title="إضافة إيموجي" style="background:transparent; border:none; cursor:pointer; font-size:18px; padding:0; filter:grayscale(100%); transition:all 0.2s; opacity:0.6; display: flex; align-items: center; justify-content: center; margin-top: 2px;" onmouseover="this.style.filter='none'; this.style.opacity='1'" onmouseout="this.style.filter='grayscale(100%)'; this.style.opacity='0.6'">😀</button>
                         </div>
                         <textarea placeholder="أدخل محتوى التصميم هنا..." class="sm-textarea-design" style="width: 100%; min-height: 80px; display: block; padding: 16px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: vertical; font-family: inherit;" oninput="if(typeof window.updateLiveDiff === 'function') window.updateLiveDiff();"></textarea>
+                        <div id="emojiPickerContainer-design" style="display:none; position:absolute; top:48px; left:16px; z-index:9999; box-shadow:0 10px 25px rgba(0,0,0,0.15); border-radius:8px;"></div>
                     </div>
 
                     <!-- Box 3: محتوى المنشور (formerly المحتوى) -->
@@ -1429,42 +1449,71 @@
                         import 'https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js';
                         
                         document.addEventListener('DOMContentLoaded', () => {
-                            const emojiBtn = document.getElementById('emojiPickerBtn');
-                            const container = document.getElementById('emojiPickerContainer');
-                            const textarea = document.querySelector('.sm-textarea');
-                            
-                            let pickerAdded = false;
+                            const setupEmojiPicker = (btnId, containerId, textareaClass) => {
+                                const emojiBtn = document.getElementById(btnId);
+                                const container = document.getElementById(containerId);
+                                const textarea = document.querySelector(textareaClass);
+                                
+                                if (!emojiBtn || !container || !textarea) return;
+                                
+                                let pickerAdded = false;
 
-                            emojiBtn.addEventListener('click', (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (container.style.display === 'none') {
-                                    container.style.display = 'block';
-                                    if (!pickerAdded) {
-                                        const picker = document.createElement('emoji-picker');
-                                        picker.className = 'light';
-                                        picker.addEventListener('emoji-click', event => {
-                                            const emoji = event.detail.unicode;
-                                            const start = textarea.selectionStart;
-                                            const end = textarea.selectionEnd;
-                                            const text = textarea.value;
-                                            textarea.value = text.substring(0, start) + emoji + text.substring(end);
-                                            textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
-                                            textarea.focus();
-                                            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                                        });
-                                        container.appendChild(picker);
-                                        pickerAdded = true;
+                                emojiBtn.addEventListener('click', (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    
+                                    // Close other pickers
+                                    document.querySelectorAll('[id^="emojiPickerContainer"]').forEach(c => {
+                                        if (c.id !== containerId) c.style.display = 'none';
+                                    });
+
+                                    if (container.style.display === 'none') {
+                                        container.style.display = 'block';
+                                        if (!pickerAdded) {
+                                            const picker = document.createElement('emoji-picker');
+                                            picker.className = 'light';
+                                            picker.addEventListener('emoji-click', event => {
+                                                const emoji = event.detail.unicode;
+                                                const start = textarea.selectionStart;
+                                                const end = textarea.selectionEnd;
+                                                const text = textarea.value;
+                                                textarea.value = text.substring(0, start) + emoji + text.substring(end);
+                                                textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
+                                                textarea.focus();
+                                                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                                            });
+                                            container.appendChild(picker);
+                                            pickerAdded = true;
+                                        }
+                                    } else {
+                                        container.style.display = 'none';
                                     }
-                                } else {
-                                    container.style.display = 'none';
-                                }
-                            });
+                                });
+                            };
+
+                            setupEmojiPicker('emojiPickerBtn', 'emojiPickerContainer', '.sm-textarea');
+                            setupEmojiPicker('emojiPickerBtn-idea', 'emojiPickerContainer-idea', '.sm-textarea-idea');
+                            setupEmojiPicker('emojiPickerBtn-design', 'emojiPickerContainer-design', '.sm-textarea-design');
 
                             document.addEventListener('click', (e) => {
-                                if (container.style.display === 'block' && !container.contains(e.target) && e.target !== emojiBtn) {
-                                    container.style.display = 'none';
-                                }
+                                const containers = [
+                                    document.getElementById('emojiPickerContainer'),
+                                    document.getElementById('emojiPickerContainer-idea'),
+                                    document.getElementById('emojiPickerContainer-design')
+                                ];
+                                const btns = [
+                                    document.getElementById('emojiPickerBtn'),
+                                    document.getElementById('emojiPickerBtn-idea'),
+                                    document.getElementById('emojiPickerBtn-design')
+                                ];
+                                
+                                containers.forEach((container, i) => {
+                                    if (container && container.style.display === 'block' && 
+                                        !container.contains(e.target) && 
+                                        e.target !== btns[i]) {
+                                        container.style.display = 'none';
+                                    }
+                                });
                             });
                         });
                     </script>
@@ -1847,7 +1896,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-    <script src="app.js?v=105"></script>
+    <script src="app.js?v=106"></script>
     <!-- Global Confirmation Modal -->
     <div class="modal-overlay" id="globalConfirmModal" style="z-index: 9999;">
         <div class="modal-content" style="max-width: 350px; text-align: center; border-radius: 16px; padding: 32px 24px;">
