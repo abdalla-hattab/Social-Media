@@ -1624,7 +1624,8 @@ window.openCreatePostModal = function(postId = null) {
                 'smModalExistingPostsArea',
                 'frameIoContainer',
                 'formatSelectorsWrapper',
-                'smUploadZone'
+                'smUploadZone',
+                'smPostTypeSelector'
             ];
             elementsToHide.forEach(id => {
                 const el = document.getElementById(id);
