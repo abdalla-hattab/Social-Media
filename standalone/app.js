@@ -1642,11 +1642,20 @@ window.openCreatePostModal = function(postId = null) {
                 'frameIoContainer',
                 'formatSelectorsWrapper',
                 'smUploadZone',
-                'smPostTypeSelector'
+                'smPostTypeSelector',
+                'emojiPickerBtn',
+                'emojiPickerBtn-idea',
+                'emojiPickerBtn-design'
             ];
             elementsToHide.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.style.setProperty('display', 'none', 'important');
+            });
+            
+            // Hide undo/redo buttons
+            const undoRedoContainers = document.querySelectorAll('.sm-textarea-header > div > div');
+            undoRedoContainers.forEach(container => {
+                container.style.setProperty('display', 'none', 'important');
             });
         }
         
@@ -1821,12 +1830,18 @@ window.openCreatePostModal = function(postId = null) {
                         if (cc) cc.innerText = textArea.value.length + ' حرف';
                         
                         if (window.isClientView) {
-                            textArea.readOnly = true;
-                            textArea.style.setProperty('outline', 'none', 'important');
-                            textArea.style.height = 'auto';
+                            [textArea, ideaArea, designArea].forEach(ta => {
+                                if (ta) {
+                                    ta.readOnly = true;
+                                    ta.style.setProperty('outline', 'none', 'important');
+                                    ta.style.height = 'auto';
+                                    ta.style.overflow = 'hidden';
+                                }
+                            });
                             setTimeout(() => {
-                                textArea.style.height = textArea.scrollHeight + 'px';
-                                textArea.style.overflow = 'hidden';
+                                [textArea, ideaArea, designArea].forEach(ta => {
+                                    if (ta) ta.style.height = ta.scrollHeight + 'px';
+                                });
                             }, 100);
                         }
                     }
