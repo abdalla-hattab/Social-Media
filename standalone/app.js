@@ -5727,7 +5727,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             </div>
                             <div style="display:flex; justify-content:center; gap: 8px; margin-top: 12px; width: 100%;">
                                 <button onclick="window.requestClientEdit('${p.id}')" style="background: white; color: #f59e0b; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#fef3c7'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='white'; this.style.borderColor='#fde68a';">يوجد تعديل</button>
-                                <button onclick="window.approveClientPost('${p.id}')" style="background: white; color: #10b981; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';">موافق</button>
+                                <button onclick="window.approveClientPost('${p.id}', this)" style="background: white; color: #10b981; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';">موافق</button>
                             </div>
                             ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
                         </div>`;
@@ -7723,7 +7723,7 @@ window.updatePublishTogglesVisibility = function(isInitialOpen = false) {
     }
 };
 
-window.approveClientPost = function(postId) {
+window.approveClientPost = function(postId, btnEl) {
     if (!window.activeBoard || !window.activeBoard.cards) return;
     const post = window.activeBoard.cards.find(c => c.id === postId);
     if (!post) return;
@@ -7732,7 +7732,22 @@ window.approveClientPost = function(postId) {
     post.clientEdits = "تمت الموافقة ✅";
     
     if (typeof window.saveState === 'function') window.saveState();
-    if (typeof window.render === 'function') window.render();
+    
+    if (btnEl) {
+        const card = btnEl.closest('.sm-feed-post-card');
+        if (card) {
+            card.style.background = '#dcfce7';
+            card.style.border = '1px solid #bbf7d0';
+            let editBox = card.querySelector('.sm-thumb-edit');
+            if (!editBox) {
+                editBox = document.createElement('div');
+                editBox.className = 'sm-thumb-edit';
+                editBox.style.cssText = 'width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;';
+                card.appendChild(editBox);
+            }
+            editBox.innerHTML = `تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(post.clientEdits)}</span>`;
+        }
+    }
 };
 
 window.requestClientEdit = function(postId) {
