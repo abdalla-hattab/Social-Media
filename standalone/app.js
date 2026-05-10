@@ -4620,7 +4620,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     if (p.status === 'فوري') { bg = '#f0fdf4'; border = '1px solid #bbf7d0'; accentColor = '#22c55e'; }
                     else if (p.status === 'جدولة') { bg = '#fffbeb'; border = '1px solid #fde68a'; accentColor = '#f59e0b'; }
                     
-                    if (window.smShowClientEditsToggle !== false && p.clientModified) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
+                    if (window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
                     
                     return `
                     <div class="sm-cal-draggable-post" draggable="${!window.isClientView}" ondragstart="if(!window.isClientView) window.handleCalDragStart(event, '${p.id}')" onclick="window.openCreatePostModal('${p.id}');" title="${safeFullText || safeDesc || ''}" style="--dot-color: ${accentColor}; margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; flex-wrap: wrap;" onmouseover="this.style.boxShadow='0 3px 6px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
@@ -4628,7 +4628,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             ${mediaThumb}
                             <div class="sm-thumb-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; padding-bottom:1px; flex:1; font-weight:500; pointer-events:none;">${textSnippet}</div>
                         </div>
-                        ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:4px; padding:4px; background:#bbf7d0; color:#166534; border-radius:4px; font-size:10px; font-weight:700; text-align:right;">تم تعديله من العميل${p.clientEdits ? `<br><span style="font-weight:500;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
+                        ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:4px; padding:4px; background:#bbf7d0; color:#166534; border-radius:4px; font-size:10px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500;">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
                     </div>`;
                 }).join('');
                 
@@ -5699,7 +5699,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         if (p.status === 'فوري') { bg = '#f0fdf4'; border = '1px solid #bbf7d0'; accentColor = '#22c55e'; }
                         else if (p.status === 'جدولة') { bg = '#fffbeb'; border = '1px solid #fde68a'; accentColor = '#f59e0b'; }
                         
-                        if (window.smShowClientEditsToggle !== false && p.clientModified) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
+                        if (window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
                         
                         let platformsHtml = '';
                         if (p.platforms && p.platforms.length > 0) {
@@ -5729,7 +5729,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                 <button onclick="window.requestClientEdit('${p.id}')" style="background: white; color: #f59e0b; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#fef3c7'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='white'; this.style.borderColor='#fde68a';">يوجد تعديل</button>
                                 <button onclick="window.approveClientPost('${p.id}')" style="background: white; color: #10b981; border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';">موافق</button>
                             </div>
-                            ${(window.smShowClientEditsToggle !== false && p.clientModified) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة${p.clientEdits ? `<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span>` : ''}</div>` : ''}
+                            ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
                         </div>`;
                     });
                     clientFeedHtml += `</div></div>`;
