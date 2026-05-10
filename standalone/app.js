@@ -5727,7 +5727,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             </div>
                             <div style="display:flex; justify-content:center; gap: 8px; margin-top: 12px; width: 100%;">
                                 ${ (p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? '' : `<button onclick="window.requestClientEdit('${p.id}')" style="background: white; color: #f59e0b; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#fef3c7'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='white'; this.style.borderColor='#fde68a';">يوجد تعديل</button>` }
-                                <button ${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? '' : `onclick="window.approveClientPost('${p.id}', this)"`} style="${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'background: #10b981; color: white; border: 1px solid #10b981; cursor: default;' : 'background: white; color: #10b981; border: 1px solid #bbf7d0; cursor:pointer; transition: all 0.2s ease;'} border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;" ${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? '' : `onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';"`}>${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'تمت الموافقة' : 'موافق'}</button>
+                                <button onclick="window.approveClientPost('${p.id}', this)" style="${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'background: #10b981; color: white; border: 1px solid #10b981;' : 'background: white; color: #10b981; border: 1px solid #bbf7d0;'} cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;" ${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? `onmouseover="this.style.background='#059669'; this.style.borderColor='#059669';" onmouseout="this.style.background='#10b981'; this.style.borderColor='#10b981';"` : `onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';"`}>${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'تمت الموافقة' : 'موافق'}</button>
                             </div>
                             ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
                         </div>`;
@@ -7730,8 +7730,15 @@ window.approveClientPost = function(postId, btnEl) {
     const post = activeBoard.cards.find(c => c.id === postId);
     if (!post) return;
     
-    post.clientModified = true;
-    post.clientEdits = "تمت الموافقة ✅";
+    const isApproved = post.clientModified && post.clientEdits === "تمت الموافقة ✅";
+
+    if (isApproved) {
+        post.clientModified = false;
+        post.clientEdits = "";
+    } else {
+        post.clientModified = true;
+        post.clientEdits = "تمت الموافقة ✅";
+    }
     
     window.suppressRenderForClientApprove = true;
     if (typeof window.saveState === 'function') window.saveState();
@@ -7740,30 +7747,70 @@ window.approveClientPost = function(postId, btnEl) {
     if (btnEl) {
         const card = btnEl.closest('.sm-feed-post-card');
         
-        btnEl.style.background = '#10b981';
-        btnEl.style.color = 'white';
-        btnEl.style.borderColor = '#10b981';
-        btnEl.innerText = 'تمت الموافقة';
-        btnEl.style.cursor = 'default';
-        btnEl.onclick = null;
-        btnEl.onmouseover = null;
-        btnEl.onmouseout = null;
-        
-        if (card) {
-            card.style.background = '#dcfce7';
-            card.style.border = '1px solid #bbf7d0';
+        if (!isApproved) {
+            // Activating approval
+            btnEl.style.background = '#10b981';
+            btnEl.style.color = 'white';
+            btnEl.style.borderColor = '#10b981';
+            btnEl.innerText = 'تمت الموافقة';
+            btnEl.onmouseover = function() { this.style.background='#059669'; this.style.borderColor='#059669'; };
+            btnEl.onmouseout = function() { this.style.background='#10b981'; this.style.borderColor='#10b981'; };
             
-            const editBtn = card.querySelector('button[onclick^="window.requestClientEdit"]');
-            if (editBtn) editBtn.style.display = 'none';
-            
-            let editBox = card.querySelector('.sm-thumb-edit');
-            if (!editBox) {
-                editBox = document.createElement('div');
-                editBox.className = 'sm-thumb-edit';
-                editBox.style.cssText = 'width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;';
-                card.appendChild(editBox);
+            if (card) {
+                card.style.background = '#dcfce7';
+                card.style.border = '1px solid #bbf7d0';
+                
+                let editBtn = card.querySelector('button[onclick^="window.requestClientEdit"]');
+                if (editBtn) editBtn.style.display = 'none';
+                
+                let editBox = card.querySelector('.sm-thumb-edit');
+                if (!editBox) {
+                    editBox = document.createElement('div');
+                    editBox.className = 'sm-thumb-edit';
+                    editBox.style.cssText = 'width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;';
+                    card.appendChild(editBox);
+                }
+                editBox.innerHTML = `تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(post.clientEdits)}</span>`;
+                editBox.style.display = 'block';
             }
-            editBox.innerHTML = `تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(post.clientEdits)}</span>`;
+        } else {
+            // Deactivating approval (reverting)
+            btnEl.style.background = 'white';
+            btnEl.style.color = '#10b981';
+            btnEl.style.borderColor = '#bbf7d0';
+            btnEl.innerText = 'موافق';
+            btnEl.onmouseover = function() { this.style.background='#dcfce7'; this.style.borderColor='#10b981'; };
+            btnEl.onmouseout = function() { this.style.background='white'; this.style.borderColor='#bbf7d0'; };
+            
+            if (card) {
+                card.style.background = 'white';
+                card.style.border = '1px solid #f1f5f9';
+                
+                let editBtn = card.querySelector('button[onclick^="window.requestClientEdit"]');
+                if (editBtn) {
+                    editBtn.style.display = 'block';
+                } else {
+                    // It was removed from DOM if render was called, need to recreate it if missing?
+                    // Actually, if render wasn't called, it's just display='none'. If render was called, it might be omitted from HTML completely!
+                    // If it's omitted from HTML, the easiest is to just let the normal view logic handle it or just do a manual refresh if needed. 
+                    // But we can just create it dynamically:
+                    const btnContainer = btnEl.parentElement;
+                    if (!card.querySelector('button[onclick^="window.requestClientEdit"]')) {
+                        const newEditBtn = document.createElement('button');
+                        newEditBtn.setAttribute('onclick', `window.requestClientEdit('${postId}')`);
+                        newEditBtn.style.cssText = "background: white; color: #f59e0b; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;";
+                        newEditBtn.onmouseover = function() { this.style.background='#fef3c7'; this.style.borderColor='#f59e0b'; };
+                        newEditBtn.onmouseout = function() { this.style.background='white'; this.style.borderColor='#fde68a'; };
+                        newEditBtn.innerText = 'يوجد تعديل';
+                        btnContainer.insertBefore(newEditBtn, btnEl);
+                    }
+                }
+                
+                let editBox = card.querySelector('.sm-thumb-edit');
+                if (editBox) {
+                    editBox.style.display = 'none';
+                }
+            }
         }
     }
 };
