@@ -5731,7 +5731,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         if (p.status === 'فوري') { bg = '#f0fdf4'; border = '1px solid #bbf7d0'; accentColor = '#22c55e'; }
                         else if (p.status === 'جدولة') { bg = '#fffbeb'; border = '1px solid #fde68a'; accentColor = '#f59e0b'; }
                         
-                        if (window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
+                        if (window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits === "تمت الموافقة ✅") { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
                         
                         let platformsHtml = '';
                         if (p.platforms && p.platforms.length > 0) {
@@ -5758,10 +5758,19 @@ function renderSocialSchedulerApp(activeBoard) {
                                 ${postFrameIoLink ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#0f172a'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.background='#1e293b'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                             </div>
                             <div style="display:flex; justify-content:center; gap: 8px; margin-top: 12px; width: 100%;">
-                                ${ (p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? '' : `<button onclick="window.requestClientEdit('${p.id}')" style="background: white; color: #f59e0b; border: 1px solid #fde68a; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#fef3c7'; this.style.borderColor='#f59e0b';" onmouseout="this.style.background='white'; this.style.borderColor='#fde68a';">يوجد تعديل</button>` }
+                                ${ (() => {
+                                    if (p.clientModified && p.clientEdits === "تمت الموافقة ✅") return '';
+                                    const hasEdit = p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0;
+                                    const btnBg = hasEdit ? '#f59e0b' : 'white';
+                                    const btnColor = hasEdit ? 'white' : '#f59e0b';
+                                    const btnBorder = hasEdit ? '#f59e0b' : '#fde68a';
+                                    const hoverBg = hasEdit ? '#d97706' : '#fef3c7';
+                                    const hoverBorder = hasEdit ? '#d97706' : '#f59e0b';
+                                    return `<button onclick="window.requestClientEdit('${p.id}')" style="background: ${btnBg}; color: ${btnColor}; border: 1px solid ${btnBorder}; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='${hoverBg}'; this.style.borderColor='${hoverBorder}';" onmouseout="this.style.background='${btnBg}'; this.style.borderColor='${btnBorder}';">يوجد تعديل</button>`;
+                                })() }
                                 <button onclick="window.approveClientPost('${p.id}', this)" style="${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'background: #10b981; color: white; border: 1px solid #10b981;' : 'background: white; color: #10b981; border: 1px solid #bbf7d0;'} cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;" ${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? `onmouseover="this.style.background='#059669'; this.style.borderColor='#059669';" onmouseout="this.style.background='#10b981'; this.style.borderColor='#10b981';"` : `onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';"`}>${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'تمت الموافقة' : 'موافق'}</button>
                             </div>
-                            ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:#bbf7d0; color:#166534; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#14532d;">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
+                            ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:${p.clientEdits === "تمت الموافقة ✅" ? '#bbf7d0' : '#fef3c7'}; color:${p.clientEdits === "تمت الموافقة ✅" ? '#166534' : '#b45309'}; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:${p.clientEdits === "تمت الموافقة ✅" ? '#14532d' : '#92400e'};">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
                         </div>`;
                     });
                     clientFeedHtml += `</div></div>`;
