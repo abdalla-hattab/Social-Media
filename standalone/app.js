@@ -2464,6 +2464,9 @@ if (closeCreatePostModal && createPostModal) {
                 }
             } else {
                 if (typeof window.saveSocialDraft === 'function') window.saveSocialDraft(true);
+                if (typeof render === 'function' && !window.suppressRenderForClientApprove) {
+                    setTimeout(() => render(), 50);
+                }
             }
         } catch (e) {
             console.error("Error during modal dismiss logic", e);
