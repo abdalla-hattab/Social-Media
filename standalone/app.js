@@ -7888,8 +7888,8 @@ window.approveClientPost = function(postId, btnEl) {
     setTimeout(() => { window.suppressRenderForClientApprove = false; }, 3000);
     
     if (btnEl) {
-        const card = btnEl.closest('.sm-feed-post-card') || document.querySelector(`.sm-feed-post-card button[onclick*="approveClientPost('${postId}'"]`)?.closest('.sm-feed-post-card');
-        const feedBtn = card ? card.querySelector(`button[onclick*="approveClientPost('${postId}'"]`) : null;
+        const card = btnEl.closest('.sm-feed-post-card') || document.querySelector(`.sm-feed-post-card button[onclick*="approveClientPost"][onclick*="${postId}"]`)?.closest('.sm-feed-post-card');
+        const feedBtn = card ? card.querySelector(`button[onclick*="approveClientPost"][onclick*="${postId}"]`) : null;
         const targetBtns = [btnEl];
         if (feedBtn && feedBtn !== btnEl) targetBtns.push(feedBtn);
         
