@@ -1645,9 +1645,29 @@ window.openCreatePostModal = function(postId = null) {
                 const btns = document.getElementById('clientEditsButtons');
                 const wrapper = document.getElementById('clientEditsInputWrapper');
                 
-                if (btns) btns.style.setProperty("display", "flex", "important");
+                if (btns) {
+                    btns.style.setProperty("display", "flex", "important");
+                    const approveBtn = document.getElementById('modalClientApproveBtn');
+                    if (approveBtn) {
+                        if (isClientModified && editsVal === "تمت الموافقة ✅") {
+                            approveBtn.style.background = '#10b981';
+                            approveBtn.style.color = 'white';
+                            approveBtn.style.borderColor = '#10b981';
+                            approveBtn.innerText = 'تمت الموافقة';
+                            approveBtn.onmouseover = function() { this.style.background='#059669'; this.style.borderColor='#059669'; };
+                            approveBtn.onmouseout = function() { this.style.background='#10b981'; this.style.borderColor='#10b981'; };
+                        } else {
+                            approveBtn.style.background = 'white';
+                            approveBtn.style.color = '#10b981';
+                            approveBtn.style.borderColor = '#bbf7d0';
+                            approveBtn.innerText = 'موافق';
+                            approveBtn.onmouseover = function() { this.style.background='#dcfce7'; this.style.borderColor='#10b981'; };
+                            approveBtn.onmouseout = function() { this.style.background='white'; this.style.borderColor='#bbf7d0'; };
+                        }
+                    }
+                }
                 
-                if (isClientModified || editsVal.length > 0) {
+                if (isClientModified && editsVal !== "تمت الموافقة ✅" && editsVal.length > 0) {
                     if (wrapper) wrapper.style.setProperty("display", "flex", "important");
                 } else {
                     if (wrapper) wrapper.style.setProperty("display", "none", "important");
@@ -7868,16 +7888,22 @@ window.approveClientPost = function(postId, btnEl) {
     setTimeout(() => { window.suppressRenderForClientApprove = false; }, 3000);
     
     if (btnEl) {
-        const card = btnEl.closest('.sm-feed-post-card');
+        const card = btnEl.closest('.sm-feed-post-card') || document.querySelector(`.sm-feed-post-card button[onclick*="approveClientPost('${postId}'"]`)?.closest('.sm-feed-post-card');
+        const feedBtn = card ? card.querySelector(`button[onclick*="approveClientPost('${postId}'"]`) : null;
+        const targetBtns = [btnEl];
+        if (feedBtn && feedBtn !== btnEl) targetBtns.push(feedBtn);
         
         if (!isApproved) {
             // Activating approval
-            btnEl.style.background = '#10b981';
-            btnEl.style.color = 'white';
-            btnEl.style.borderColor = '#10b981';
-            btnEl.innerText = 'تمت الموافقة';
-            btnEl.onmouseover = function() { this.style.background='#059669'; this.style.borderColor='#059669'; };
-            btnEl.onmouseout = function() { this.style.background='#10b981'; this.style.borderColor='#10b981'; };
+            targetBtns.forEach(btn => {
+                if (!btn) return;
+                btn.style.background = '#10b981';
+                btn.style.color = 'white';
+                btn.style.borderColor = '#10b981';
+                btn.innerText = 'تمت الموافقة';
+                btn.onmouseover = function() { this.style.background='#059669'; this.style.borderColor='#059669'; };
+                btn.onmouseout = function() { this.style.background='#10b981'; this.style.borderColor='#10b981'; };
+            });
             
             if (card) {
                 card.style.background = '#dcfce7';
@@ -7898,12 +7924,15 @@ window.approveClientPost = function(postId, btnEl) {
             }
         } else {
             // Deactivating approval (reverting)
-            btnEl.style.background = 'white';
-            btnEl.style.color = '#10b981';
-            btnEl.style.borderColor = '#bbf7d0';
-            btnEl.innerText = 'موافق';
-            btnEl.onmouseover = function() { this.style.background='#dcfce7'; this.style.borderColor='#10b981'; };
-            btnEl.onmouseout = function() { this.style.background='white'; this.style.borderColor='#bbf7d0'; };
+            targetBtns.forEach(btn => {
+                if (!btn) return;
+                btn.style.background = 'white';
+                btn.style.color = '#10b981';
+                btn.style.borderColor = '#bbf7d0';
+                btn.innerText = 'موافق';
+                btn.onmouseover = function() { this.style.background='#dcfce7'; this.style.borderColor='#10b981'; };
+                btn.onmouseout = function() { this.style.background='white'; this.style.borderColor='#bbf7d0'; };
+            });
             
             if (card) {
                 card.style.background = 'white';
