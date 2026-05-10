@@ -7877,30 +7877,32 @@ window.approveClientPost = function(postId, btnEl) {
     if (!post) return;
     
     const isApproved = post.clientModified && post.clientEdits === "تمت الموافقة ✅";
+    const hasUnapprovedEdits = post.clientModified && post.clientEdits && post.clientEdits.trim() !== "" && post.clientEdits !== "تمت الموافقة ✅";
 
-    if (isApproved) {
-        post.clientModified = false;
-        post.clientEdits = "";
-    } else {
-        post.clientModified = true;
-        post.clientEdits = "تمت الموافقة ✅";
-    }
-    
-    window.suppressRenderForClientApprove = true;
-    if (typeof window.saveState === 'function') window.saveState();
-    setTimeout(() => { window.suppressRenderForClientApprove = false; }, 3000);
-    
-    if (btnEl) {
-        const card = btnEl.closest('.sm-feed-post-card') || document.querySelector(`.sm-feed-post-card button[onclick*="approveClientPost"][onclick*="${postId}"]`)?.closest('.sm-feed-post-card');
-        const feedBtn = card ? card.querySelector(`button[onclick*="approveClientPost"][onclick*="${postId}"]`) : null;
-        const targetBtns = [btnEl];
-        if (feedBtn && feedBtn !== btnEl) targetBtns.push(feedBtn);
+    const performApproval = () => {
+        if (isApproved) {
+            post.clientModified = false;
+            post.clientEdits = "";
+        } else {
+            post.clientModified = true;
+            post.clientEdits = "تمت الموافقة ✅";
+        }
         
-        if (!isApproved) {
-            // Activating approval
-            targetBtns.forEach(btn => {
-                if (!btn) return;
-                btn.style.background = '#10b981';
+        window.suppressRenderForClientApprove = true;
+        if (typeof window.saveState === 'function') window.saveState();
+        setTimeout(() => { window.suppressRenderForClientApprove = false; }, 3000);
+        
+        if (btnEl) {
+            const card = btnEl.closest('.sm-feed-post-card') || document.querySelector(`.sm-feed-post-card button[onclick*="approveClientPost"][onclick*="${postId}"]`)?.closest('.sm-feed-post-card');
+            const feedBtn = card ? card.querySelector(`button[onclick*="approveClientPost"][onclick*="${postId}"]`) : null;
+            const targetBtns = [btnEl];
+            if (feedBtn && feedBtn !== btnEl) targetBtns.push(feedBtn);
+            
+            if (!isApproved) {
+                // Activating approval
+                targetBtns.forEach(btn => {
+                    if (!btn) return;
+                    btn.style.background = '#10b981';
                 btn.style.color = 'white';
                 btn.style.borderColor = '#10b981';
                 btn.innerText = 'تمت الموافقة';
@@ -7970,6 +7972,31 @@ window.approveClientPost = function(postId, btnEl) {
                 }
             }
         }
+    };
+
+    if (!isApproved && hasUnapprovedEdits) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'هل أنت متأكد؟',
+                text: 'سيتم مسح التعديلات التي طلبتها في حال الموافقة على المنشور.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#10b981',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'نعم، موافق',
+                cancelButtonText: 'إلغاء'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performApproval();
+                }
+            });
+        } else {
+            if (confirm('سيتم مسح التعديلات التي طلبتها في حال الموافقة على المنشور. هل أنت متأكد؟')) {
+                performApproval();
+            }
+        }
+    } else {
+        performApproval();
     }
 };
 
