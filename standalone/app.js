@@ -7724,8 +7724,10 @@ window.updatePublishTogglesVisibility = function(isInitialOpen = false) {
 };
 
 window.approveClientPost = function(postId, btnEl) {
-    if (!window.activeBoard || !window.activeBoard.cards) return;
-    const post = window.activeBoard.cards.find(c => c.id === postId);
+    if (typeof boards === 'undefined' || typeof activeBoardId === 'undefined') return;
+    const activeBoard = boards.find(b => b.id === activeBoardId);
+    if (!activeBoard || !activeBoard.cards) return;
+    const post = activeBoard.cards.find(c => c.id === postId);
     if (!post) return;
     
     post.clientModified = true;
