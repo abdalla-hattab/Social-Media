@@ -1527,6 +1527,12 @@ window.openCreatePostModal = function(postId = null) {
             if (cc) cc.innerText = '0 حرف';
         }
         
+        const ideaArea = document.querySelector('.sm-textarea-idea');
+        if (ideaArea) ideaArea.value = '';
+        
+        const designArea = document.querySelector('.sm-textarea-design');
+        if (designArea) designArea.value = '';
+        
         // Always reset draft icon highlights explicitly so state doesn't leak between posts
         const draftIconsState = document.querySelectorAll('.sm-platform-empty > div > div');
         draftIconsState.forEach(icon => {
@@ -1794,6 +1800,12 @@ window.openCreatePostModal = function(postId = null) {
                 if (post) {
                     if (textArea) {
                         textArea.value = post.fullText || post.description || '';
+                        
+                        const ideaArea = document.querySelector('.sm-textarea-idea');
+                        if (ideaArea) ideaArea.value = post.idea || '';
+                        
+                        const designArea = document.querySelector('.sm-textarea-design');
+                        if (designArea) designArea.value = post.designContent || '';
                         const cc = document.querySelector('.sm-char-count');
                         if (cc) cc.innerText = textArea.value.length + ' حرف';
                         
@@ -2335,12 +2347,16 @@ if (closeCreatePostModal && createPostModal) {
     window.handleModalDismiss = () => {
         const createPostModal = document.getElementById('createPostModal');
         const textArea = document.querySelector('.sm-textarea');
+        const ideaArea = document.querySelector('.sm-textarea-idea');
+        const designArea = document.querySelector('.sm-textarea-design');
         try {
             const textContent = textArea ? textArea.value.trim() : '';
+            const ideaContent = ideaArea ? ideaArea.value.trim() : '';
+            const designContentStr = designArea ? designArea.value.trim() : '';
             const gallery = document.getElementById('smMediaGallery');
             const hasGalleryItems = gallery && gallery.children.length > 0;
             
-            const isEmpty = !textContent && !hasGalleryItems;
+            const isEmpty = !textContent && !ideaContent && !designContentStr && !hasGalleryItems;
             
             if (isEmpty) {
                 if (window.currentEditingSocialPostId) {
@@ -7047,7 +7063,12 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         }
         
         const textArea = document.querySelector('.sm-textarea');
+        const ideaArea = document.querySelector('.sm-textarea-idea');
+        const designArea = document.querySelector('.sm-textarea-design');
+        
         const textContent = textArea ? textArea.value.trim() : '';
+        const ideaContent = ideaArea ? ideaArea.value.trim() : '';
+        const designContentStr = designArea ? designArea.value.trim() : '';
         const input = document.getElementById('smMediaInput');
         
         let mediaItems = [];
@@ -7347,6 +7368,8 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
             title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
             fullText: textContent,
+            idea: ideaContent,
+            designContent: designContentStr,
             dateStr: dateStr,
             timeStr: timeStr,
             status: status,

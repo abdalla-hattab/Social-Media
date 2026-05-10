@@ -1384,10 +1384,31 @@
                         </div>
                     </div>
 
+                    <!-- Box 1: الفكرة -->
                     <div class="sm-textarea-wrap" style="flex-shrink: 0; display: block; width: 100%; margin-bottom: 24px; background: white; padding: 16px; border: 1px solid #eaf0f6; border-radius: 12px; position: relative;">
                         <div class="sm-textarea-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
-                                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155;">المحتوى</h4>
+                                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155;">الفكرة</h4>
+                            </div>
+                        </div>
+                        <textarea placeholder="أدخل فكرة المنشور هنا..." class="sm-textarea-idea" style="width: 100%; min-height: 80px; display: block; padding: 16px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: vertical; font-family: inherit;" oninput="if(typeof window.updateLiveDiff === 'function') window.updateLiveDiff();"></textarea>
+                    </div>
+
+                    <!-- Box 2: محتوى التصميم -->
+                    <div class="sm-textarea-wrap" style="flex-shrink: 0; display: block; width: 100%; margin-bottom: 24px; background: white; padding: 16px; border: 1px solid #eaf0f6; border-radius: 12px; position: relative;">
+                        <div class="sm-textarea-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+                                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155;">محتوى التصميم</h4>
+                            </div>
+                        </div>
+                        <textarea placeholder="أدخل محتوى التصميم هنا..." class="sm-textarea-design" style="width: 100%; min-height: 80px; display: block; padding: 16px; border: 1px solid #cbd5e0; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: vertical; font-family: inherit;" oninput="if(typeof window.updateLiveDiff === 'function') window.updateLiveDiff();"></textarea>
+                    </div>
+
+                    <!-- Box 3: محتوى المنشور (formerly المحتوى) -->
+                    <div class="sm-textarea-wrap" style="flex-shrink: 0; display: block; width: 100%; margin-bottom: 24px; background: white; padding: 16px; border: 1px solid #eaf0f6; border-radius: 12px; position: relative;">
+                        <div class="sm-textarea-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+                                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #334155;">محتوى المنشور</h4>
                                 <div style="display: flex; gap: 12px; align-items: center;">
                                     <button type="button" title="تراجع (Ctrl+Z)" onclick="const t = document.querySelector('.sm-textarea'); t.focus(); document.execCommand('undo'); t.dispatchEvent(new Event('input'));" style="background:transparent; border:none; cursor:pointer; padding:0; color:#94a3b8; transition:all 0.2s; display:flex; align-items:center; justify-content:center;" onmouseover="this.style.color='#f97316'" onmouseout="this.style.color='#94a3b8'">
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3l-3 2.7"></path></svg>
@@ -1826,7 +1847,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-    <script src="app.js?v=104"></script>
+    <script src="app.js?v=105"></script>
     <!-- Global Confirmation Modal -->
     <div class="modal-overlay" id="globalConfirmModal" style="z-index: 9999;">
         <div class="modal-content" style="max-width: 350px; text-align: center; border-radius: 16px; padding: 32px 24px;">
