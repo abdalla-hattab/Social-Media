@@ -1516,6 +1516,11 @@ window.openCreatePostModal = function(postId = null) {
         }
         return;
     }
+    
+    // Add popstate for mobile back button behavior
+    if (window.history && window.history.pushState) {
+        window.history.pushState({ modalOpen: true }, '');
+    }
 
     if (createPostModal) {
         window.currentEditingSocialPostId = postId;
@@ -4179,7 +4184,7 @@ function render() {
         appContainer.innerHTML = `
             <div style="display:flex; height:100vh; background:#f4f5f7; align-items:center; justify-content:center; color:#475569; font-weight:700; font-family:sans-serif; flex-direction:column; gap:20px;">
                 <div class="sm-spinner" style="width:48px; height:48px; border:4px solid #cbd5e1; border-top-color:#ea580c; border-radius:50%; animation:spin 1s linear infinite;"></div>
-                <div style="font-size: 18px;">جاري تهيئة ومزامنة مساحة العميل...</div>
+                <div style="font-size: 18px;">جاري التهيئة والمزامنة...</div>
                 <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
             </div>`;
         return;
@@ -8110,3 +8115,15 @@ window.requestClientEdit = function(postId) {
         }, 300); // Wait for modal animation
     }
 };
+
+// Global popstate handler for mobile back button to close modal instead of exiting page
+window.addEventListener('popstate', function(e) {
+    const createPostModal = document.getElementById('createPostModal');
+    if (createPostModal && createPostModal.classList.contains('active')) {
+        if (typeof window.handleModalDismiss === 'function') {
+            window.handleModalDismiss();
+        } else {
+            createPostModal.classList.remove('active');
+        }
+    }
+});
