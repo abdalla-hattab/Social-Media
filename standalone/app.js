@@ -5727,6 +5727,21 @@ function renderSocialSchedulerApp(activeBoard) {
         
         const monthKey = `${currentYear}-${currentMonth}`;
         const contractStats = (activeBoard.monthlyContract && activeBoard.monthlyContract[monthKey]) || { images: 0, videos: 0 };
+        
+        const getMediaCountHtml = (images, videos, color) => {
+            let parts = [];
+            if (images > 0) {
+                let imgText = (images === 1) ? 'صورة' : 'صور';
+                parts.push(`<span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;"><strong style="color: ${color}; font-size: 14px; font-weight: 800;">${images}</strong> <span>${imgText}</span> <span>🖼️</span></span>`);
+            }
+            if (videos > 0) {
+                let vidText = (videos >= 3 && videos <= 10) ? 'فيديوهات' : 'فيديو';
+                parts.push(`<span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;"><strong style="color: ${color}; font-size: 14px; font-weight: 800;">${videos}</strong> <span>${vidText}</span> <span>▶️</span></span>`);
+            }
+            if (parts.length === 0) return `<span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap; color: #94a3b8;">لا يوجد</span>`;
+            return parts.join(` <span style="color: ${color === '#ea580c' ? '#fed7aa' : '#bfdbfe'}; font-weight: 400; margin: 0 4px;">|</span> `);
+        };
+
         let contractSubtitle = '';
         if (activeBoard.contractStartDate) {
             const d = activeBoard.contractDurationMonths ? ` (${activeBoard.contractDurationMonths} أشهر)` : '';
@@ -5744,9 +5759,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         ${contractSubtitle}
                     </div>
                     <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe; white-space: nowrap;">
-                        <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">🖼️ صور: <strong style="color: #2563eb; font-size: 14px; font-weight: 800;">${contractStats.images}</strong></span>
-                        <span style="color: #bfdbfe; font-weight: 400;">|</span>
-                        <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">▶️ فيديو: <strong style="color: #2563eb; font-size: 14px; font-weight: 800;">${contractStats.videos}</strong></span>
+                        ${getMediaCountHtml(contractStats.images, contractStats.videos, '#2563eb')}
                     </span>
                 </div>
             `;
@@ -5758,9 +5771,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 <div style="display: inline-flex; flex-direction: column; align-items: center;">
                     <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px; white-space: nowrap;">${window.isClientView ? 'سيتم تسوية' : 'تم تسوية'}</span>
                     <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa; white-space: nowrap;">
-                        <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">🖼️ صور: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthImages}</strong></span>
-                        <span style="color: #fed7aa; font-weight: 400;">|</span>
-                        <span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;">▶️ فيديو: <strong style="color: #ea580c; font-size: 14px; font-weight: 800;">${currentMonthVideos}</strong></span>
+                        ${getMediaCountHtml(currentMonthImages, currentMonthVideos, '#ea580c')}
                     </span>
                 </div>
             </div>
@@ -5885,7 +5896,11 @@ function renderSocialSchedulerApp(activeBoard) {
                     <div class="sm-calendar-wrap ${window.isLiveModeActive ? 'sm-calendar-live-active' : ''}" style="flex: 1; overflow: visible; margin-bottom: 0;">
                         <div class="sm-calendar-header" style="flex-wrap: wrap; gap: 16px; justify-content: space-between;">
                             <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center;">
-                                <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;">${window.isClientView ? `خطة المحتوى - ${activeBoard.title}` : `${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}`}</h3>
+                                <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;">
+                                    ${window.isClientView 
+                                        ? `<div style="display: flex; flex-direction: column; align-items: center;">خطة المحتوى - ${activeBoard.title}<div style="font-size: 14px; color: #64748b; margin-top: 4px; font-weight: 600;">${monthNamesArabic[currentMonth]} ${currentYear}</div></div>` 
+                                        : `${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}`}
+                                </h3>
                                 ${monthStatsHtml}
                             </div>
                             <div class="sm-cal-nav" style="align-items: center; flex-wrap: wrap; gap: 12px; justify-content: center;">
