@@ -2463,10 +2463,24 @@ if (closeCreatePostModal && createPostModal) {
                     }
                 }
             } else {
+                let shouldSuppress = window.suppressRenderForClientApprove;
+                if (window.isClientView) {
+                    shouldSuppress = true; // Never re-render the whole feed on modal close for clients
+                    if (window.currentEditingSocialPostId && typeof window.syncClientCardUI === 'function') {
+                        window.syncClientCardUI(window.currentEditingSocialPostId);
+                    }
+                }
+                
+                const origSuppress = window.suppressRenderForClientApprove;
+                window.suppressRenderForClientApprove = shouldSuppress;
+                
                 if (typeof window.saveSocialDraft === 'function') window.saveSocialDraft(true);
+                
                 if (typeof render === 'function' && !window.suppressRenderForClientApprove) {
                     setTimeout(() => render(), 50);
                 }
+                
+                window.suppressRenderForClientApprove = origSuppress;
             }
         } catch (e) {
             console.error("Error during modal dismiss logic", e);
@@ -7674,7 +7688,9 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             }
         }
         
-        render();
+        if (!window.suppressRenderForClientApprove) {
+            render();
+        }
         
         if (isAutoSave) {
             const listEl = document.getElementById('smModalPostsList');
@@ -7891,6 +7907,58 @@ window.updatePublishTogglesVisibility = function(isInitialOpen = false) {
                 const schedBtn = Array.from(publishToggles).find(b => b.textContent.trim() === 'جدولة');
                 if (schedBtn) schedBtn.click();
             }
+        }
+    }
+};
+
+window.syncClientCardUI = function(postId) {
+    if (!postId || typeof boards === 'undefined' || typeof activeBoardId === 'undefined') return;
+    const board = boards.find(b => b.id === activeBoardId);
+    if (!board || !board.cards) return;
+    const post = board.cards.find(c => c.id === postId);
+    if (!post) return;
+    
+    const card = document.querySelector(`.sm-feed-post-card button[onclick*="approveClientPost"][onclick*="${postId}"]`)?.closest('.sm-feed-post-card');
+    if (!card) return;
+    
+    const hasEdit = post.clientModified && post.clientEdits && post.clientEdits.trim().length > 0;
+    const isApproved = post.clientModified && post.clientEdits === "تمت الموافقة ✅";
+    
+    const approveBtn = card.querySelector(`button[onclick*="approveClientPost"]`);
+    const editBtn = card.querySelector(`button[onclick*="requestClientEdit"]`);
+    
+    if (approveBtn) {
+        if (isApproved) {
+            approveBtn.style.background = '#10b981';
+            approveBtn.style.color = 'white';
+            approveBtn.style.borderColor = '#10b981';
+            approveBtn.innerText = 'تمت الموافقة';
+            approveBtn.onmouseover = function() { this.style.background='#059669'; this.style.borderColor='#059669'; };
+            approveBtn.onmouseout = function() { this.style.background='#10b981'; this.style.borderColor='#10b981'; };
+        } else {
+            approveBtn.style.background = 'white';
+            approveBtn.style.color = '#10b981';
+            approveBtn.style.borderColor = '#bbf7d0';
+            approveBtn.innerText = 'موافق';
+            approveBtn.onmouseover = function() { this.style.background='#dcfce7'; this.style.borderColor='#10b981'; };
+            approveBtn.onmouseout = function() { this.style.background='white'; this.style.borderColor='#bbf7d0'; };
+        }
+    }
+    
+    if (hasEdit && !isApproved) {
+        if (!editBtn && approveBtn) {
+            const btnContainer = approveBtn.parentElement;
+            const newEditBtn = document.createElement('button');
+            newEditBtn.setAttribute('onclick', `window.requestClientEdit('${postId}')`);
+            newEditBtn.style.cssText = "background: white; color: #f97316; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;";
+            newEditBtn.innerText = 'يوجد تعديل';
+            newEditBtn.onmouseover = function() { this.style.background='#fff7ed'; this.style.borderColor='#f97316'; };
+            newEditBtn.onmouseout = function() { this.style.background='white'; this.style.borderColor='#fed7aa'; };
+            btnContainer.insertBefore(newEditBtn, approveBtn);
+        }
+    } else {
+        if (editBtn) {
+            editBtn.remove();
         }
     }
 };
