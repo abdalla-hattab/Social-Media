@@ -4151,6 +4151,10 @@ function render() {
         }
     });
 
+    const appWrapperEl = document.querySelector('.sm-app-wrapper');
+    const savedWrapperScroll = appWrapperEl ? appWrapperEl.scrollTop : 0;
+    const savedWindowScroll = window.scrollY;
+
     appContainer.innerHTML = '';
     let activeBoard = boards.find(b => b.id === activeBoardId);
     
@@ -4190,6 +4194,12 @@ function render() {
     appContainer.classList.remove('managing-view');
     appContainer.classList.add('social-scheduler-view');
     renderSocialSchedulerApp(activeBoard);
+    
+    setTimeout(() => {
+        const newWrapperEl = document.querySelector('.sm-app-wrapper');
+        if (newWrapperEl) newWrapperEl.scrollTop = savedWrapperScroll;
+        window.scrollTo(0, savedWindowScroll);
+    }, 0);
     
     // Clear global animation flags after render sequence wraps
     window.isFilterFadingIn = false;
