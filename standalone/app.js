@@ -5895,19 +5895,15 @@ function renderSocialSchedulerApp(activeBoard) {
                                 </button>
                                 ${postFrameIoLink ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#0f172a'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.background='#1e293b'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                             </div>
-                            <div style="display:flex; justify-content:center; gap: 8px; margin-top: 12px; width: 100%;">
+                            <div class="sm-client-card-actions" style="display:${(p.clientModified && p.clientEdits) ? 'flex' : 'none'}; justify-content:center; gap: 8px; margin-top: 12px; width: 100%;">
                                 ${ (() => {
-                                    if (p.clientModified && p.clientEdits === "تمت الموافقة ✅") return '';
-                                    const hasEdit = p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0;
-                                    if (!hasEdit) return '';
-                                    const btnBg = '#f59e0b';
-                                    const btnColor = 'white';
-                                    const btnBorder = '#f59e0b';
-                                    const hoverBg = '#d97706';
-                                    const hoverBorder = '#d97706';
-                                    return `<button onclick="window.requestClientEdit('${p.id}')" style="background: ${btnBg}; color: ${btnColor}; border: 1px solid ${btnBorder}; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='${hoverBg}'; this.style.borderColor='${hoverBorder}';" onmouseout="this.style.background='${btnBg}'; this.style.borderColor='${btnBorder}';">يوجد تعديل</button>`;
+                                    if (p.clientModified && p.clientEdits === "تمت الموافقة ✅") {
+                                        return `<button onclick="window.approveClientPost('${p.id}', this)" style="background: #10b981; color: white; border: 1px solid #10b981; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;" onmouseover="this.style.background='#059669'; this.style.borderColor='#059669';" onmouseout="this.style.background='#10b981'; this.style.borderColor='#10b981';">تمت الموافقة</button>`;
+                                    } else if (p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) {
+                                        return `<button onclick="window.requestClientEdit('${p.id}')" style="background: white; color: #f97316; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#fff7ed'; this.style.borderColor='#f97316';" onmouseout="this.style.background='white'; this.style.borderColor='#fed7aa';">يوجد تعديل</button>`;
+                                    }
+                                    return '';
                                 })() }
-                                <button onclick="window.approveClientPost('${p.id}', this)" style="${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'background: #10b981; color: white; border: 1px solid #10b981;' : 'background: white; color: #10b981; border: 1px solid #bbf7d0;'} cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;" ${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? `onmouseover="this.style.background='#059669'; this.style.borderColor='#059669';" onmouseout="this.style.background='#10b981'; this.style.borderColor='#10b981';"` : `onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';"`}>${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'تمت الموافقة' : 'موافق'}</button>
                             </div>
                             ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:${p.clientEdits === "تمت الموافقة ✅" ? '#bbf7d0' : '#fef3c7'}; color:${p.clientEdits === "تمت الموافقة ✅" ? '#166534' : '#b45309'}; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:${p.clientEdits === "تمت الموافقة ✅" ? '#14532d' : '#92400e'};">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
                         </div>`;
@@ -7923,48 +7919,32 @@ window.syncClientCardUI = function(postId) {
     const post = board.cards.find(c => c.id === postId);
     if (!post) return;
     
-    const card = document.querySelector(`.sm-feed-post-card button[onclick*="approveClientPost"][onclick*="${postId}"]`)?.closest('.sm-feed-post-card');
+    const openModalBtn = document.querySelector(`.sm-feed-post-card button[onclick*="openCreatePostModal"][onclick*="'${postId}'"]`);
+    if (!openModalBtn) return;
+    const card = openModalBtn.closest('.sm-feed-post-card');
     if (!card) return;
     
     const hasEdit = post.clientModified && post.clientEdits && post.clientEdits.trim().length > 0;
     const isApproved = post.clientModified && post.clientEdits === "تمت الموافقة ✅";
     
-    const approveBtn = card.querySelector(`button[onclick*="approveClientPost"]`);
-    const editBtn = card.querySelector(`button[onclick*="requestClientEdit"]`);
-    
-    if (approveBtn) {
-        if (isApproved) {
-            approveBtn.style.background = '#10b981';
-            approveBtn.style.color = 'white';
-            approveBtn.style.borderColor = '#10b981';
-            approveBtn.innerText = 'تمت الموافقة';
-            approveBtn.onmouseover = function() { this.style.background='#059669'; this.style.borderColor='#059669'; };
-            approveBtn.onmouseout = function() { this.style.background='#10b981'; this.style.borderColor='#10b981'; };
-        } else {
-            approveBtn.style.background = 'white';
-            approveBtn.style.color = '#10b981';
-            approveBtn.style.borderColor = '#bbf7d0';
-            approveBtn.innerText = 'موافق';
-            approveBtn.onmouseover = function() { this.style.background='#dcfce7'; this.style.borderColor='#10b981'; };
-            approveBtn.onmouseout = function() { this.style.background='white'; this.style.borderColor='#bbf7d0'; };
-        }
+    let actionsContainer = card.querySelector('.sm-client-card-actions');
+    if (!actionsContainer) {
+        actionsContainer = document.createElement('div');
+        actionsContainer.className = 'sm-client-card-actions';
+        actionsContainer.style.cssText = "display:none; justify-content:center; gap: 8px; margin-top: 12px; width: 100%;";
+        card.appendChild(actionsContainer);
     }
     
-    if (hasEdit && !isApproved) {
-        if (!editBtn && approveBtn) {
-            const btnContainer = approveBtn.parentElement;
-            const newEditBtn = document.createElement('button');
-            newEditBtn.setAttribute('onclick', `window.requestClientEdit('${postId}')`);
-            newEditBtn.style.cssText = "background: white; color: #f97316; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;";
-            newEditBtn.innerText = 'يوجد تعديل';
-            newEditBtn.onmouseover = function() { this.style.background='#fff7ed'; this.style.borderColor='#f97316'; };
-            newEditBtn.onmouseout = function() { this.style.background='white'; this.style.borderColor='#fed7aa'; };
-            btnContainer.insertBefore(newEditBtn, approveBtn);
+    if (isApproved || hasEdit) {
+        actionsContainer.style.display = 'flex';
+        if (isApproved) {
+            actionsContainer.innerHTML = `<button onclick="window.approveClientPost('${postId}', this)" style="background: #10b981; color: white; border: 1px solid #10b981; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;" onmouseover="this.style.background='#059669'; this.style.borderColor='#059669';" onmouseout="this.style.background='#10b981'; this.style.borderColor='#10b981';">تمت الموافقة</button>`;
+        } else if (hasEdit) {
+            actionsContainer.innerHTML = `<button onclick="window.requestClientEdit('${postId}')" style="background: white; color: #f97316; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#fff7ed'; this.style.borderColor='#f97316';" onmouseout="this.style.background='white'; this.style.borderColor='#fed7aa';">يوجد تعديل</button>`;
         }
     } else {
-        if (editBtn) {
-            editBtn.remove();
-        }
+        actionsContainer.style.display = 'none';
+        actionsContainer.innerHTML = '';
     }
 };
 
