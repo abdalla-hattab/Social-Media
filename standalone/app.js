@@ -5872,7 +5872,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             <div style="display:flex; align-items:center; justify-content:${postFrameIoLink ? 'space-between' : 'center'}; width: 100%;">
                                 <button onclick="window.openCreatePostModal('${p.id}');" style="background: white; color: #334155; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.color='#334155';">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    عرض المحتوى
+                                    عرض الفكرة ومحتوى التصميم
                                 </button>
                                 ${postFrameIoLink ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#0f172a'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.background='#1e293b'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                             </div>
@@ -5880,11 +5880,12 @@ function renderSocialSchedulerApp(activeBoard) {
                                 ${ (() => {
                                     if (p.clientModified && p.clientEdits === "تمت الموافقة ✅") return '';
                                     const hasEdit = p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0;
-                                    const btnBg = hasEdit ? '#f59e0b' : 'white';
-                                    const btnColor = hasEdit ? 'white' : '#f59e0b';
-                                    const btnBorder = hasEdit ? '#f59e0b' : '#fde68a';
-                                    const hoverBg = hasEdit ? '#d97706' : '#fef3c7';
-                                    const hoverBorder = hasEdit ? '#d97706' : '#f59e0b';
+                                    if (!hasEdit) return '';
+                                    const btnBg = '#f59e0b';
+                                    const btnColor = 'white';
+                                    const btnBorder = '#f59e0b';
+                                    const hoverBg = '#d97706';
+                                    const hoverBorder = '#d97706';
                                     return `<button onclick="window.requestClientEdit('${p.id}')" style="background: ${btnBg}; color: ${btnColor}; border: 1px solid ${btnBorder}; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='${hoverBg}'; this.style.borderColor='${hoverBorder}';" onmouseout="this.style.background='${btnBg}'; this.style.borderColor='${btnBorder}';">يوجد تعديل</button>`;
                                 })() }
                                 <button onclick="window.approveClientPost('${p.id}', this)" style="${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'background: #10b981; color: white; border: 1px solid #10b981;' : 'background: white; color: #10b981; border: 1px solid #bbf7d0;'} cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;" ${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? `onmouseover="this.style.background='#059669'; this.style.borderColor='#059669';" onmouseout="this.style.background='#10b981'; this.style.borderColor='#10b981';"` : `onmouseover="this.style.background='#dcfce7'; this.style.borderColor='#10b981';" onmouseout="this.style.background='white'; this.style.borderColor='#bbf7d0';"`}>${(p.clientModified && p.clientEdits === "تمت الموافقة ✅") ? 'تمت الموافقة' : 'موافق'}</button>
