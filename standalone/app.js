@@ -4472,24 +4472,48 @@ window.generatePipelineHtml = function(board) {
                 dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
             }
         }
-        let diffDays = 0;
+        let diffDaysStr = '';
+        let remainingDays = 0;
         if (dateObj && !isNaN(dateObj.getTime())) {
             const now = new Date();
             dateObj.setHours(0,0,0,0);
             const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const diffTime = nowStart - dateObj;
-            diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays >= 0) {
-                diffDaysStr = `مر ${diffDays} يوم`;
+            
+            const endDate = new Date(dateObj);
+            endDate.setMonth(endDate.getMonth() + 1);
+            
+            const remainingTime = endDate - nowStart;
+            remainingDays = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+            
+            if (remainingDays > 0) {
+                if (remainingDays === 1) diffDaysStr = 'باقي يوم واحد';
+                else if (remainingDays === 2) diffDaysStr = 'باقي يومين';
+                else if (remainingDays >= 3 && remainingDays <= 10) diffDaysStr = `باقي ${remainingDays} أيام`;
+                else diffDaysStr = `باقي ${remainingDays} يوم`;
+            } else if (remainingDays === 0) {
+                diffDaysStr = 'ينتهي اليوم';
             } else {
-                diffDaysStr = `باقي ${Math.abs(diffDays)} يوم`;
+                diffDaysStr = `انتهى منذ ${Math.abs(remainingDays)} يوم`;
             }
         }
         
-        const isPassed = diffDays >= 0;
-        const diffColor = isPassed ? '#e11d48' : '#059669';
-        const diffBg = isPassed ? '#fff1f2' : '#ecfdf5';
-        const diffBorder = isPassed ? '#ffe4e6' : '#d1fae5';
+        let diffColor = '#059669'; 
+        let diffBg = '#ecfdf5'; 
+        let diffBorder = '#d1fae5'; 
+
+        if (remainingDays > 10) {
+            diffColor = '#059669';
+            diffBg = '#ecfdf5';
+            diffBorder = '#d1fae5';
+        } else if (remainingDays > 5 && remainingDays <= 10) {
+            diffColor = '#d97706';
+            diffBg = '#fffbeb';
+            diffBorder = '#fef3c7';
+        } else {
+            diffColor = '#e11d48';
+            diffBg = '#fff1f2';
+            diffBorder = '#ffe4e6';
+        }
 
         html += `<div style="display: flex; justify-content: center; width: 100%; margin-bottom: 4px;">
                     <div style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 6px 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap;">
