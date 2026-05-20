@@ -5136,8 +5136,18 @@ function renderSocialSchedulerApp(activeBoard) {
         </style>
         <div style="display: flex; gap: 8px; padding: 2px 0; align-items: flex-start; width: 100%;">
             <div id="socialClientTabs" style="flex: 1; text-align: right;">
-            ${socialBoards.slice(2).map((b, idx) => {
-                const isActive = activeBoard.id === b.id;
+            ${(() => {
+                let clients = socialBoards.slice(2);
+                clients.sort((a, b) => {
+                    let aVal = a.importanceLevel;
+                    let bVal = b.importanceLevel;
+                    if (aVal === undefined && bVal === undefined) return 0;
+                    if (aVal === undefined) return 1;
+                    if (bVal === undefined) return -1;
+                    return aVal - bVal;
+                });
+                return clients.map((b, idx) => {
+                    const isActive = activeBoard.id === b.id;
                 
                 let bg = isActive ? 'white' : 'transparent';
                 let color = '#1a202c';
@@ -6634,48 +6644,7 @@ function renderSocialSchedulerApp(activeBoard) {
 
     const socialClientTabsEl = document.getElementById('socialClientTabs');
     if (socialClientTabsEl && window.Sortable && !window.isClientView) {
-        // Add ghost styles dynamically if they don't exist
-        if (!document.getElementById('sortableGhostStyles')) {
-            const style = document.createElement('style');
-            style.id = 'sortableGhostStyles';
-            style.innerHTML = `
-                .sortable-ghost { opacity: 0.4; }
-                .sortable-fallback { cursor: grabbing !important; z-index: 99999 !important; }
-            `;
-            document.head.appendChild(style);
-        }
-
-        new window.Sortable(socialClientTabsEl, {
-            animation: 150,
-            fallbackTolerance: 5, // Prevent accidental drags when just clicking
-            filter: ".sm-non-draggable",
-            onMove: function (evt) {
-                if (evt.related.classList.contains('sm-non-draggable')) {
-                    return false;
-                }
-            },
-            onEnd: function(evt) {
-                const oldIndex = evt.oldIndex;
-                const newIndex = evt.newIndex;
-                if (oldIndex === newIndex) return;
-
-                const draggedBoardId = evt.item.getAttribute('data-id');
-                
-                const allSocials = boards.filter(b => b.type === 'social_scheduler');
-                const agencySocials = allSocials.slice(0, 2);
-                let clientSocials = allSocials.slice(2);
-                
-                const draggedBoard = clientSocials.find(b => b.id === draggedBoardId);
-                if (!draggedBoard) return;
-                clientSocials = clientSocials.filter(b => b.id !== draggedBoardId);
-                clientSocials.splice(newIndex, 0, draggedBoard);
-                
-                const otherBoards = boards.filter(b => b.type !== 'social_scheduler');
-                boards = [...otherBoards, ...agencySocials, ...clientSocials];
-                
-                if (typeof saveState === 'function') saveState();
-            }
-        });
+        // Dragging disabled completely.
     }
 
     const tabs = appContainer.querySelectorAll('.sm-tab');
