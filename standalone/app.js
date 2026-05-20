@@ -4492,7 +4492,7 @@ window.generatePipelineHtml = function(board) {
         const diffBorder = isPassed ? '#ffe4e6' : '#d1fae5';
 
         html += `<div style="display: flex; justify-content: center; width: 100%; margin-bottom: 4px;">
-                    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 6px 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
+                    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 6px 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap;">
                         <div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: #f8fafc; border-radius: 50%; border: 1px solid #f1f5f9;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </div>
@@ -4505,15 +4505,15 @@ window.generatePipelineHtml = function(board) {
                     </div>
                  </div>`;
     }
-    html += `<div style="display: flex; align-items: center; width: 100%;">`;
+    html += `<div style="display: flex; align-items: flex-start; width: 100%;">`;
     
     html += `
-        <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 16px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
+        <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 16px; margin-top: 2px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
         </button>
     `;
 
-    html += `<div class="sm-pipeline-container" style="flex: 1; display: flex; gap: 4px; overflow: hidden; border-radius: 4px;">`;
+    html += `<div class="sm-pipeline-container" style="flex: 1; display: flex; flex-wrap: wrap; gap: 6px; border-radius: 4px;">`;
 
     stages.forEach((stage, index) => {
         const isActive = index === activeIndex;
