@@ -4459,7 +4459,36 @@ window.generatePipelineHtml = function(board) {
     const activeIndex = pl.activeStageIndex || 0;
     const entries = pl.stageEntries || {};
 
-    let html = `<div class="sm-pipeline-wrapper" style="margin: 16px 0 24px 0; padding: 10px 24px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
+    let html = `<div style="display: flex; flex-direction: column; width: 100%; margin: 16px 0 24px 0;">`;
+    if (board.contractStartDate) {
+        let diffDaysStr = '';
+        const parts = board.contractStartDate.split('-');
+        let dateObj = null;
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+            } else {
+                dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+        }
+        if (dateObj && !isNaN(dateObj.getTime())) {
+            const now = new Date();
+            dateObj.setHours(0,0,0,0);
+            const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const diffTime = nowStart - dateObj;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays >= 0) {
+                diffDaysStr = `(مرت ${diffDays} يوم)`;
+            } else {
+                diffDaysStr = `(باقي ${Math.abs(diffDays)} يوم)`;
+            }
+        }
+        html += `<div style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    تاريخ بداية هذا الشهر: <span style="color: #2563eb;">${board.contractStartDate}</span> <span style="color: #ea580c; font-size: 13px;">${diffDaysStr}</span>
+                 </div>`;
+    }
+    html += `<div class="sm-pipeline-wrapper" style="padding: 10px 24px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
     
     html += `
         <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 16px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
@@ -4527,6 +4556,7 @@ window.generatePipelineHtml = function(board) {
     });
 
     html += `</div>`; 
+    html += `</div>`;
     html += `</div>`;
     return html;
 };
