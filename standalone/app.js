@@ -5019,6 +5019,10 @@ function renderSocialSchedulerApp(activeBoard) {
                     </div>
                     <div class="modal-body" style="padding-top: 12px;">
                         <input type="text" id="renameClientInput" class="modal-input" placeholder="اسم العميل..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
+                        <div style="margin-top: 12px;">
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">مستوى الأهمية (ترتيب)</label>
+                            <input type="number" id="renameClientImportance" class="modal-input" placeholder="رقم الأهمية (مثال: 1, 2...)" min="1" step="1" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
+                        </div>
                     </div>
                     <div class="modal-footer" style="padding-top: 16px; margin-top: 16px; border-top: 1px solid #edf2f7; display: flex; justify-content: space-between; gap: 8px;">
                         <button id="renameClientDeleteBtn" style="padding: 8px 16px; border-radius: 6px; border: none; background: #fee2e2; color: #dc2626; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">حذف العميل</button>
@@ -5043,15 +5047,33 @@ function renderSocialSchedulerApp(activeBoard) {
         }
         
         const input = document.getElementById('renameClientInput');
+        const importanceInput = document.getElementById('renameClientImportance');
         input.value = board.title;
+        if(importanceInput) importanceInput.value = board.importanceLevel || '';
         
         document.getElementById('renameClientConfirmBtn').onclick = () => {
             const newName = input.value.trim();
+            const newImportance = parseInt(importanceInput.value, 10);
             input.blur();
             rnModal.classList.remove('active');
             
+            let changed = false;
             if (newName && newName !== board.title) {
                 board.title = newName;
+                changed = true;
+            }
+            
+            if (!isNaN(newImportance)) {
+                if (board.importanceLevel !== newImportance) {
+                    board.importanceLevel = newImportance;
+                    changed = true;
+                }
+            } else if (board.importanceLevel !== undefined) {
+                delete board.importanceLevel;
+                changed = true;
+            }
+            
+            if (changed) {
                 saveState();
                 render();
             }
@@ -5239,6 +5261,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         outline: none;
                     "
                     onmousedown="this.parentElement.style.cursor='grabbing'; this.style.cursor='grabbing';" onmouseup="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';" onmouseleave="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';">
+                        ${b.importanceLevel ? `<span style="background: rgba(0,0,0,0.06); color: inherit; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 800;">${b.importanceLevel}</span>` : ''}
                         ${b.title || 'Client '}
                     </button>
                 </div>
