@@ -5721,7 +5721,7 @@ function renderSocialSchedulerApp(activeBoard) {
             <!-- Bottom Row: Tabs + Client Share Button -->
             <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: flex-end;">
                 ${tabsHtml}
-                <div style="display: flex; gap: 8px;">
+                <div style="display: flex; gap: 8px; align-items: center; flex: 1;">
                     <button class="sm-action-btn" title="فتح مساحة العميل في صفحة جديدة" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.generateDirectShareLink('${activeBoard.id}', this, event)">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                         مشاركة العميل
@@ -5730,6 +5730,9 @@ function renderSocialSchedulerApp(activeBoard) {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                         مشاركة خطة المحتوى
                     </button>
+                    
+                    <!-- Client Notes Input -->
+                    <input type="text" placeholder="اكتب ملاحظاتك الخاصة بهذا العميل هنا..." style="flex: 1; padding: 10px 16px; border: 1px solid #e2e8f0; border-radius: 9px; outline: none; font-size: 14px; background: #f8fafc; color: #334155; font-family: inherit; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: all 0.2s;" onfocus="this.style.background='white'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 0 0 2px rgba(14,165,233,0.1)';" onblur="this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='inset 0 1px 2px rgba(0,0,0,0.02)';" value="${(activeBoard.clientNotes || '').replace(/"/g, '&quot;')}" onchange="const b = typeof boards !== 'undefined' ? boards.find(b=>b.id==='${activeBoard.id}') : null; if(b){ b.clientNotes = this.value; if(typeof saveState === 'function') saveState(); }" />
                 </div>
             </div>
         </div>
