@@ -5017,9 +5017,12 @@ function renderSocialSchedulerApp(activeBoard) {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
                     </div>
-                    <div class="modal-body" style="padding-top: 12px;">
-                        <input type="text" id="renameClientInput" class="modal-input" placeholder="اسم العميل..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
-                        <div style="margin-top: 12px;">
+                    <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px; padding-top: 12px; margin-bottom: 0;">
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">اسم العميل</label>
+                            <input type="text" id="renameClientInput" class="modal-input" placeholder="اسم العميل..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
+                        </div>
+                        <div>
                             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">مستوى الأهمية (ترتيب)</label>
                             <input type="number" id="renameClientImportance" class="modal-input" placeholder="رقم الأهمية (مثال: 1, 2...)" min="1" step="1" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
                         </div>
