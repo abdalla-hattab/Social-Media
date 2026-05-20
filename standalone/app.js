@@ -5927,9 +5927,8 @@ function renderSocialSchedulerApp(activeBoard) {
                                         ? `<div style="display: flex; flex-direction: column; align-items: center;">خطة المحتوى - ${activeBoard.title}<div style="font-size: 14px; color: #64748b; margin-top: 4px; font-weight: 600;">${monthNamesArabic[currentMonth]} ${currentYear}</div></div>` 
                                         : `${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}`}
                                 </h3>
-                                ${monthStatsHtml}
                             </div>
-                            <div class="sm-cal-nav" style="align-items: center; flex-wrap: wrap; gap: 12px; justify-content: center;">
+                            <div class="sm-cal-nav" style="display: flex; align-items: center; flex-wrap: wrap; gap: 12px; justify-content: center;">
                                 <button class="sm-mobile-toggle-sidebar" onclick="document.querySelector('.sm-sidebar').classList.add('active')" style="background: #ea580c; color: white; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; align-items: center; gap: 6px;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                                     معلومات وتفاصيل اليوم
@@ -5940,6 +5939,8 @@ function renderSocialSchedulerApp(activeBoard) {
                                 <button class="sm-icon-btn" onclick="window.toggleClientEditsVisibility()" title="${window.smShowClientEditsToggle !== false ? 'إخفاء تعديلات العميل' : 'إظهار تعديلات العميل'}" style="margin-left: 4px; border: none; color:${window.smShowClientEditsToggle !== false ? '#16a34a' : '#64748b'};" onmouseover="this.style.background='${window.smShowClientEditsToggle !== false ? '#f0fdf4' : '#f1f5f9'}';" onmouseout="this.style.background='transparent';">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${window.smShowClientEditsToggle !== false ? '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z"></path>' : '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line>'}</svg>
                                 </button>
+                                ${monthStatsHtml}
+
                                 
                                 <style>@keyframes smLivePulse { 0% { transform: scale(0.9); opacity: 1; } 100% { transform: scale(1.4); opacity: 0.6; box-shadow: 0 0 8px #ef4444; } }</style>
                                 <button class="sm-icon-btn" onclick="window.toggleLiveMode()" title="البث المباشر (Live)" style="margin-left: 4px; border: 1px solid ${window.isLiveModeActive ? '#ef4444' : 'transparent'}; background: ${window.isLiveModeActive ? '#fef2f2' : 'transparent'}; color:${window.isLiveModeActive ? '#ef4444' : '#64748b'}; font-weight:700; width: auto; padding: 0 10px; gap: 6px; font-size:13px; transition: all 0.2s;" onmouseover="this.style.background='${window.isLiveModeActive ? '#fee2e2' : '#f1f5f9'}';" onmouseout="this.style.background='${window.isLiveModeActive ? '#fef2f2' : 'transparent'}';">
