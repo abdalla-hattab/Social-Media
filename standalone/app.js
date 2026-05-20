@@ -4460,6 +4460,7 @@ window.generatePipelineHtml = function(board) {
     const entries = pl.stageEntries || {};
 
     let html = `<div style="display: flex; flex-direction: column; width: 100%; margin: 16px 0 24px 0;">`;
+    html += `<div class="sm-pipeline-wrapper" style="padding: 16px 24px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 16px; border: 1px solid #f1f5f9; position: relative;">`;
     if (board.contractStartDate) {
         let diffDaysStr = '';
         const parts = board.contractStartDate.split('-');
@@ -4483,12 +4484,15 @@ window.generatePipelineHtml = function(board) {
                 diffDaysStr = `(باقي ${Math.abs(diffDays)} يوم)`;
             }
         }
-        html += `<div style="font-size: 14px; font-weight: 700; color: #475569; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #64748b;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    تاريخ بداية هذا الشهر: <span style="color: #2563eb;">${board.contractStartDate}</span> <span style="color: #ea580c; font-size: 13px;">${diffDaysStr}</span>
+        html += `<div style="display: flex; justify-content: center; width: 100%;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 13px; font-weight: 700; color: #475569; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        تاريخ بداية هذا العقد: <span style="color: #2563eb;">${board.contractStartDate}</span>
+                        <span style="color: #ea580c; margin-right: 4px;">${diffDaysStr}</span>
+                    </div>
                  </div>`;
     }
-    html += `<div class="sm-pipeline-wrapper" style="padding: 10px 24px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;">`;
+    html += `<div style="display: flex; align-items: center; width: 100%;">`;
     
     html += `
         <button class="sm-pipeline-edit-btn" onclick="window.openPipelineEditModal('${board.id}')" title="تعديل المراحل" style="margin-left: 16px; background: transparent; border: none; color: #64748b; cursor: pointer; padding: 8px; border-radius: 6px; outline: none; border: 1px solid #e2e8f0;" onmouseover="this.style.background='#f1f5f9';" onmouseout="this.style.background='transparent';">
@@ -4556,6 +4560,7 @@ window.generatePipelineHtml = function(board) {
     });
 
     html += `</div>`; 
+    html += `</div>`;
     html += `</div>`;
     html += `</div>`;
     return html;
