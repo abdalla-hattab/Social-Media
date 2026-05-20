@@ -5815,7 +5815,6 @@ function renderSocialSchedulerApp(activeBoard) {
                 <div onclick="window.editContract(${currentYear}, ${currentMonth})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; transition: all 0.2s; transform-origin: center;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
                     <div style="display: flex; align-items: center; margin-bottom: 4px; white-space: nowrap; gap: 6px;">
                         <span style="font-size: 12px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
-                        ${contractSubtitle}
                     </div>
                     <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe; white-space: nowrap;">
                         ${getMediaCountHtml(contractStats.images, contractStats.videos, '#2563eb')}
