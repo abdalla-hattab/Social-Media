@@ -5279,7 +5279,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     </button>
                 </div>
                 `;
-            }).join('')}
+            }).join(''); })()}
                 <button class="sm-non-draggable" onclick="window.openAddClientModal();" style="
                     display: inline-flex; 
                     margin-bottom: 8px;
