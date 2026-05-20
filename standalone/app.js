@@ -4472,23 +4472,36 @@ window.generatePipelineHtml = function(board) {
                 dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
             }
         }
+        let diffDays = 0;
         if (dateObj && !isNaN(dateObj.getTime())) {
             const now = new Date();
             dateObj.setHours(0,0,0,0);
             const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const diffTime = nowStart - dateObj;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             if (diffDays >= 0) {
-                diffDaysStr = `(مرت ${diffDays} يوم)`;
+                diffDaysStr = `مرت ${diffDays} يوم`;
             } else {
-                diffDaysStr = `(باقي ${Math.abs(diffDays)} يوم)`;
+                diffDaysStr = `باقي ${Math.abs(diffDays)} يوم`;
             }
         }
-        html += `<div style="display: flex; justify-content: center; width: 100%;">
-                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; font-size: 13px; font-weight: 700; color: #475569; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        تاريخ بداية هذا العقد: <span style="color: #2563eb;">${board.contractStartDate}</span>
-                        <span style="color: #ea580c; margin-right: 4px;">${diffDaysStr}</span>
+        
+        const isPassed = diffDays >= 0;
+        const diffColor = isPassed ? '#e11d48' : '#059669';
+        const diffBg = isPassed ? '#fff1f2' : '#ecfdf5';
+        const diffBorder = isPassed ? '#ffe4e6' : '#d1fae5';
+
+        html += `<div style="display: flex; justify-content: center; width: 100%; margin-bottom: 4px;">
+                    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 6px 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);">
+                        <div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: #f8fafc; border-radius: 50%; border: 1px solid #f1f5f9;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        </div>
+                        <span style="letter-spacing: 0.2px;">تاريخ بداية هذا العقد:</span> 
+                        <span style="font-weight: 800; font-size: 14px; letter-spacing: 0.5px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${board.contractStartDate}</span>
+                        <span style="display: flex; align-items: center; gap: 4px; background: ${diffBg}; color: ${diffColor}; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-right: 2px; border: 1px solid ${diffBorder}; letter-spacing: 0.2px;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            ${diffDaysStr}
+                        </span>
                     </div>
                  </div>`;
     }
