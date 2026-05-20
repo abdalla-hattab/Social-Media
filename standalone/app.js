@@ -5720,6 +5720,7 @@ function renderSocialSchedulerApp(activeBoard) {
             
             <!-- Bottom Row: Tabs + Client Share Button -->
             <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: flex-end;">
+                ${tabsHtml}
                 <div style="display: flex; gap: 8px; align-items: flex-start; flex: 1;">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <button class="sm-action-btn" title="فتح مساحة العميل في صفحة جديدة" style="display:flex; align-items:center; gap:8px; padding: 10px 16px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 14px;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.generateDirectShareLink('${activeBoard.id}', this, event)">
