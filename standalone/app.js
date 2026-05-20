@@ -4472,7 +4472,6 @@ window.generatePipelineHtml = function(board) {
                 dateObj = new Date(parts[2], parts[1] - 1, parts[0]);
             }
         }
-        let diffDaysStr = '';
         let remainingDays = 0;
         if (dateObj && !isNaN(dateObj.getTime())) {
             const now = new Date();
