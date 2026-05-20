@@ -4480,7 +4480,7 @@ window.generatePipelineHtml = function(board) {
             const diffTime = nowStart - dateObj;
             diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             if (diffDays >= 0) {
-                diffDaysStr = `مرت ${diffDays} يوم`;
+                diffDaysStr = `مر ${diffDays} يوم`;
             } else {
                 diffDaysStr = `باقي ${Math.abs(diffDays)} يوم`;
             }
