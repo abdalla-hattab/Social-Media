@@ -2493,9 +2493,18 @@ input[type=number] {
 }
 
 .sm-pipeline-stage.active {
-    background: #468c5b; /* Pipedrive green */
     color: #ffffff;
+    background: linear-gradient(to right, #3c424f 50%, #468c5b 50%);
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    animation: fillBgRightToLeft 0.6s ease-out;
 }
+
+@keyframes fillBgRightToLeft {
+    0% { background-position: 0% 0; }
+    100% { background-position: 100% 0; }
+}
+
 .sm-pipeline-stage.active:hover {
     background: #50a168;
 }
