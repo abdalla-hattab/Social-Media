@@ -5247,7 +5247,7 @@ function renderSocialSchedulerApp(activeBoard) {
 
                 return `
                 <div data-id="${b.id}" style="display: inline-flex; margin-left: 8px; margin-bottom: 8px; vertical-align: top; background: ${bg}; border: ${border}; box-shadow: ${shadow}; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 12px;">
-                    <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="window.handleEmojiClick(event, '${b.id}')" title="تحديد حالة العميل">
+                    <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%;" onclick="window.switchSocialClient('${b.id}')" ondblclick="window.toggleClientEmojiPopup(event, '${b.id}')">
                         ${window.getClientEmojiSvg(b.clientSentiment || 'grey', 18)}
                     </div>
                     <button 
