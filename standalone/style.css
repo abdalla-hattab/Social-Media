@@ -2506,7 +2506,9 @@ input[type=number] {
 }
 
 .sm-pipeline-stage.active:hover {
-    background: #50a168;
+    background: linear-gradient(to right, #4b5263 50%, #50a168 50%);
+    background-size: 200% 100%;
+    background-position: 100% 0;
 }
 .sm-pipeline-stage.past {
     background: #468c5b;
