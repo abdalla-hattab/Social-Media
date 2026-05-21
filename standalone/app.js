@@ -5471,14 +5471,23 @@ function renderSocialSchedulerApp(activeBoard) {
                         <h2 style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0; outline: none; padding: 2px 6px; border-radius: 4px;">لوحة تنظيم خدمة السوشال ميديا</h2>
                     </div>
                 </div>
-                <!-- Frame.io Button -->
-                <a href="https://next.frame.io/" target="_blank" style="display: flex; align-items: center; gap: 8px; background: #0f172a; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='translateY(0)'" title="الذهاب إلى Frame.io">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="2" y="2" width="20" height="20" rx="2.5" ry="2.5"></rect>
-                        <polygon points="10 8 16 12 10 16 10 8"></polygon>
-                    </svg>
-                    Frame.io
-                </a>
+                <div style="display: flex; gap: 8px;">
+                    <!-- Ads System (Trello) Button -->
+                    <a href="https://trello.com/b/PQ3Zdn0R/ads-value-stream-a-system-for-every-client-to-make-monthly-20000-sar" target="_blank" style="display: flex; align-items: center; gap: 8px; background: #0052cc; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #0747a6; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#0047b3'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0052cc'; this.style.transform='translateY(0)'" title="الذهاب إلى Ads System">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.5 2H4.5C3.119 2 2 3.119 2 4.5V19.5C2 20.881 3.119 22 4.5 22H19.5C20.881 22 22 20.881 22 19.5V4.5C22 3.119 20.881 2 19.5 2ZM10.5 17.5C10.5 17.776 10.276 18 10 18H5C4.724 18 4.5 17.776 4.5 17.5V5.5C4.5 5.224 4.724 5 5 5H10C10.276 5 10.5 5.224 10.5 5.5V17.5ZM19.5 12.5C19.5 12.776 19.276 13 19 13H14C13.724 13 13.5 12.776 13.5 12.5V5.5C13.5 5.224 13.724 5 14 5H19C19.276 5 19.5 5.224 19.5 5.5V12.5Z" />
+                        </svg>
+                        Ads System
+                    </a>
+                    <!-- Frame.io Button -->
+                    <a href="https://next.frame.io/" target="_blank" style="display: flex; align-items: center; gap: 8px; background: #0f172a; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='translateY(0)'" title="الذهاب إلى Frame.io">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="2.5" ry="2.5"></rect>
+                            <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                        </svg>
+                        Frame.io
+                    </a>
+                </div>
             </div>
 
             <!-- Client Tabs below the title -->
