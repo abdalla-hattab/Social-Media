@@ -5230,9 +5230,9 @@ function renderSocialSchedulerApp(activeBoard) {
                     });
 
                     document.body.appendChild(popup);
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    popup.style.top = (rect.bottom + 10) + 'px';
-                    popup.style.left = (rect.left + rect.width/2 - popup.offsetWidth/2) + 'px';
+                    // The element might be detached due to re-render, so we use mouse coordinates
+                    popup.style.top = (e.clientY + 15) + 'px';
+                    popup.style.left = (e.clientX - popup.offsetWidth/2) + 'px';
                     
                     setTimeout(() => {
                         const closeHandler = (ev) => {
