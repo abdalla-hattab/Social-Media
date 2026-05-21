@@ -6566,13 +6566,6 @@ function renderSocialSchedulerApp(activeBoard) {
         }
 
         if (savedLink) {
-            menu.appendChild(createMenuItem(`عرض ${pName}`, () => {
-                let url = savedLink;
-                if (!url.startsWith('http://') && !url.startsWith('https://')) {
-                    url = 'https://' + url;
-                }
-                window.open(url, '_blank');
-            }));
             menu.appendChild(createMenuItem('تعديل الرابط', () => {
                 window.openAllSocialLinksModal();
             }));
