@@ -6114,6 +6114,10 @@ function renderSocialSchedulerApp(activeBoard) {
                                     }
                                     const hasLink = savedLink && savedLink.trim() !== '';
 
+                                    if (platform === 'linkedin' && !hasLink) {
+                                        return '';
+                                    }
+
                                     let actionBtnHtml = '';
                                     if (hasLink) {
                                         actionBtnHtml = `<div onclick="window.smHandleSocialActionClick(event, '${platform}', true, '${storageKey}', '${savedLink}')" style="width:16px; height:16px; border-radius:50%; background:#dbeafe; color:#2563eb; border:1px solid #bfdbfe; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-top:-6px; z-index:2; position:relative; font-weight:bold;" title="الذهاب للرابط">
