@@ -6114,7 +6114,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                     }
                                     const hasLink = savedLink && savedLink.trim() !== '';
 
-                                    if (platform === 'linkedin' && !hasLink) {
+                                    if ((platform === 'linkedin' || platform === 'twitter') && !hasLink) {
                                         return '';
                                     }
 
