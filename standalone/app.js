@@ -2194,6 +2194,19 @@ window.openCreatePostModal = function(postId = null) {
         });
         
         const subtitle = document.getElementById('createPostSubtitle');
+        const timeContainer = document.getElementById('createPostTimeContainer');
+        const timeInput = document.getElementById('createPostTimeInput');
+        
+        let postTimeValue = '16:00';
+        if (postId) {
+            const activeBoardForTime = boards.find(b => b.id === activeBoardId);
+            if (activeBoardForTime && activeBoardForTime.cards) {
+                const p = activeBoardForTime.cards.find(c => c.id === postId);
+                if (p && p.timeStr) postTimeValue = p.timeStr;
+            }
+        }
+        if (timeInput) timeInput.value = postTimeValue;
+
         if (subtitle && targetOpt) {
             const monthNamesArabic = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
             const dayNamesArabic = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
@@ -2204,10 +2217,14 @@ window.openCreatePostModal = function(postId = null) {
             subtitle.textContent = `للنشر يوم: ${dayOfWeekArabic} ${targetOpt.date} ${monthText} ${targetOpt.year}`;
             subtitle.style.fontWeight = '600';
             subtitle.style.color = '#f97316';
-        } else if (subtitle) {
-            subtitle.textContent = 'أنشئ وانشر محتواك على منصاتك';
-            subtitle.style.fontWeight = 'normal';
-            subtitle.style.color = '#718096';
+            if (timeContainer) timeContainer.style.display = 'flex';
+        } else {
+            if (subtitle) {
+                subtitle.textContent = 'أنشئ وانشر محتواك على منصاتك';
+                subtitle.style.fontWeight = 'normal';
+                subtitle.style.color = '#718096';
+            }
+            if (timeContainer) timeContainer.style.display = 'none';
         }
         
         const existingPostsArea = document.getElementById('smModalExistingPostsArea');
@@ -2597,10 +2614,13 @@ if (closeCreatePostModal && createPostModal) {
                             const b = boards.find(bd => bd.id === window.activeBoardId);
                             if (b && b.cards) currentEditingPost = b.cards.find(c => c.id === window.currentEditingSocialPostId);
                         }
+                        const headerTimeInput = document.getElementById('createPostTimeInput');
                         if (currentEditingPost && currentEditingPost.timeStr) {
                             timeInput.value = currentEditingPost.timeStr;
+                            if (headerTimeInput) headerTimeInput.value = currentEditingPost.timeStr;
                         } else {
                             timeInput.value = '16:00';
+                            if (headerTimeInput) headerTimeInput.value = '16:00';
                         }
                     }
                 }
@@ -7517,9 +7537,15 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         }
         
         // Also grab custom time
-        const timeInputEl = document.querySelector('.sm-time-input');
-        if (timeInputEl && timeInputEl.value) {
-            timeStr = timeInputEl.value; // typical format is HH:MM
+        const headerTimeInputEl = document.getElementById('createPostTimeInput');
+        const sidebarTimeInputEl = document.querySelector('.sm-time-input');
+        
+        if (headerTimeInputEl && headerTimeInputEl.value) {
+            timeStr = headerTimeInputEl.value; // typical format is HH:MM
+            if (sidebarTimeInputEl && sidebarTimeInputEl.value !== timeStr) sidebarTimeInputEl.value = timeStr;
+        } else if (sidebarTimeInputEl && sidebarTimeInputEl.value) {
+            timeStr = sidebarTimeInputEl.value;
+            if (headerTimeInputEl && headerTimeInputEl.value !== timeStr) headerTimeInputEl.value = timeStr;
         }
         
         let status = 'مسودة';

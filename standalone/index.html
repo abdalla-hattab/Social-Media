@@ -957,6 +957,10 @@
                         <span id="createPostModalLiveBadge" style="display: none; border: 1px solid #ef4444; background: #fef2f2; color: #ef4444; font-weight: 700; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; align-items: center; cursor: default; user-select: none;"><div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; margin-left: 6px; animation: smLivePulse 0.8s infinite alternate;"></div>Live</span>
                     </div>
                     <p id="createPostSubtitle" style="margin-top: 5px;">أنشئ وانشر محتواك على منصاتك</p>
+                    <div id="createPostTimeContainer" style="display: none; margin-top: 8px; align-items: center; gap: 8px;">
+                        <label for="createPostTimeInput" style="font-size: 13px; font-weight: 600; color: #475569;">وقت النشر:</label>
+                        <input type="time" id="createPostTimeInput" style="border: 1px solid #cbd5e0; border-radius: 6px; padding: 4px 8px; font-size: 13px; color: #1e293b; outline: none; font-family: inherit; width: 110px;" onchange="window.saveSocialDraft(true)">
+                    </div>
                 </div>
             </div>
             
