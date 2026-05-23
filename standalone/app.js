@@ -7485,12 +7485,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                 const statusBtnSnapshot = document.querySelector('.sm-toggle-btn.active');
                 if (statusBtnSnapshot) currentStatus = statusBtnSnapshot.textContent.trim();
                 
-                // CRITICAL FIX: Allow the user to force-save it as a draft even if empty or missing UI
-                if (currentStatus === 'مسودة') {
-                    console.log("Allowed empty draft save.");
-                } else {
-                    return;
-                }
+                return;
             } else {
                 // If the post is auto-saving but has become completely empty, we brutally delete it
                 // ONLY DO THIS IF THE MODAL IS ACTUALLY OPEN! If it's closed, the DOM is empty and we shouldn't kill the post.
