@@ -2443,7 +2443,11 @@ window.openCreatePostModal = function(postId = null) {
                 // Hide or disable fields not relevant for clients
                 if (dateInput) dateInput.disabled = true;
                 if (timeInput) timeInput.disabled = true;
-                if (headerTimeInput) headerTimeInput.disabled = true;
+                if (headerTimeInput) {
+                    headerTimeInput.disabled = true;
+                    headerTimeInput.style.pointerEvents = 'none';
+                    headerTimeInput.style.opacity = '0.7';
+                }
 
                 const zone = document.getElementById("smUploadZone");
                 if (zone) zone.style.setProperty("margin-bottom", "0px", "important");
@@ -2505,7 +2509,11 @@ window.openCreatePostModal = function(postId = null) {
                 if (wrapTt) wrapTt.style.display = 'block';
                 if (dateInput) dateInput.disabled = false;
                 if (timeInput) timeInput.disabled = false;
-                if (headerTimeInput) headerTimeInput.disabled = false;
+                if (headerTimeInput) {
+                    headerTimeInput.disabled = false;
+                    headerTimeInput.style.pointerEvents = 'auto';
+                    headerTimeInput.style.opacity = '1';
+                }
 
                 if (frameIoLabel) frameIoLabel.style.setProperty("display", "flex", "important");
                 if (frameIoContainer) frameIoContainer.style.setProperty("display", "flex", "important");
