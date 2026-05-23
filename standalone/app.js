@@ -2440,6 +2440,28 @@ window.openCreatePostModal = function(postId = null) {
                 // Client view specific logic for openCreatePostModal
                 // Note: Wrappers are no longer hidden here so the client can see the content for all platforms
                 
+                if (window.shareType === 'content_plan') {
+                    const hides = [wrapFb, wrapIg, wrapSc, wrapTt];
+                    hides.forEach(w => {
+                        if (w) {
+                            w.style.setProperty("display", "none", "important");
+                            if (w.previousElementSibling && w.previousElementSibling.classList.contains('client-view-title')) {
+                                w.previousElementSibling.style.setProperty("display", "none", "important");
+                            }
+                        }
+                    });
+                } else {
+                    const shows = [wrapFb, wrapIg, wrapSc, wrapTt];
+                    shows.forEach(w => {
+                        if (w) {
+                            w.style.setProperty("display", "block", "important");
+                            if (w.previousElementSibling && w.previousElementSibling.classList.contains('client-view-title')) {
+                                w.previousElementSibling.style.setProperty("display", "flex", "important");
+                            }
+                        }
+                    });
+                }
+                
                 // Hide or disable fields not relevant for clients
                 if (dateInput) dateInput.disabled = true;
                 if (timeInput) timeInput.disabled = true;
