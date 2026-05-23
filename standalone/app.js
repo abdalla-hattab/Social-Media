@@ -1701,16 +1701,31 @@ window.openCreatePostModal = function(postId = null) {
             const h4s = document.querySelectorAll('#createPostModal .sm-textarea-header h4');
             h4s.forEach(h4 => {
                 const wrap = h4.closest('.sm-textarea-wrap');
-                if (wrap && !wrap.previousElementSibling?.classList?.contains('client-view-title')) {
-                    const newTitle = document.createElement('h4');
-                    newTitle.className = 'client-view-title';
-                    newTitle.textContent = h4.textContent;
-                    newTitle.style.cssText = 'margin: 0 0 10px 0; font-size: 16px; font-weight: 700; color: #334155; text-align: right; width: 100%;';
-                    wrap.parentNode.insertBefore(newTitle, wrap);
-                    
-                    const headerParent = h4.closest('.sm-textarea-header');
+                const headerParent = h4.closest('.sm-textarea-header');
+                
+                if (wrap) {
+                    // Always hide the original header in client view
                     if (headerParent) {
                         headerParent.style.setProperty('display', 'none', 'important');
+                    }
+                    
+                    if (!wrap.previousElementSibling?.classList?.contains('client-view-title')) {
+                        const newTitleContainer = document.createElement('div');
+                        newTitleContainer.className = 'client-view-title';
+                        newTitleContainer.style.cssText = 'display: flex; align-items: center; gap: 8px; margin: 0 0 10px 0; width: 100%;';
+                        
+                        const newH4 = h4.cloneNode(true);
+                        newH4.style.cssText = 'margin: 0; font-size: 16px; font-weight: 700; color: #334155;';
+                        newTitleContainer.appendChild(newH4);
+                        
+                        // Extract icon if it exists (next sibling div containing SVG, but not buttons)
+                        const nextEl = h4.nextElementSibling;
+                        if (nextEl && nextEl.tagName === 'DIV' && !nextEl.querySelector('button') && nextEl.querySelector('svg')) {
+                            const iconClone = nextEl.cloneNode(true);
+                            newTitleContainer.appendChild(iconClone);
+                        }
+                        
+                        wrap.parentNode.insertBefore(newTitleContainer, wrap);
                     }
                 }
             });
