@@ -1704,6 +1704,14 @@ window.openCreatePostModal = function(postId = null) {
                 const headerParent = h4.closest('.sm-textarea-header');
                 
                 if (wrap) {
+                    // Skip extracting titles for IG, Snap, TikTok because they are hidden in Client View
+                    if (window.isClientView) {
+                        const wId = wrap.id || '';
+                        if (wId === 'post-content-wrap-instagram' || wId === 'post-content-wrap-snapchat' || wId === 'post-content-wrap-tiktok') {
+                            return;
+                        }
+                    }
+                    
                     // Always hide the original header in client view
                     if (headerParent) {
                         headerParent.style.setProperty('display', 'none', 'important');
@@ -1748,8 +1756,7 @@ window.openCreatePostModal = function(postId = null) {
                 'smPostTypeSelector',
                 'emojiPickerBtn',
                 'emojiPickerBtn-idea',
-                'emojiPickerBtn-design',
-                'post-content-wrap'
+                'emojiPickerBtn-design'
             ];
             elementsToHide.forEach(id => {
                 const el = document.getElementById(id);
@@ -2441,7 +2448,6 @@ window.openCreatePostModal = function(postId = null) {
             const headerTimeInput = document.getElementById('createPostTimeInput');
 
             if (window.isClientView) {
-                if (wrapFb) wrapFb.style.setProperty("display", "none", "important");
                 if (wrapIg) wrapIg.style.setProperty("display", "none", "important");
                 if (wrapSc) wrapSc.style.setProperty("display", "none", "important");
                 if (wrapTt) wrapTt.style.setProperty("display", "none", "important");
