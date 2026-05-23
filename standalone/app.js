@@ -1700,13 +1700,17 @@ window.openCreatePostModal = function(postId = null) {
             
             const h4s = document.querySelectorAll('#createPostModal .sm-textarea-header h4');
             h4s.forEach(h4 => {
-                h4.style.textAlign = 'center';
-                h4.style.width = '100%';
-                if(h4.parentElement) {
-                    h4.parentElement.style.alignItems = 'center';
-                    h4.parentElement.style.width = '100%';
-                    if(h4.parentElement.parentElement) {
-                        h4.parentElement.parentElement.style.justifyContent = 'center';
+                const wrap = h4.closest('.sm-textarea-wrap');
+                if (wrap && !wrap.previousElementSibling?.classList?.contains('client-view-title')) {
+                    const newTitle = document.createElement('h4');
+                    newTitle.className = 'client-view-title';
+                    newTitle.textContent = h4.textContent;
+                    newTitle.style.cssText = 'margin: 0 0 10px 0; font-size: 16px; font-weight: 700; color: #334155; text-align: right; width: 100%;';
+                    wrap.parentNode.insertBefore(newTitle, wrap);
+                    
+                    const headerParent = h4.closest('.sm-textarea-header');
+                    if (headerParent) {
+                        headerParent.style.setProperty('display', 'none', 'important');
                     }
                 }
             });
@@ -2476,6 +2480,14 @@ window.openCreatePostModal = function(postId = null) {
                     if (newInputs) { newInputs.value = existingEdits; newInputs.innerHTML = existingEdits; }
                 }
             } else {
+                const addedTitles = document.querySelectorAll('.client-view-title');
+                addedTitles.forEach(t => t.remove());
+                
+                const originalHeaders = document.querySelectorAll('#createPostModal .sm-textarea-header');
+                originalHeaders.forEach(h => {
+                    h.style.display = 'flex';
+                });
+
                 if (wrapFb) wrapFb.style.display = 'block';
                 if (wrapIg) wrapIg.style.display = 'block';
                 if (wrapSc) wrapSc.style.display = 'block';
