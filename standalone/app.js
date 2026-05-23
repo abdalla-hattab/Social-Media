@@ -2445,8 +2445,11 @@ window.openCreatePostModal = function(postId = null) {
                 if (timeInput) timeInput.disabled = true;
                 if (headerTimeInput) {
                     headerTimeInput.disabled = true;
+                    headerTimeInput.readOnly = true;
                     headerTimeInput.style.pointerEvents = 'none';
                     headerTimeInput.style.opacity = '0.7';
+                    const timeContainer = document.getElementById('createPostTimeContainer');
+                    if (timeContainer) timeContainer.style.pointerEvents = 'none';
                 }
 
                 const zone = document.getElementById("smUploadZone");
@@ -2511,8 +2514,11 @@ window.openCreatePostModal = function(postId = null) {
                 if (timeInput) timeInput.disabled = false;
                 if (headerTimeInput) {
                     headerTimeInput.disabled = false;
+                    headerTimeInput.readOnly = false;
                     headerTimeInput.style.pointerEvents = 'auto';
                     headerTimeInput.style.opacity = '1';
+                    const timeContainer = document.getElementById('createPostTimeContainer');
+                    if (timeContainer) timeContainer.style.pointerEvents = 'auto';
                 }
 
                 if (frameIoLabel) frameIoLabel.style.setProperty("display", "flex", "important");
