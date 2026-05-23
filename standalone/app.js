@@ -1529,12 +1529,9 @@ window.openCreatePostModal = function(postId = null) {
         
         const postContentWrap = document.getElementById('post-content-wrap');
         if (postContentWrap) {
-            if (window.shareType === 'content_plan') {
-                postContentWrap.style.display = 'none';
-            } else {
-                postContentWrap.style.display = 'block';
-            }
+            postContentWrap.style.display = 'block';
         }
+
         
         // Reset modal fields first
         if (textArea) {
