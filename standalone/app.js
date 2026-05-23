@@ -3907,7 +3907,7 @@ const stopwatchIcon = `<svg width="14" height="14" viewBox="0 0 24 24" fill="non
 function showToast(message) {
     toast.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    setTimeout(() => { toast.classList.remove('show'); }, 6000);
 }
 
 // Global functions
@@ -7375,6 +7375,8 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         const designArea = document.querySelector('.sm-textarea-design');
         
         const textContent = textArea ? textArea.value.trim() : '';
+        const instagramArea = document.querySelector('.sm-textarea-instagram');
+        const instagramContent = instagramArea ? instagramArea.value.trim() : '';
         const snapchatContent = snapchatArea ? snapchatArea.value.trim() : '';
         const tiktokContent = tiktokArea ? tiktokArea.value.trim() : '';
         const ideaContent = ideaArea ? ideaArea.value.trim() : '';
@@ -7465,7 +7467,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             }
         }
         
-        if (!textContent && mediaItems.length === 0) {
+        if (!textContent && !instagramContent && !snapchatContent && !tiktokContent && !ideaContent && !designContentStr && mediaItems.length === 0) {
             if (!isAutoSave) {
                 const textareaWrap = document.querySelector('.sm-textarea-wrap');
                 if (textareaWrap) {
