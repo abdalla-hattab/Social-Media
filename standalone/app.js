@@ -6160,6 +6160,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                     };
                                     
                                     const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
+                                    const storageKey = `social_link_${boardPrefix}_${platform}`;
                                     let savedLink = '';
                                     if (typeof activeBoard !== 'undefined' && activeBoard && activeBoard.socialLinks && activeBoard.socialLinks[platform]) {
                                         savedLink = activeBoard.socialLinks[platform];
