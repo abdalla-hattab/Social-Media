@@ -1543,6 +1543,20 @@ window.openCreatePostModal = function(postId = null) {
             if (cc) cc.innerText = '0 حرف';
         }
         
+        const snapchatArea = document.querySelector('.sm-textarea-snapchat');
+        if (snapchatArea) {
+            snapchatArea.value = '';
+            const cc = document.querySelector('.sm-char-count-snapchat');
+            if (cc) cc.innerText = '0 حرف';
+        }
+
+        const tiktokArea = document.querySelector('.sm-textarea-tiktok');
+        if (tiktokArea) {
+            tiktokArea.value = '';
+            const cc = document.querySelector('.sm-char-count-tiktok');
+            if (cc) cc.innerText = '0 حرف';
+        }
+        
         const ideaArea = document.querySelector('.sm-textarea-idea');
         if (ideaArea) ideaArea.value = '';
         
@@ -1892,6 +1906,20 @@ window.openCreatePostModal = function(postId = null) {
                     if (textArea) {
                         textArea.value = post.fullText || post.description || '';
                         
+                        const snapchatArea = document.querySelector('.sm-textarea-snapchat');
+                        if (snapchatArea) {
+                            snapchatArea.value = post.fullTextSnapchat || '';
+                            const ccs = document.querySelector('.sm-char-count-snapchat');
+                            if (ccs) ccs.innerText = snapchatArea.value.length + ' حرف';
+                        }
+                        
+                        const tiktokArea = document.querySelector('.sm-textarea-tiktok');
+                        if (tiktokArea) {
+                            tiktokArea.value = post.fullTextTiktok || '';
+                            const cct = document.querySelector('.sm-char-count-tiktok');
+                            if (cct) cct.innerText = tiktokArea.value.length + ' حرف';
+                        }
+                        
                         const ideaArea = document.querySelector('.sm-textarea-idea');
                         if (ideaArea) ideaArea.value = post.idea || '';
                         
@@ -1901,7 +1929,7 @@ window.openCreatePostModal = function(postId = null) {
                         if (cc) cc.innerText = textArea.value.length + ' حرف';
                         
                         if (window.isClientView) {
-                            [textArea, ideaArea, designArea].forEach(ta => {
+                            [textArea, ideaArea, designArea, snapchatArea, tiktokArea].forEach(ta => {
                                 if (ta) {
                                     ta.readOnly = true;
                                     ta.style.setProperty('outline', 'none', 'important');
@@ -7320,10 +7348,14 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         }
         
         const textArea = document.querySelector('.sm-textarea');
+        const snapchatArea = document.querySelector('.sm-textarea-snapchat');
+        const tiktokArea = document.querySelector('.sm-textarea-tiktok');
         const ideaArea = document.querySelector('.sm-textarea-idea');
         const designArea = document.querySelector('.sm-textarea-design');
         
         const textContent = textArea ? textArea.value.trim() : '';
+        const snapchatContent = snapchatArea ? snapchatArea.value.trim() : '';
+        const tiktokContent = tiktokArea ? tiktokArea.value.trim() : '';
         const ideaContent = ideaArea ? ideaArea.value.trim() : '';
         const designContentStr = designArea ? designArea.value.trim() : '';
         const input = document.getElementById('smMediaInput');
@@ -7548,12 +7580,14 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         }
         
         const isClientModified = window.isClientView 
-            ? (clientEdits !== '' || (existingPost && existingPost.fullText !== textContent) || (existingPost && existingPost.postType !== postType) || (existingPost && typeof existingPost.clientModified !== 'undefined' ? existingPost.clientModified : false))
+            ? (clientEdits !== '' || (existingPost && existingPost.fullText !== textContent) || (existingPost && existingPost.fullTextSnapchat !== snapchatContent) || (existingPost && existingPost.fullTextTiktok !== tiktokContent) || (existingPost && existingPost.postType !== postType) || (existingPost && typeof existingPost.clientModified !== 'undefined' ? existingPost.clientModified : false))
             : (existingPost ? !!existingPost.clientModified : false);
 
         if (window.isClientView && isClientModified && existingPost && !originalState) {
             originalState = {
                 fullText: existingPost.fullText,
+                fullTextSnapchat: existingPost.fullTextSnapchat,
+                fullTextTiktok: existingPost.fullTextTiktok,
                 postType: existingPost.postType
             };
         }
@@ -7623,8 +7657,10 @@ window.saveSocialDraft = async function(isAutoSave = false) {
 
         const newDraft = {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
-            title: textContent.substring(0, 50) + (textContent.length > 50 ? '...' : ''),
+            title: (textContent || snapchatContent || tiktokContent || '').substring(0, 50) + ((textContent || snapchatContent || tiktokContent || '').length > 50 ? '...' : ''),
             fullText: textContent,
+            fullTextSnapchat: snapchatContent,
+            fullTextTiktok: tiktokContent,
             idea: ideaContent,
             designContent: designContentStr,
             dateStr: dateStr,
