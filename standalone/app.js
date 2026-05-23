@@ -6160,8 +6160,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                     };
                                     
                                     const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
-                                    const storageKey = `social_link_${boardPrefix}_${platform}`;
-                                    let savedLink = localStorage.getItem(storageKey);
+                                    let savedLink = '';
                                     if (typeof activeBoard !== 'undefined' && activeBoard && activeBoard.socialLinks && activeBoard.socialLinks[platform]) {
                                         savedLink = activeBoard.socialLinks[platform];
                                     }
@@ -6411,8 +6410,7 @@ function renderSocialSchedulerApp(activeBoard) {
 
         platforms.forEach(platform => {
             const pName = platformNames[platform];
-            const storageKey = `social_link_${boardPrefix}_${platform}`;
-            let savedLink = localStorage.getItem(storageKey) || '';
+            let savedLink = '';
             if (currentBoard && currentBoard.socialLinks && currentBoard.socialLinks[platform]) {
                 savedLink = currentBoard.socialLinks[platform];
             }
@@ -6514,21 +6512,19 @@ function renderSocialSchedulerApp(activeBoard) {
 
         cancelBtn.onclick = () => closeModal();
         saveBtn.onclick = () => {
-            if (currentBoard) {
-                if (!currentBoard.socialLinks) currentBoard.socialLinks = {};
+            const actualBoard = typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined' ? boards.find(b => b.id === activeBoardId) : null;
+            if (actualBoard) {
+                if (!actualBoard.socialLinks) actualBoard.socialLinks = {};
             }
             Object.keys(inputElements).forEach(platform => {
                 const val = inputElements[platform].value.trim();
-                const storageKey = `social_link_${boardPrefix}_${platform}`;
                 if (val) {
-                    if (currentBoard) currentBoard.socialLinks[platform] = val;
-                    localStorage.setItem(storageKey, val);
+                    if (actualBoard) actualBoard.socialLinks[platform] = val;
                 } else {
-                    if (currentBoard && currentBoard.socialLinks) delete currentBoard.socialLinks[platform];
-                    localStorage.removeItem(storageKey);
+                    if (actualBoard && actualBoard.socialLinks) delete actualBoard.socialLinks[platform];
                 }
             });
-            if (currentBoard && typeof window.saveState === 'function') window.saveState();
+            if (actualBoard && typeof window.saveState === 'function') window.saveState();
             
             window.activePreviewPlatform = null;
             closeModal();
@@ -6566,11 +6562,8 @@ function renderSocialSchedulerApp(activeBoard) {
         }
         window.__socialContextMenuCleanups = [];
 
-        // Get saved link per board
-        const boardPrefix = typeof activeBoardId !== 'undefined' ? activeBoardId : 'default';
-        const storageKey = `social_link_${boardPrefix}_${platform}`;
         const currentBoard = typeof boards !== 'undefined' && typeof activeBoardId !== 'undefined' ? boards.find(b => b.id === activeBoardId) : null;
-        let savedLink = localStorage.getItem(storageKey);
+        let savedLink = '';
         if (currentBoard && currentBoard.socialLinks && currentBoard.socialLinks[platform]) {
             savedLink = currentBoard.socialLinks[platform];
         }
