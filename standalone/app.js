@@ -1906,6 +1906,11 @@ window.openCreatePostModal = function(postId = null) {
                     if (textArea) {
                         textArea.value = post.fullText || post.description || '';
                         
+                        const instagramArea = document.querySelector('.sm-textarea-instagram');
+                        if (instagramArea) {
+                            instagramArea.value = typeof post.fullTextInstagram !== 'undefined' ? post.fullTextInstagram : (post.fullText || post.description || '');
+                        }
+                        
                         const snapchatArea = document.querySelector('.sm-textarea-snapchat');
                         if (snapchatArea) {
                             snapchatArea.value = post.fullTextSnapchat || '';
@@ -5611,6 +5616,8 @@ function renderSocialSchedulerApp(activeBoard) {
         const clientEditsInput = document.getElementById('clientEditsInput');
         
         const currentText = textArea ? textArea.value : (post.fullText || '');
+        const instagramArea = document.querySelector('.sm-textarea-instagram');
+        const currentInstagramText = instagramArea ? instagramArea.value : (post.fullTextInstagram || currentText);
         const currentType = postTypeInput ? postTypeInput.value : (post.postType || 'image');
         const currentClientEdits = clientEditsInput ? clientEditsInput.value : (post.clientEdits || '');
         
@@ -7574,12 +7581,13 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         }
         
         const isClientModified = window.isClientView 
-            ? (clientEdits !== '' || (existingPost && existingPost.fullText !== textContent) || (existingPost && existingPost.fullTextSnapchat !== snapchatContent) || (existingPost && existingPost.fullTextTiktok !== tiktokContent) || (existingPost && existingPost.postType !== postType) || (existingPost && typeof existingPost.clientModified !== 'undefined' ? existingPost.clientModified : false))
+            ? (clientEdits !== '' || (existingPost && existingPost.fullText !== textContent) || (existingPost && existingPost.fullTextInstagram !== instagramContent) || (existingPost && existingPost.fullTextSnapchat !== snapchatContent) || (existingPost && existingPost.fullTextTiktok !== tiktokContent) || (existingPost && existingPost.postType !== postType) || (existingPost && typeof existingPost.clientModified !== 'undefined' ? existingPost.clientModified : false))
             : (existingPost ? !!existingPost.clientModified : false);
 
         if (window.isClientView && isClientModified && existingPost && !originalState) {
             originalState = {
                 fullText: existingPost.fullText,
+                fullTextInstagram: existingPost.fullTextInstagram || existingPost.fullText,
                 fullTextSnapchat: existingPost.fullTextSnapchat,
                 fullTextTiktok: existingPost.fullTextTiktok,
                 postType: existingPost.postType
@@ -7653,6 +7661,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
             title: (textContent || snapchatContent || tiktokContent || '').substring(0, 50) + ((textContent || snapchatContent || tiktokContent || '').length > 50 ? '...' : ''),
             fullText: textContent,
+            fullTextInstagram: instagramContent,
             fullTextSnapchat: snapchatContent,
             fullTextTiktok: tiktokContent,
             idea: ideaContent,
