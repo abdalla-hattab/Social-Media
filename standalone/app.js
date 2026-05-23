@@ -2283,29 +2283,56 @@ window.openCreatePostModal = function(postId = null) {
                             <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; font-weight: ${isActive ? '700' : '500'}; color: ${isActive ? '#1d4ed8' : '#1e293b'}; margin-left: 4px;">${textSnippet}</div>
                             ${window.isClientView ? '' : `
                             <button onclick="event.stopPropagation(); window.deleteSocialPost('${p.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 4px; border-radius: 4px; pointer-events: auto; display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: all 0.2s;" onmouseover="this.style.opacity='1'; this.style.background='#fee2e2';" onmouseout="this.style.opacity='0.7'; this.style.background='transparent';" title="حذف المنشور">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-                            </button>`}
-                        </div>`;
-                    }).join('');
-                    
-                    html += `</div>`;
-                    
-                    existingPostsArea.innerHTML = html;
-                    if (!window.isClientView) existingPostsArea.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        const listEl = document.getElementById('smModalPostsList');
-                        if (listEl && typeof Sortable !== 'undefined') {
-                            new Sortable(listEl, {
-                                animation: 150,
-                                handle: '.sm-sidebar-drag-handle',
-                                onEnd: function () {
-                                    const board = boards.find(b => b.id === activeBoardId);
-                                    if (board && board.cards) {
-                                        const dateStr = `${targetOpt.year}-${targetOpt.month}-${targetOpt.date}`;
-                                        const originalDayCards = board.cards.filter(c => c.dateStr === dateStr);
-                                        const newOrderDOMIds = Array.from(listEl.children).map(c => c.getAttribute('data-id')).filter(id => id);
-                                        const rearrangedDayCards = newOrderDOMIds.map(id => originalDayCards.find(c => c.id === id)).filter(c => c);
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1            const wrapFb = document.getElementById('post-content-wrap');
+            const wrapIg = document.getElementById('post-content-wrap-instagram');
+            const wrapSc = document.getElementById('post-content-wrap-snapchat');
+            const wrapTt = document.getElementById('post-content-wrap-tiktok');
+            const dateInput = createPostModal.querySelector('.sm-date-input');
+            const timeInput = createPostModal.querySelector('.sm-time-input');
+            const headerTimeInput = document.getElementById('createPostTimeInput');
+
+            if (window.isClientView) {
+                if (wrapFb) wrapFb.style.setProperty("display", "none", "important");
+                if (wrapIg) wrapIg.style.setProperty("display", "none", "important");
+                if (wrapSc) wrapSc.style.setProperty("display", "none", "important");
+                if (wrapTt) wrapTt.style.setProperty("display", "none", "important");
+                if (dateInput) dateInput.disabled = true;
+                if (timeInput) timeInput.disabled = true;
+                if (headerTimeInput) headerTimeInput.disabled = true;
+
+                const zone = document.getElementById("smUploadZone");
+                if (zone) zone.style.setProperty("margin-bottom", "0px", "important");
+                if (zone) zone.style.setProperty("display", "none", "important"); // Hide media completely for client
+                
+                const prompt = document.getElementById("smUploadPrompt");
+                if (prompt) {
+                    prompt.style.setProperty("display", "none", "important");
+                    prompt.style.cssText = "display: none !important;";
+                }
+                
+                if (frameIoLabel) frameIoLabel.style.setProperty("display", "none", "important");
+                if (frameIoContainer) frameIoContainer.style.setProperty("display", "none", "important");
+                
+                const publishSec = document.getElementById("publishSection");
+                if (publishSec) {
+                    publishSec.style.setProperty("display", "none", "important");
+                } else {
+                    // Fallback if index.html is cached
+                    document.querySelectorAll(".sm-modal-section").forEach(sec => {
+                        if (sec.innerHTML.includes("النشر") && sec.innerHTML.includes("مسودة")) {
+                            sec.style.setProperty("display", "none", "important");
+                        }
+                    });
+                }
+            } else {
+                if (wrapFb) wrapFb.style.display = 'block';
+                if (wrapIg) wrapIg.style.display = 'block';
+                if (wrapSc) wrapSc.style.display = 'block';
+                if (wrapTt) wrapTt.style.display = 'block';
+                if (dateInput) dateInput.disabled = false;
+                if (timeInput) timeInput.disabled = false;
+                if (headerTimeInput) headerTimeInput.disabled = false;
+            }MIds.map(id => originalDayCards.find(c => c.id === id)).filter(c => c);
                                         
                                         let replacementIndex = 0;
                                         board.cards = board.cards.map(c => {
