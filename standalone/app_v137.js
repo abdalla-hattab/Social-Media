@@ -1532,6 +1532,25 @@ window.openCreatePostModal = function(postId = null) {
         window.history.pushState({ modalOpen: true }, '');
     }
 
+    // Highlight the clicked day cell and remove highlight from others
+    document.querySelectorAll('.sm-cal-cell').forEach(cell => {
+        cell.style.outline = 'none';
+        cell.style.boxShadow = 'none';
+    });
+    
+    if (postId) {
+        const postElement = document.querySelector(`.sm-cal-draggable-post[data-id="${postId}"]`);
+        if (postElement) {
+            const cellElement = postElement.closest('.sm-cal-cell');
+            if (cellElement) {
+                cellElement.style.outline = '2px solid #ea580c';
+                cellElement.style.outlineOffset = '-2px'; // inside the cell to avoid cutting off
+                cellElement.style.borderRadius = '8px';
+                cellElement.style.transition = 'all 0.2s';
+            }
+        }
+    }
+
     if (createPostModal) {
         window.currentEditingSocialPostId = postId;
         const textArea = document.querySelector('.sm-textarea');
@@ -5034,7 +5053,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     if (window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
                     
                     return `
-                    <div class="sm-cal-draggable-post" draggable="${!window.isClientView}" ondragstart="if(!window.isClientView) window.handleCalDragStart(event, '${p.id}')" onclick="window.openCreatePostModal('${p.id}');" title="${safeFullText || safeDesc || ''}" style="--dot-color: ${accentColor}; margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; flex-wrap: wrap;" onmouseover="this.style.boxShadow='0 3px 6px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
+                    <div class="sm-cal-draggable-post" data-id="${p.id}" draggable="${!window.isClientView}" ondragstart="if(!window.isClientView) window.handleCalDragStart(event, '${p.id}')" onclick="window.openCreatePostModal('${p.id}');" title="${safeFullText || safeDesc || ''}" style="--dot-color: ${accentColor}; margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s, outline 0.2s; direction: rtl; flex-wrap: wrap;" onmouseover="this.style.boxShadow='0 3px 6px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
                         <div style="display:flex; align-items:center; width: 100%; justify-content: center;">
                             ${mediaThumb}
                             <div class="sm-thumb-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; padding-bottom:1px; flex:1; font-weight:500; pointer-events:none;">${textSnippet}</div>
