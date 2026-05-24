@@ -5513,7 +5513,14 @@ function renderSocialSchedulerApp(activeBoard) {
         let y = window.activeSocialMonthView ? window.activeSocialMonthView.year : new Date().getFullYear();
         
         const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
-        const shareData = `${boardId}|${m}|${y}|${shareType}`;
+        
+        const bList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
+        const targetBoard = bList.find(b => b.id === boardId) || {title: ''};
+        const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+        const tStr = encodeURIComponent(targetBoard.title);
+        const dStr = encodeURIComponent(mNames[m] + ' ' + y);
+        
+        const shareData = `${boardId}|${m}|${y}|${shareType}|${tStr}|${dStr}`;
         
         const newTab = window.open('about:blank', '_blank');
         if (newTab) {
@@ -5529,12 +5536,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 setTimeout(() => { btn.innerHTML = oldHtml; }, 2000);
             }
             
-            const bList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
-            const targetBoard = bList.find(b => b.id === boardId) || {title: ''};
-            const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-            const tStr = encodeURIComponent(targetBoard.title);
-            const dStr = encodeURIComponent(mNames[m] + ' ' + y);
-            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode + '&t=' + tStr + '&d=' + dStr;
+            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode;
             
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(targetUrl).catch(err => console.error("Clipboard copy failed", err));
@@ -5872,7 +5874,14 @@ function renderSocialSchedulerApp(activeBoard) {
             btn.style.pointerEvents = 'none';
         }
         const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
-        const shareData = `${boardId}|${month}|${year}`;
+        
+        const bList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
+        const targetBoard = bList.find(b => b.id === boardId) || {title: ''};
+        const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+        const tStr = encodeURIComponent(targetBoard.title);
+        const dStr = encodeURIComponent(mNames[month] + ' ' + year);
+        
+        const shareData = `${boardId}|${month}|${year}|client|${tStr}|${dStr}`;
         
         // Open the tab synchronously to bypass popup blockers
         const newTab = window.open('about:blank', '_blank');
@@ -5885,12 +5894,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
             }
-            const bList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
-            const targetBoard = bList.find(b => b.id === boardId) || {title: ''};
-            const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-            const tStr = encodeURIComponent(targetBoard.title);
-            const dStr = encodeURIComponent(mNames[month] + ' ' + year);
-            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode + '&t=' + tStr + '&d=' + dStr;
+            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode;
             if (newTab) newTab.location.href = targetUrl;
             else window.location.href = targetUrl; // Fallback if popup blocked
         }).catch(e => {

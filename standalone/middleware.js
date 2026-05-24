@@ -4,17 +4,33 @@ export const config = {
 
 export default async function middleware(req) {
   const url = new URL(req.url);
-  const title = url.searchParams.get('t');
-  const date = url.searchParams.get('d');
+  const id = url.searchParams.get('id');
 
-  if (!title) {
+  if (!id) {
     return;
   }
 
   try {
-    // Fetch the original index.html from the same host
+    // Check firebase for the short link data
+    const fbRes = await fetch(`https://socail-media-creation-default-rtdb.firebaseio.com/sm_short_links/${id}.json`);
+    const data = await fbRes.json();
+    
+    // If it's a string, it might have the new format: boardId|m|y|shareType|tStr|dStr
+    let title = null;
+    let date = null;
+    if (typeof data === 'string') {
+      const parts = data.split('|');
+      if (parts.length >= 6) {
+        title = decodeURIComponent(parts[4]);
+        date = decodeURIComponent(parts[5]);
+      }
+    }
+
+    if (!title) {
+      return; // Fallback to normal behavior for old links
+    }
+
     const fetchUrl = new URL('/index.html', req.url);
-    // Add a dummy parameter to avoid infinite loops if index.html is also matched
     fetchUrl.searchParams.set('bypass', '1');
     
     const response = await fetch(fetchUrl);
@@ -23,13 +39,11 @@ export default async function middleware(req) {
     const newTitle = `خطة المحتوى للسوشيال ميديا - ${title}`;
     const newDesc = date ? date : 'اضغط هنا لعرض خطة المحتوى الخاصة بك.';
 
-    // Replace the title
     html = html.replace(
       '<title>خطة المحتوى للسوشيال ميديا</title>', 
       `<title>${newTitle}</title>`
     );
     
-    // Inject OG tags right before </head>
     const ogTags = `
     <meta property="og:title" content="${newTitle}">
     <meta property="og:description" content="${newDesc}">
