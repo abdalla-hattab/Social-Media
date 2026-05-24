@@ -1536,11 +1536,14 @@ window.openCreatePostModal = function(postId = null) {
         window.currentEditingSocialPostId = postId;
         
         // Highlight active mobile card
-        document.querySelectorAll('.sm-feed-post-card').forEach(c => c.classList.remove('selected-mobile-card'));
+        document.querySelectorAll('.sm-feed-day-card').forEach(c => c.classList.remove('selected-mobile-card'));
         if (postId) {
-            const activeCard = document.getElementById(`mobile-post-card-${postId}`);
-            if (activeCard) {
-                activeCard.classList.add('selected-mobile-card');
+            const activePostCard = document.getElementById(`mobile-post-card-${postId}`);
+            if (activePostCard) {
+                const dayCard = activePostCard.closest('.sm-feed-day-card');
+                if (dayCard) {
+                    dayCard.classList.add('selected-mobile-card');
+                }
             }
         }
         const textArea = document.querySelector('.sm-textarea');
@@ -6160,7 +6163,8 @@ function renderSocialSchedulerApp(activeBoard) {
                     const dayObj = new Date(currentYear, currentMonth, dayNum);
                     const dayName = dayNamesArabic[dayObj.getDay()];
                     
-                    clientFeedHtml += `<div class="sm-feed-day-card" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 16px;">`;
+                    const hasActivePost = postsByDate[dateStr].some(p => p.id === window.currentEditingSocialPostId);
+                    clientFeedHtml += `<div id="mobile-day-card-${dateStr}" class="sm-feed-day-card ${hasActivePost ? 'selected-mobile-card' : ''}" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 16px; transition: all 0.2s ease;">`;
                     clientFeedHtml += `<div style="font-weight: 800; font-size: 16px; color: #0f172a; margin-bottom: 16px; display:flex; justify-content:center; align-items:center; gap:8px;">
                         <span style="background:#ea580c; color:white; border-radius:8px; padding:4px 12px; font-size: 15px;">${dayNum} ${monthNamesArabic[currentMonth]}</span>
                         <span style="color: #64748b; font-weight: 600; font-size: 14px;">${dayName}</span>
@@ -6219,7 +6223,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         }
 
                         clientFeedHtml += `
-                        <div id="mobile-post-card-${p.id}" class="sm-feed-post-card ${window.currentEditingSocialPostId === p.id ? 'selected-mobile-card' : ''}" style="position: relative; padding: 14px 16px; border-radius: 16px; background: ${bg}; border: ${border}; color: #1e293b; display: flex; flex-direction: column; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; direction: rtl; width: 100%; box-sizing: border-box; margin-bottom: 12px;" onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.02)'; this.style.transform='none';">
+                        <div id="mobile-post-card-${p.id}" class="sm-feed-post-card" style="position: relative; padding: 14px 16px; border-radius: 16px; background: ${bg}; border: ${border}; color: #1e293b; display: flex; flex-direction: column; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; direction: rtl; width: 100%; box-sizing: border-box; margin-bottom: 12px;" onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.02)'; this.style.transform='none';">
                             <div style="display:flex; align-items:center; justify-content:${postFrameIoLink ? 'space-between' : 'center'}; width: 100%;">
                                 <button onclick="window.openCreatePostModal('${p.id}');" style="background: white; color: #334155; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.color='#334155';">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
