@@ -4993,7 +4993,7 @@ function renderSocialSchedulerApp(activeBoard) {
     const dayNamesArabic = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
     if (window.isClientView && activeBoard) {
-        document.title = `${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}`;
+        document.title = 'خطة المحتوى للسوشيال ميديا - ' + activeBoard.title + ' | ' + monthNamesArabic[currentMonth] + ' ' + currentYear;
     }
     
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
