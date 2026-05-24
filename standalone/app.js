@@ -2469,7 +2469,11 @@ window.openCreatePostModal = function(postId = null) {
                     headerTimeInput.disabled = true;
                     headerTimeInput.readOnly = true;
                     headerTimeInput.style.pointerEvents = 'none';
-                    headerTimeInput.style.opacity = '0.7';
+                    headerTimeInput.style.opacity = '1';
+                    headerTimeInput.style.background = 'transparent';
+                    headerTimeInput.style.border = 'none';
+                    headerTimeInput.style.color = '#334155';
+                    headerTimeInput.style.fontWeight = '700';
                     const timeContainer = document.getElementById('createPostTimeContainer');
                     if (timeContainer) timeContainer.style.pointerEvents = 'none';
                 }
@@ -2539,6 +2543,10 @@ window.openCreatePostModal = function(postId = null) {
                     headerTimeInput.readOnly = false;
                     headerTimeInput.style.pointerEvents = 'auto';
                     headerTimeInput.style.opacity = '1';
+                    headerTimeInput.style.background = '';
+                    headerTimeInput.style.border = '1px solid #cbd5e0';
+                    headerTimeInput.style.color = '#1e293b';
+                    headerTimeInput.style.fontWeight = 'normal';
                     const timeContainer = document.getElementById('createPostTimeContainer');
                     if (timeContainer) timeContainer.style.pointerEvents = 'auto';
                 }
