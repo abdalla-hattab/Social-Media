@@ -5529,7 +5529,12 @@ function renderSocialSchedulerApp(activeBoard) {
                 setTimeout(() => { btn.innerHTML = oldHtml; }, 2000);
             }
             
-            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode;
+            const bList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
+            const targetBoard = bList.find(b => b.id === boardId) || {title: ''};
+            const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+            const tStr = encodeURIComponent(targetBoard.title);
+            const dStr = encodeURIComponent(mNames[m] + ' ' + y);
+            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode + '&t=' + tStr + '&d=' + dStr;
             
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(targetUrl).catch(err => console.error("Clipboard copy failed", err));
@@ -5880,7 +5885,12 @@ function renderSocialSchedulerApp(activeBoard) {
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
             }
-            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode;
+            const bList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
+            const targetBoard = bList.find(b => b.id === boardId) || {title: ''};
+            const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+            const tStr = encodeURIComponent(targetBoard.title);
+            const dStr = encodeURIComponent(mNames[month] + ' ' + year);
+            const targetUrl = window.location.href.split('?')[0] + '?id=' + shortCode + '&t=' + tStr + '&d=' + dStr;
             if (newTab) newTab.location.href = targetUrl;
             else window.location.href = targetUrl; // Fallback if popup blocked
         }).catch(e => {
