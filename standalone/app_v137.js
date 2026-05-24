@@ -141,6 +141,9 @@ if (shortC) {
 }
 
 if (window.isClientView) {
+    const style = document.createElement('style');
+    style.innerHTML = '#createPostTimeInput { display: none !important; } #clientOnlyTimeDisplay { display: inline-block !important; } #createPostTimeContainer { pointer-events: none !important; }';
+    document.head.appendChild(style);
     // Inject global CSS rule to ensure these elements stay hidden permanently overriding inline styles
     const styleNode = document.createElement('style');
     styleNode.innerHTML = `
