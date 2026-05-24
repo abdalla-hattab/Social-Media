@@ -1443,6 +1443,10 @@ input[type=number] {
     background: transparent;
 }
 
+.selected-mobile-card {
+    border: 2px solid #ea580c !important;
+}
+
 .sm-cal-date {
     font-size: 14px;
     font-weight: 600;

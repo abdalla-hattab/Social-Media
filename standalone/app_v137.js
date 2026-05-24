@@ -1532,27 +1532,17 @@ window.openCreatePostModal = function(postId = null) {
         window.history.pushState({ modalOpen: true }, '');
     }
 
-    // Highlight the clicked day cell and remove highlight from others
-    document.querySelectorAll('.sm-cal-cell').forEach(cell => {
-        cell.style.outline = 'none';
-        cell.style.boxShadow = 'none';
-    });
-    
-    if (postId) {
-        const postElement = document.querySelector(`.sm-cal-draggable-post[data-id="${postId}"]`);
-        if (postElement) {
-            const cellElement = postElement.closest('.sm-cal-cell');
-            if (cellElement) {
-                cellElement.style.outline = '2px solid #ea580c';
-                cellElement.style.outlineOffset = '-2px'; // inside the cell to avoid cutting off
-                cellElement.style.borderRadius = '8px';
-                cellElement.style.transition = 'all 0.2s';
-            }
-        }
-    }
-
     if (createPostModal) {
         window.currentEditingSocialPostId = postId;
+        
+        // Highlight active mobile card
+        document.querySelectorAll('.sm-feed-post-card').forEach(c => c.classList.remove('selected-mobile-card'));
+        if (postId) {
+            const activeCard = document.getElementById(`mobile-post-card-${postId}`);
+            if (activeCard) {
+                activeCard.classList.add('selected-mobile-card');
+            }
+        }
         const textArea = document.querySelector('.sm-textarea');
         const publishToggles = createPostModal.querySelectorAll('.sm-toggle-btn');
         
@@ -5053,7 +5043,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     if (window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
                     
                     return `
-                    <div class="sm-cal-draggable-post" data-id="${p.id}" draggable="${!window.isClientView}" ondragstart="if(!window.isClientView) window.handleCalDragStart(event, '${p.id}')" onclick="window.openCreatePostModal('${p.id}');" title="${safeFullText || safeDesc || ''}" style="--dot-color: ${accentColor}; margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s, outline 0.2s; direction: rtl; flex-wrap: wrap;" onmouseover="this.style.boxShadow='0 3px 6px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
+                    <div class="sm-cal-draggable-post" draggable="${!window.isClientView}" ondragstart="if(!window.isClientView) window.handleCalDragStart(event, '${p.id}')" onclick="window.openCreatePostModal('${p.id}');" title="${safeFullText || safeDesc || ''}" style="--dot-color: ${accentColor}; margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; flex-wrap: wrap;" onmouseover="this.style.boxShadow='0 3px 6px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
                         <div style="display:flex; align-items:center; width: 100%; justify-content: center;">
                             ${mediaThumb}
                             <div class="sm-thumb-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; padding-bottom:1px; flex:1; font-weight:500; pointer-events:none;">${textSnippet}</div>
@@ -6229,7 +6219,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         }
 
                         clientFeedHtml += `
-                        <div class="sm-feed-post-card" style="position: relative; padding: 14px 16px; border-radius: 16px; background: ${bg}; border: ${border}; color: #1e293b; display: flex; flex-direction: column; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; direction: rtl; width: 100%; box-sizing: border-box; margin-bottom: 12px;" onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.02)'; this.style.transform='none';">
+                        <div id="mobile-post-card-${p.id}" class="sm-feed-post-card ${window.currentEditingSocialPostId === p.id ? 'selected-mobile-card' : ''}" style="position: relative; padding: 14px 16px; border-radius: 16px; background: ${bg}; border: ${border}; color: #1e293b; display: flex; flex-direction: column; box-shadow: 0 2px 6px rgba(0,0,0,0.02); transition: all 0.2s ease; direction: rtl; width: 100%; box-sizing: border-box; margin-bottom: 12px;" onmouseover="this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.boxShadow='0 2px 6px rgba(0,0,0,0.02)'; this.style.transform='none';">
                             <div style="display:flex; align-items:center; justify-content:${postFrameIoLink ? 'space-between' : 'center'}; width: 100%;">
                                 <button onclick="window.openCreatePostModal('${p.id}');" style="background: white; color: #334155; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.color='#334155';">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
