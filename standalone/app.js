@@ -1693,7 +1693,12 @@ window.openCreatePostModal = function(postId = null) {
             const t = document.getElementById('createPostModalTitle');
             if (t) t.style.display = 'none';
             const s = document.getElementById('createPostSubtitle');
-            if (s) s.style.display = 'none';
+            if (s) {
+                s.style.display = 'block';
+                s.style.color = '#475569';
+                s.style.marginTop = '0';
+                s.style.marginBottom = '12px';
+            }
             
             const h4s = document.querySelectorAll('#createPostModal .sm-textarea-header h4');
             h4s.forEach(h4 => {
