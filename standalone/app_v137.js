@@ -101,6 +101,13 @@ if (superShortId) {
                 if (parts.length >= 4) window.shareType = parts[3];
                 else window.shareType = 'client';
                 
+                // Inject CSS overrides now that shareType is known
+                if (window.shareType === 'content_plan') {
+                    const cpStyle = document.createElement('style');
+                    cpStyle.innerHTML = '#post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok { display: none !important; }';
+                    document.head.appendChild(cpStyle);
+                }
+                
                 if (window.shortClientMonth && window.shortClientYear) {
                     window.activeSocialMonthView = { year: parseInt(window.shortClientYear, 10), month: parseInt(window.shortClientMonth, 10) };
                     window.activeSocialDateOptions = { year: parseInt(window.shortClientYear, 10), month: parseInt(window.shortClientMonth, 10), date: 1 };
