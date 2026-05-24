@@ -2225,7 +2225,22 @@ window.openCreatePostModal = function(postId = null) {
                 if (p && p.timeStr) postTimeValue = p.timeStr;
             }
         }
-        if (timeInput) timeInput.value = postTimeValue;
+        if (timeInput) {
+            timeInput.value = postTimeValue;
+            const spanDisplay = document.getElementById('clientOnlyTimeDisplay');
+            if (spanDisplay) {
+                let [h, m] = postTimeValue.split(':');
+                let ampm = 'AM';
+                let hInt = parseInt(h);
+                if (hInt >= 12) {
+                    ampm = 'PM';
+                    if (hInt > 12) hInt -= 12;
+                }
+                if (hInt === 0) hInt = 12;
+                let hStr = hInt.toString().padStart(2, '0');
+                spanDisplay.innerText = `${hStr}:${m} ${ampm}`;
+            }
+        }
 
         if (subtitle && targetOpt) {
             const monthNamesArabic = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
@@ -2471,14 +2486,10 @@ window.openCreatePostModal = function(postId = null) {
                 if (dateInput) dateInput.disabled = true;
                 if (timeInput) timeInput.disabled = true;
                 if (headerTimeInput) {
-                    headerTimeInput.disabled = true;
-                    headerTimeInput.readOnly = true;
-                    headerTimeInput.style.pointerEvents = 'none';
-                    headerTimeInput.style.opacity = '1';
-                    headerTimeInput.style.background = 'transparent';
-                    headerTimeInput.style.border = 'none';
-                    headerTimeInput.style.color = '#334155';
-                    headerTimeInput.style.fontWeight = '700';
+                    headerTimeInput.style.display = 'none'; // Completely hide input for client
+                    const clientSpan = document.getElementById('clientOnlyTimeDisplay');
+                    if (clientSpan) clientSpan.style.display = 'inline-block';
+                    
                     const timeContainer = document.getElementById('createPostTimeContainer');
                     if (timeContainer) timeContainer.style.pointerEvents = 'none';
                 }
@@ -2544,14 +2555,13 @@ window.openCreatePostModal = function(postId = null) {
                 if (dateInput) dateInput.disabled = false;
                 if (timeInput) timeInput.disabled = false;
                 if (headerTimeInput) {
+                    headerTimeInput.style.display = 'inline-block'; // Show input for agency
+                    const clientSpan = document.getElementById('clientOnlyTimeDisplay');
+                    if (clientSpan) clientSpan.style.display = 'none';
+                    
                     headerTimeInput.disabled = false;
                     headerTimeInput.readOnly = false;
                     headerTimeInput.style.pointerEvents = 'auto';
-                    headerTimeInput.style.opacity = '1';
-                    headerTimeInput.style.background = '';
-                    headerTimeInput.style.border = '1px solid #cbd5e0';
-                    headerTimeInput.style.color = '#1e293b';
-                    headerTimeInput.style.fontWeight = 'normal';
                     const timeContainer = document.getElementById('createPostTimeContainer');
                     if (timeContainer) timeContainer.style.pointerEvents = 'auto';
                 }
@@ -2717,6 +2727,19 @@ if (closeCreatePostModal && createPostModal) {
                         } else {
                             timeInput.value = '16:00';
                             if (headerTimeInput) headerTimeInput.value = '16:00';
+                        }
+                        const spanDisplay = document.getElementById('clientOnlyTimeDisplay');
+                        if (spanDisplay && headerTimeInput && headerTimeInput.value) {
+                            let [h, m] = headerTimeInput.value.split(':');
+                            let ampm = 'AM';
+                            let hInt = parseInt(h);
+                            if (hInt >= 12) {
+                                ampm = 'PM';
+                                if (hInt > 12) hInt -= 12;
+                            }
+                            if (hInt === 0) hInt = 12;
+                            let hStr = hInt.toString().padStart(2, '0');
+                            spanDisplay.innerText = `${hStr}:${m} ${ampm}`;
                         }
                     }
                 }
