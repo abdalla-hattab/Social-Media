@@ -104,7 +104,7 @@ if (superShortId) {
                 // Inject CSS overrides now that shareType is known
                 if (window.shareType === 'content_plan') {
                     const cpStyle = document.createElement('style');
-                    cpStyle.innerHTML = '#post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok { display: none !important; }';
+                    cpStyle.innerHTML = '#post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title { display: none !important; }';
                     document.head.appendChild(cpStyle);
                 }
                 
@@ -1724,6 +1724,9 @@ window.openCreatePostModal = function(postId = null) {
                     if (!wrap.previousElementSibling?.classList?.contains('client-view-title')) {
                         const newTitleContainer = document.createElement('div');
                         newTitleContainer.className = 'client-view-title';
+                        if (['post-content-wrap', 'post-content-wrap-instagram', 'post-content-wrap-snapchat', 'post-content-wrap-tiktok'].includes(wrap.id)) {
+                            newTitleContainer.classList.add('social-platform-title');
+                        }
                         newTitleContainer.style.cssText = 'display: flex; align-items: center; gap: 8px; margin: 0 0 10px 0; width: 100%;';
                         
                         const newH4 = h4.cloneNode(true);
