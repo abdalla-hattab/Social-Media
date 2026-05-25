@@ -106,6 +106,10 @@ if (superShortId) {
                     const cpStyle = document.createElement('style');
                     cpStyle.innerHTML = '#post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title { display: none !important; }';
                     document.head.appendChild(cpStyle);
+                } else if (window.shareType === 'publishing_plan') {
+                    const ppStyle = document.createElement('style');
+                    ppStyle.innerHTML = '#idea-wrap, #design-wrap { display: none !important; }';
+                    document.head.appendChild(ppStyle);
                 }
                 
                 if (window.shortClientMonth && window.shortClientYear) {
