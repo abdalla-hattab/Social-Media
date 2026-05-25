@@ -162,7 +162,6 @@ if (window.isClientView) {
         #smUploadPrompt,
         #frameIoLabel,
         #frameIoContainer,
-        #smUploadZone,
         .sm-textarea-header button {
             display: none !important;
         }
