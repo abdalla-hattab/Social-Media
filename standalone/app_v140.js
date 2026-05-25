@@ -8588,9 +8588,15 @@ window.approveClientComponent = function(postId, component, btnEl) {
     
     if (!post.componentEdits) post.componentEdits = {};
     
-    const isApproved = post.componentEdits[component] === "تمت الموافقة ✅";
+    // Check visual state as source of truth for toggling
+    let isCurrentlyApproved = false;
+    if (btnEl) {
+        isCurrentlyApproved = btnEl.innerText.includes('تمت') || btnEl.textContent.includes('تمت');
+    } else {
+        isCurrentlyApproved = post.componentEdits[component] === "تمت الموافقة ✅";
+    }
     
-    if (isApproved) {
+    if (isCurrentlyApproved) {
         delete post.componentEdits[component];
     } else {
         post.componentEdits[component] = "تمت الموافقة ✅";
@@ -8598,7 +8604,7 @@ window.approveClientComponent = function(postId, component, btnEl) {
     
     const inputEl = document.getElementById(`clientEditsInput_${component}`);
     if (inputEl) {
-        if (!isApproved) {
+        if (isCurrentlyApproved) {
             inputEl.value = '';
         } else {
             inputEl.value = post.componentEdits[component] || '';
@@ -8613,12 +8619,12 @@ window.approveClientComponent = function(postId, component, btnEl) {
     const wrapper = document.getElementById(`clientEditsInputWrapper_${component}`);
     
     if (btnEl) {
-        if (!isApproved) {
+        if (!isCurrentlyApproved) {
             // Activating approval
             btnEl.style.background = '#10b981';
             btnEl.style.color = 'white';
             btnEl.style.borderColor = '#10b981';
-            btnEl.innerText = 'تمت الموافقة';
+            btnEl.innerHTML = 'تمت الموافقة';
             btnEl.setAttribute('onmouseover', "this.style.background='#059669'; this.style.borderColor='#059669';");
             btnEl.setAttribute('onmouseout', "this.style.background='#10b981'; this.style.borderColor='#10b981';");
             
@@ -8627,7 +8633,7 @@ window.approveClientComponent = function(postId, component, btnEl) {
                  editBtn.style.background = 'white';
                  editBtn.style.color = '#f97316';
                  editBtn.style.borderColor = '#fed7aa';
-                 editBtn.innerText = 'يوجد تعديل';
+                 editBtn.innerHTML = 'يوجد تعديل';
             }
             if (wrapper) wrapper.style.setProperty('display', 'none', 'important');
         } else {
@@ -8635,7 +8641,7 @@ window.approveClientComponent = function(postId, component, btnEl) {
             btnEl.style.background = 'white';
             btnEl.style.color = '#10b981';
             btnEl.style.borderColor = '#bbf7d0';
-            btnEl.innerText = 'موافق';
+            btnEl.innerHTML = 'موافق';
             btnEl.setAttribute('onmouseover', "this.style.background='#dcfce7'; this.style.borderColor='#10b981';");
             btnEl.setAttribute('onmouseout', "this.style.background='white'; this.style.borderColor='#bbf7d0';");
         }
