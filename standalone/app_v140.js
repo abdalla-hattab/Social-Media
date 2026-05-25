@@ -8598,7 +8598,11 @@ window.approveClientComponent = function(postId, component, btnEl) {
     
     const inputEl = document.getElementById(`clientEditsInput_${component}`);
     if (inputEl) {
-        inputEl.value = post.componentEdits[component] || '';
+        if (!isApproved) {
+            inputEl.value = '';
+        } else {
+            inputEl.value = post.componentEdits[component] || '';
+        }
     }
     
     window.suppressRenderForClientApprove = true;
@@ -8606,26 +8610,30 @@ window.approveClientComponent = function(postId, component, btnEl) {
     if (typeof window.saveSocialDraft === 'function') setTimeout(() => window.saveSocialDraft(true), 50);
     setTimeout(() => { window.suppressRenderForClientApprove = false; }, 3000);
     
+    const wrapper = document.getElementById(`clientEditsInputWrapper_${component}`);
+    
     if (btnEl) {
         if (!isApproved) {
+            // Activating approval
             btnEl.style.background = '#10b981';
             btnEl.style.color = 'white';
             btnEl.style.borderColor = '#10b981';
-            btnEl.textContent = 'تمت الموافقة';
+            btnEl.innerText = 'تمت الموافقة';
+            
             const editBtn = btnEl.previousElementSibling || btnEl.nextElementSibling;
-            if (editBtn && editBtn.textContent.includes('يوجد تعديل')) {
+            if (editBtn && (editBtn.innerText.includes('تعديل') || editBtn.textContent.includes('تعديل'))) {
                  editBtn.style.background = 'white';
                  editBtn.style.color = '#f97316';
                  editBtn.style.borderColor = '#fed7aa';
-                 editBtn.textContent = 'يوجد تعديل';
+                 editBtn.innerText = 'يوجد تعديل';
             }
-            const wrapper = document.getElementById(`clientEditsInputWrapper_${component}`);
             if (wrapper) wrapper.style.setProperty('display', 'none', 'important');
         } else {
+            // Deactivating approval
             btnEl.style.background = 'white';
             btnEl.style.color = '#10b981';
             btnEl.style.borderColor = '#bbf7d0';
-            btnEl.textContent = 'موافق';
+            btnEl.innerText = 'موافق';
         }
     }
     
@@ -8654,44 +8662,11 @@ window.requestClientComponentEdit = function(postId, component, btnEl) {
         btnEl.style.borderColor = '#f97316';
         
         const appBtn = btnEl.nextElementSibling || btnEl.previousElementSibling;
-        if (appBtn && appBtn.textContent.includes('موافق')) {
+        if (appBtn && (appBtn.innerText.includes('موافق') || appBtn.textContent.includes('موافق') || appBtn.innerText.includes('الموافقة'))) {
             appBtn.style.background = 'white';
             appBtn.style.color = '#10b981';
             appBtn.style.borderColor = '#bbf7d0';
-            appBtn.textContent = 'موافق';
-        }
-    }
-};
-
-window.approveClientComponent = function(postId, component, btnEl) {
-    window.saveComponentEdit(postId, component, "تمت الموافقة ✅");
-    
-    // Hide the input wrapper if it exists
-    const wrapper = document.getElementById(`clientEditsInputWrapper_${component}`);
-    if (wrapper) {
-        wrapper.style.setProperty('display', 'none', 'important');
-    }
-    
-    if (btnEl) {
-        btnEl.style.background = '#10b981';
-        btnEl.style.color = 'white';
-        btnEl.style.borderColor = '#10b981';
-        btnEl.textContent = 'تمت الموافقة';
-        
-        const reqBtn = btnEl.previousElementSibling || btnEl.nextElementSibling;
-        if (reqBtn && reqBtn.textContent.includes('تعديل')) {
-            reqBtn.style.background = 'white';
-            reqBtn.style.color = '#f97316';
-            reqBtn.style.borderColor = '#fed7aa';
-        }
-    }
-    
-    // Update the card UI
-    const card = document.getElementById(`mobile-post-card-${postId}`);
-    if (card) {
-        const actionsContainer = card.querySelector('.sm-client-card-actions');
-        if (actionsContainer && typeof window.renderClientCardActions === 'function') {
-            window.renderClientCardActions(postId, actionsContainer);
+            appBtn.innerText = 'موافق';
         }
     }
 };
