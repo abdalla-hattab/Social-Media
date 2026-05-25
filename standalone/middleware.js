@@ -33,7 +33,7 @@ export default async function middleware(req) {
     const fetchUrl = new URL('/index.html', req.url);
     fetchUrl.searchParams.set('bypass', '1');
     
-    const response = await fetch(fetchUrl);
+    const response = await fetch(fetchUrl, { cache: 'no-store' });
     let html = await response.text();
 
     const newTitle = `خطة المحتوى للسوشيال ميديا - ${title}`;
