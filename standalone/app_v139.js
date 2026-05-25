@@ -1778,7 +1778,6 @@ window.openCreatePostModal = function(postId = null) {
                 'smModalExistingPostsArea',
                 'frameIoContainer',
                 'formatSelectorsWrapper',
-                'smUploadZone',
                 'smPostTypeSelector',
                 'emojiPickerBtn',
                 'emojiPickerBtn-idea',
@@ -2549,7 +2548,6 @@ window.openCreatePostModal = function(postId = null) {
 
                 const zone = document.getElementById("smUploadZone");
                 if (zone) zone.style.setProperty("margin-bottom", "0px", "important");
-                if (zone) zone.style.setProperty("display", "none", "important"); // Hide media completely for client
                 
                 const prompt = document.getElementById("smUploadPrompt");
                 if (prompt) {
