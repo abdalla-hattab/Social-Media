@@ -18,9 +18,11 @@ export default async function middleware(req) {
     // If it's a string, it might have the new format: boardId|m|y|shareType|tStr|dStr
     let title = null;
     let date = null;
+    let shareType = null;
     if (typeof data === 'string') {
       const parts = data.split('|');
       if (parts.length >= 6) {
+        shareType = parts[3];
         title = decodeURIComponent(parts[4]);
         date = decodeURIComponent(parts[5]);
       }
@@ -36,8 +38,9 @@ export default async function middleware(req) {
     const response = await fetch(fetchUrl, { cache: 'no-store' });
     let html = await response.text();
 
-    const newTitle = `خطة المحتوى للسوشيال ميديا - ${title}`;
-    const newDesc = date ? date : 'اضغط هنا لعرض خطة المحتوى الخاصة بك.';
+    const prefix = shareType === 'publishing_plan' ? 'خطة النشر' : 'خطة المحتوى';
+    const newTitle = `${prefix} للسوشيال ميديا - ${title}`;
+    const newDesc = date ? date : `اضغط هنا لعرض ${prefix} الخاصة بك.`;
 
     html = html.replace(
       '<title>خطة المحتوى للسوشيال ميديا</title>', 
