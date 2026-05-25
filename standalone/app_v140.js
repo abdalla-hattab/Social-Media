@@ -8619,6 +8619,8 @@ window.approveClientComponent = function(postId, component, btnEl) {
             btnEl.style.color = 'white';
             btnEl.style.borderColor = '#10b981';
             btnEl.innerText = 'تمت الموافقة';
+            btnEl.setAttribute('onmouseover', "this.style.background='#059669'; this.style.borderColor='#059669';");
+            btnEl.setAttribute('onmouseout', "this.style.background='#10b981'; this.style.borderColor='#10b981';");
             
             const editBtn = btnEl.previousElementSibling || btnEl.nextElementSibling;
             if (editBtn && (editBtn.innerText.includes('تعديل') || editBtn.textContent.includes('تعديل'))) {
@@ -8634,6 +8636,8 @@ window.approveClientComponent = function(postId, component, btnEl) {
             btnEl.style.color = '#10b981';
             btnEl.style.borderColor = '#bbf7d0';
             btnEl.innerText = 'موافق';
+            btnEl.setAttribute('onmouseover', "this.style.background='#dcfce7'; this.style.borderColor='#10b981';");
+            btnEl.setAttribute('onmouseout', "this.style.background='white'; this.style.borderColor='#bbf7d0';");
         }
     }
     
