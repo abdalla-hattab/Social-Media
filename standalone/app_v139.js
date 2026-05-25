@@ -2512,22 +2512,42 @@ window.openCreatePostModal = function(postId = null) {
                             }
                         }
                     });
-                    const shows = [wrapFb, wrapIg, wrapSc, wrapTt];
-                    shows.forEach(w => {
-                        if (w) {
-                            w.style.setProperty("display", "block", "important");
-                            if (w.previousElementSibling && w.previousElementSibling.classList.contains('client-view-title')) {
-                                w.previousElementSibling.style.setProperty("display", "flex", "important");
+                    const platformShows = [
+                        { w: wrapFb, t: document.querySelector('.sm-textarea') },
+                        { w: wrapIg, t: document.querySelector('.sm-textarea-instagram') },
+                        { w: wrapSc, t: document.querySelector('.sm-textarea-snapchat') },
+                        { w: wrapTt, t: document.querySelector('.sm-textarea-tiktok') }
+                    ];
+                    platformShows.forEach(item => {
+                        if (item.w) {
+                            if (item.t && item.t.value.trim() === '') {
+                                item.w.style.setProperty("display", "none", "important");
+                                const titleEl = document.getElementById('title-for-' + item.w.id);
+                                if (titleEl) titleEl.style.setProperty("display", "none", "important");
+                            } else {
+                                item.w.style.setProperty("display", "block", "important");
+                                const titleEl = document.getElementById('title-for-' + item.w.id);
+                                if (titleEl) titleEl.style.setProperty("display", "flex", "important");
                             }
                         }
                     });
                 } else {
-                    const shows = [wrapFb, wrapIg, wrapSc, wrapTt];
-                    shows.forEach(w => {
-                        if (w) {
-                            w.style.setProperty("display", "block", "important");
-                            if (w.previousElementSibling && w.previousElementSibling.classList.contains('client-view-title')) {
-                                w.previousElementSibling.style.setProperty("display", "flex", "important");
+                    const platformShows = [
+                        { w: wrapFb, t: document.querySelector('.sm-textarea') },
+                        { w: wrapIg, t: document.querySelector('.sm-textarea-instagram') },
+                        { w: wrapSc, t: document.querySelector('.sm-textarea-snapchat') },
+                        { w: wrapTt, t: document.querySelector('.sm-textarea-tiktok') }
+                    ];
+                    platformShows.forEach(item => {
+                        if (item.w) {
+                            if (item.t && item.t.value.trim() === '') {
+                                item.w.style.setProperty("display", "none", "important");
+                                const titleEl = document.getElementById('title-for-' + item.w.id);
+                                if (titleEl) titleEl.style.setProperty("display", "none", "important");
+                            } else {
+                                item.w.style.setProperty("display", "block", "important");
+                                const titleEl = document.getElementById('title-for-' + item.w.id);
+                                if (titleEl) titleEl.style.setProperty("display", "flex", "important");
                             }
                         }
                     });
