@@ -2499,6 +2499,27 @@ window.openCreatePostModal = function(postId = null) {
                             }
                         }
                     });
+                } else if (window.shareType === 'publishing_plan') {
+                    const wrapIdea = document.getElementById('idea-wrap');
+                    const wrapDesign = document.getElementById('design-wrap');
+                    const hides = [wrapIdea, wrapDesign];
+                    hides.forEach(w => {
+                        if (w) {
+                            w.style.setProperty("display", "none", "important");
+                            if (w.previousElementSibling && w.previousElementSibling.classList.contains('client-view-title')) {
+                                w.previousElementSibling.style.setProperty("display", "none", "important");
+                            }
+                        }
+                    });
+                    const shows = [wrapFb, wrapIg, wrapSc, wrapTt];
+                    shows.forEach(w => {
+                        if (w) {
+                            w.style.setProperty("display", "block", "important");
+                            if (w.previousElementSibling && w.previousElementSibling.classList.contains('client-view-title')) {
+                                w.previousElementSibling.style.setProperty("display", "flex", "important");
+                            }
+                        }
+                    });
                 } else {
                     const shows = [wrapFb, wrapIg, wrapSc, wrapTt];
                     shows.forEach(w => {
