@@ -2397,7 +2397,7 @@ window.openCreatePostModal = function(postId = null) {
         }
         const feedbackSec = document.getElementById('smClientFeedbackSection');
         const footer = createPostModal.querySelector('.sm-modal-footer');
-        const modalBody = createPostModal.querySelector('.modal-body');
+        const modalBody = createPostModal.querySelector('.sm-modal-body');
         
         if (footer) footer.style.display = 'flex';
         
