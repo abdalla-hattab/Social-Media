@@ -2438,11 +2438,12 @@ window.openCreatePostModal = function(postId = null) {
             const clientEditsInput = document.getElementById('clientEditsInput');
             
             let existingEdits = '';
+            let currentPost = null;
             if (postId) {
                 const activeBoard = boards.find(b => b.id === activeBoardId);
                 if (activeBoard && activeBoard.cards) {
-                    const post = activeBoard.cards.find(c => c.id === postId);
-                    if (post && post.clientEdits) existingEdits = post.clientEdits;
+                    currentPost = activeBoard.cards.find(c => c.id === postId);
+                    if (currentPost && currentPost.clientEdits) existingEdits = currentPost.clientEdits;
                 }
             }
             if (clientEditsInput) { 
@@ -2610,25 +2611,66 @@ window.openCreatePostModal = function(postId = null) {
                 }
                 
                 if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "flex", "important");
-                if (clientEditsContainer) clientEditsContainer.style.setProperty("display", "flex", "important");
+                if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "none", "important");
+                if (clientEditsContainer) clientEditsContainer.style.setProperty("display", "none", "important");
                 
-                // Backup creation if the user is stuck on cached index.html
-                if (!document.getElementById("clientEditsInput") && prompt) {
-                    const editsLabel = document.createElement("div");
-                    editsLabel.id = "clientEditsLabel";
-                    editsLabel.style.cssText = "color: #22c55e; font-size: 15px; font-weight: 600; align-items: center; gap: 8px; margin-bottom: 12px; width: 100%; text-align: right; display: flex;";
-                    editsLabel.innerHTML = "هل هناك تعديلات؟";
-                    prompt.appendChild(editsLabel);
-
-                    const editsContainer = document.createElement("div");
-                    editsContainer.id = "clientEditsContainer";
-                    editsContainer.style.cssText = "width: 100%; max-width: 100%; display: flex;";
-                    editsContainer.innerHTML = '<textarea id="clientEditsInput" oninput="if(window.currentEditingSocialPostId&&window.boards&&window.activeBoardId){const board=boards.find(b=>b.id===activeBoardId);if(board&&board.cards){const post=board.cards.find(c=>c.id===window.currentEditingSocialPostId);if(post){post.clientEdits=this.value;post.clientModified=this.value.trim()!==\'\';if(window.saveState)window.saveState();if(typeof window.saveSocialDraft===\'function\')setTimeout(()=>window.saveSocialDraft(true),50);if(typeof window.updateLiveDiff===\'function\')setTimeout(window.updateLiveDiff,100);}}}" placeholder="اكتب ملاحظاتك أو طلبات التعديل هنا..." style="width:100%; min-height: 80px; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 6px; padding: 12px; font-size: 13px; outline:none; resize: vertical;"></textarea>';
-                    prompt.appendChild(editsContainer);
+                // --- INJECT COMPONENT APPROVALS ---
+                const injectComponentApproval = (wrapperId, componentKey) => {
+                    const wrapEl = document.getElementById(wrapperId);
+                    if (!wrapEl) return;
                     
-                    const newInputs = document.getElementById("clientEditsInput");
-                    if (newInputs) { newInputs.value = existingEdits; newInputs.innerHTML = existingEdits; }
+                    // Don't inject if wrapper is completely hidden by logic (like in content_plan)
+                    const styleDisplay = window.getComputedStyle(wrapEl).display;
+                    if (styleDisplay === 'none' && !wrapEl.style.cssText.includes('display: block') && !wrapEl.style.cssText.includes('display: flex')) {
+                         // wait, getComputedStyle might not be accurate if the modal is hidden.
+                         // Let's just check the style property or let css hide it.
+                    }
+                    
+                    // Remove existing injected approval if any
+                    const existing = wrapEl.parentElement.querySelector(`.sm-component-approval[data-component="${componentKey}"]`);
+                    if (existing) existing.remove();
+                    
+                    const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits[componentKey] : '';
+                    
+                    // Create a container to hold the approval
+                    const approvalDiv = document.createElement('div');
+                    approvalDiv.innerHTML = window.getComponentApprovalHtml(postId, componentKey, postEdits);
+                    
+                    // Append after the wrapper
+                    if (wrapEl.nextSibling) {
+                        wrapEl.parentNode.insertBefore(approvalDiv.firstElementChild, wrapEl.nextSibling);
+                    } else {
+                        wrapEl.parentNode.appendChild(approvalDiv.firstElementChild);
+                    }
+                };
+                
+                // Inject for Text Areas
+                if (window.shareType !== 'publishing_plan') {
+                    injectComponentApproval('idea-wrap', 'idea');
+                    injectComponentApproval('design-wrap', 'design');
                 }
+                injectComponentApproval('post-content-wrap', 'fb');
+                injectComponentApproval('post-content-wrap-instagram', 'ig');
+                injectComponentApproval('post-content-wrap-snapchat', 'sc');
+                injectComponentApproval('post-content-wrap-tiktok', 'tt');
+                
+                // Inject for Video/Media
+                const mediaGallery = document.getElementById('smMediaGallery');
+                if (mediaGallery) {
+                    const existing = mediaGallery.parentElement.querySelector(`.sm-component-approval[data-component="video"]`);
+                    if (existing) existing.remove();
+                    
+                    const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits['video'] : '';
+                    const approvalDiv = document.createElement('div');
+                    approvalDiv.innerHTML = window.getComponentApprovalHtml(postId, 'video', postEdits);
+                    
+                    if (mediaGallery.nextSibling) {
+                        mediaGallery.parentNode.insertBefore(approvalDiv.firstElementChild, mediaGallery.nextSibling);
+                    } else {
+                        mediaGallery.parentNode.appendChild(approvalDiv.firstElementChild);
+                    }
+                }
+
             } else {
                 const addedTitles = document.querySelectorAll('.client-view-title');
                 addedTitles.forEach(t => t.remove());
@@ -2664,40 +2706,68 @@ window.openCreatePostModal = function(postId = null) {
                 
                 if (clientEditsLabel) clientEditsLabel.style.setProperty("display", "none", "important");
                 if (clientEditsContainer) clientEditsContainer.style.setProperty("display", "none", "important");
+
+                // --- INJECT AGENCY COMPONENT EDITS ---
+                const injectAgencyEdits = (wrapperId, componentKey) => {
+                    const wrapEl = document.getElementById(wrapperId);
+                    if (!wrapEl) return;
+                    
+                    const existing = wrapEl.parentElement.querySelector(`.sm-agency-component-edits[data-component="${componentKey}"]`);
+                    if (existing) existing.remove();
+                    
+                    const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits[componentKey] : '';
+                    if (!postEdits || postEdits.trim() === '') return;
+                    
+                    const isApproved = postEdits === "تمت الموافقة ✅";
+                    
+                    const editDiv = document.createElement('div');
+                    editDiv.className = 'sm-agency-component-edits';
+                    editDiv.dataset.component = componentKey;
+                    editDiv.style.cssText = `margin-top: 8px; padding: 12px; background: ${isApproved ? '#dcfce7' : '#fef3c7'}; border: 1px solid ${isApproved ? '#bbf7d0' : '#fde68a'}; border-radius: 8px;`;
+                    
+                    const titleHtml = `<div style="color: ${isApproved ? '#166534' : '#b45309'}; font-size: 13px; font-weight: 700; margin-bottom: 4px;">${isApproved ? 'حالة العميل: تمت الموافقة' : 'ملاحظات العميل:'}</div>`;
+                    const textHtml = isApproved ? '' : `<div style="color: #92400e; font-size: 13px; white-space: pre-wrap;">${window.smEscapeHTML ? window.smEscapeHTML(postEdits) : postEdits}</div>`;
+                    
+                    editDiv.innerHTML = titleHtml + textHtml;
+                    
+                    if (wrapEl.nextSibling) {
+                        wrapEl.parentNode.insertBefore(editDiv, wrapEl.nextSibling);
+                    } else {
+                        wrapEl.parentNode.appendChild(editDiv);
+                    }
+                };
+
+                injectAgencyEdits('idea-wrap', 'idea');
+                injectAgencyEdits('design-wrap', 'design');
+                injectAgencyEdits('post-content-wrap', 'fb');
+                injectAgencyEdits('post-content-wrap-instagram', 'ig');
+                injectAgencyEdits('post-content-wrap-snapchat', 'sc');
+                injectAgencyEdits('post-content-wrap-tiktok', 'tt');
+                
+                const mediaGallery = document.getElementById('smMediaGallery');
+                if (mediaGallery) {
+                    const existing = mediaGallery.parentElement.querySelector(`.sm-agency-component-edits[data-component="video"]`);
+                    if (existing) existing.remove();
+                    
+                    const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits['video'] : '';
+                    if (postEdits && postEdits.trim() !== '') {
+                        const isApproved = postEdits === "تمت الموافقة ✅";
+                        const editDiv = document.createElement('div');
+                        editDiv.className = 'sm-agency-component-edits';
+                        editDiv.dataset.component = 'video';
+                        editDiv.style.cssText = `margin-top: 12px; padding: 12px; background: ${isApproved ? '#dcfce7' : '#fef3c7'}; border: 1px solid ${isApproved ? '#bbf7d0' : '#fde68a'}; border-radius: 8px; width: 100%;`;
+                        const titleHtml = `<div style="color: ${isApproved ? '#166534' : '#b45309'}; font-size: 13px; font-weight: 700; margin-bottom: 4px;">${isApproved ? 'حالة فيديو/صور: تمت الموافقة' : 'ملاحظات العميل (فيديو/صور):'}</div>`;
+                        const textHtml = isApproved ? '' : `<div style="color: #92400e; font-size: 13px; white-space: pre-wrap;">${window.smEscapeHTML ? window.smEscapeHTML(postEdits) : postEdits}</div>`;
+                        editDiv.innerHTML = titleHtml + textHtml;
+                        
+                        if (mediaGallery.nextSibling) {
+                            mediaGallery.parentNode.insertBefore(editDiv, mediaGallery.nextSibling);
+                        } else {
+                            mediaGallery.parentNode.appendChild(editDiv);
+                        }
+                    }
+                }
             }
-        }
-        
-
-        createPostModal.classList.add('active');
-    }
-};
-const closeCreatePostModal = document.getElementById('closeCreatePostModal');
-
-
-
-const pipedriveDomainInput = document.getElementById('pipedriveDomain');
-const pipedriveTokenInput = document.getElementById('pipedriveToken');
-const fetchPipedrivePipelinesBtn = document.getElementById('fetchPipedrivePipelinesBtn');
-const pipedrivePipelineSelectGroup = document.getElementById('pipedrivePipelineSelectGroup');
-const pipedrivePipelineSelect = document.getElementById('pipedrivePipelineSelect');
-const savePipedriveSettingsBtn = document.getElementById('savePipedriveSettingsBtn');
-
-if (closePipedriveSettingsModal) {
-    if(closePipedriveSettingsModal) closePipedriveSettingsModal.onclick = () => pipedriveSettingsModal.classList.remove('active');
-}
-
-if (closeCreatePostModal && createPostModal) {
-    window.handleModalDismiss = () => {
-        const createPostModal = document.getElementById('createPostModal');
-        const textArea = document.querySelector('.sm-textarea');
-        const ideaArea = document.querySelector('.sm-textarea-idea');
-        const designArea = document.querySelector('.sm-textarea-design');
-        try {
-            const textContent = textArea ? textArea.value.trim() : '';
-            const ideaContent = ideaArea ? ideaArea.value.trim() : '';
-            const designContentStr = designArea ? designArea.value.trim() : '';
-            const gallery = document.getElementById('smMediaGallery');
-            const hasGalleryItems = gallery && gallery.children.length > 0;
             
             const isEmpty = !textContent && !ideaContent && !designContentStr && !hasGalleryItems;
             
@@ -5116,7 +5186,8 @@ function renderSocialSchedulerApp(activeBoard) {
                     if (p.status === 'فوري') { bg = '#f0fdf4'; border = '1px solid #bbf7d0'; accentColor = '#22c55e'; }
                     else if (p.status === 'جدولة') { bg = '#fffbeb'; border = '1px solid #fde68a'; accentColor = '#f59e0b'; }
                     
-                    if (window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
+                    const aggStatus = window.getAggregatedPostStatus(p);
+                    if (window.smShowClientEditsToggle !== false && aggStatus.isApproved) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
                     
                     return `
                     <div class="sm-cal-draggable-post" draggable="${!window.isClientView}" ondragstart="if(!window.isClientView) window.handleCalDragStart(event, '${p.id}')" onclick="window.openCreatePostModal('${p.id}');" title="${safeFullText || safeDesc || ''}" style="--dot-color: ${accentColor}; margin-bottom: 4px; padding: 4px 6px; border-radius: 6px; background: ${bg}; border: ${border}; border-right: 3px solid ${accentColor}; font-size: 11px; color: #1e293b; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: box-shadow 0.2s; direction: rtl; flex-wrap: wrap;" onmouseover="this.style.boxShadow='0 3px 6px rgba(0,0,0,0.1)';" onmouseout="this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)';">
@@ -5124,7 +5195,15 @@ function renderSocialSchedulerApp(activeBoard) {
                             ${mediaThumb}
                             <div class="sm-thumb-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; padding-bottom:1px; flex:1; font-weight:500; pointer-events:none;">${textSnippet}</div>
                         </div>
-                        ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:4px; padding:4px; background:#bbf7d0; color:#166534; border-radius:4px; font-size:10px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500;">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
+                        ${(() => {
+                            if (window.smShowClientEditsToggle === false || aggStatus.summaries.length === 0) return '';
+                            return aggStatus.summaries.map(sum => `
+                                <div class="sm-thumb-edit" style="width:100%; margin-top:4px; padding:4px; background:${sum.type === 'approved' ? '#bbf7d0' : '#fef3c7'}; color:${sum.type === 'approved' ? '#166534' : '#b45309'}; border-radius:4px; font-size:10px; font-weight:700; text-align:right;">
+                                    تحديث ${sum.label}
+                                    ${sum.type !== 'approved' ? `<br><span style="font-weight:500;">${window.smEscapeHTML(sum.text)}</span>` : ''}
+                                </div>
+                            `).join('');
+                        })()}
                     </div>`;
                 }).join('');
                 
@@ -6292,7 +6371,9 @@ function renderSocialSchedulerApp(activeBoard) {
                         if (p.status === 'فوري') { bg = '#f0fdf4'; border = '1px solid #bbf7d0'; accentColor = '#22c55e'; }
                         else if (p.status === 'جدولة') { bg = '#fffbeb'; border = '1px solid #fde68a'; accentColor = '#f59e0b'; }
                         
-                        if (window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits === "تمت الموافقة ✅") { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
+                        const aggStatus = window.getAggregatedPostStatus(p);
+                        
+                        if (window.smShowClientEditsToggle !== false && aggStatus.isApproved) { bg = '#dcfce7'; border = '1px solid #bbf7d0'; accentColor = '#166534'; }
                         
                         let platformsHtml = '';
                         if (p.platforms && p.platforms.length > 0) {
@@ -6318,17 +6399,16 @@ function renderSocialSchedulerApp(activeBoard) {
                                 </button>
                                 ${(postFrameIoLink && window.shareType !== 'publishing_plan') ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#0f172a'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.background='#1e293b'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                             </div>
-                            <div class="sm-client-card-actions" style="display:${(p.clientModified && p.clientEdits) ? 'flex' : 'none'}; justify-content:center; gap: 8px; margin-top: 12px; width: 100%;">
-                                ${ (() => {
-                                    if (p.clientModified && p.clientEdits === "تمت الموافقة ✅") {
-                                        return `<button onclick="window.approveClientPost('${p.id}', this)" style="background: #10b981; color: white; border: 1px solid #10b981; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;" onmouseover="this.style.background='#059669'; this.style.borderColor='#059669';" onmouseout="this.style.background='#10b981'; this.style.borderColor='#10b981';">تمت الموافقة</button>`;
-                                    } else if (p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) {
-                                        return `<button onclick="window.requestClientEdit('${p.id}')" style="background: white; color: #f97316; border: 1px solid #fed7aa; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; cursor:pointer; flex:1; transition: all 0.2s ease;" onmouseover="this.style.background='#fff7ed'; this.style.borderColor='#f97316';" onmouseout="this.style.background='white'; this.style.borderColor='#fed7aa';">يوجد تعديل</button>`;
-                                    }
-                                    return '';
-                                })() }
-                            </div>
-                            ${(window.smShowClientEditsToggle !== false && p.clientModified && p.clientEdits && p.clientEdits.trim().length > 0) ? `<div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:${p.clientEdits === "تمت الموافقة ✅" ? '#bbf7d0' : '#fef3c7'}; color:${p.clientEdits === "تمت الموافقة ✅" ? '#166534' : '#b45309'}; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">تم تحديث الحالة<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:${p.clientEdits === "تمت الموافقة ✅" ? '#14532d' : '#92400e'};">${window.smEscapeHTML(p.clientEdits)}</span></div>` : ''}
+                            <div class="sm-client-card-actions" style="display:none;"></div>
+                            ${(() => {
+                                if (window.smShowClientEditsToggle === false || aggStatus.summaries.length === 0) return '';
+                                return aggStatus.summaries.map(sum => `
+                                    <div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:${sum.type === "approved" ? '#bbf7d0' : '#fef3c7'}; color:${sum.type === "approved" ? '#166534' : '#b45309'}; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">
+                                        تحديث ${sum.label}
+                                        ${sum.type !== 'approved' ? `<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#92400e;">${window.smEscapeHTML(sum.text)}</span>` : ''}
+                                    </div>
+                                `).join('');
+                            })()}
                         </div>`;
                     });
                     clientFeedHtml += `</div></div>`;
@@ -8495,3 +8575,214 @@ window.addEventListener('popstate', function(e) {
         }
     }
 });
+
+window.approveClientComponent = function(postId, component, btnEl) {
+    if (typeof boards === 'undefined' || typeof activeBoardId === 'undefined') return;
+    const activeBoard = boards.find(b => b.id === activeBoardId);
+    if (!activeBoard || !activeBoard.cards) return;
+    const post = activeBoard.cards.find(c => c.id === postId);
+    if (!post) return;
+    
+    if (!post.componentEdits) post.componentEdits = {};
+    
+    const isApproved = post.componentEdits[component] === "تمت الموافقة ✅";
+    
+    if (isApproved) {
+        delete post.componentEdits[component];
+    } else {
+        post.componentEdits[component] = "تمت الموافقة ✅";
+    }
+    
+    const inputEl = document.getElementById(`clientEditsInput_${component}`);
+    if (inputEl) {
+        inputEl.value = post.componentEdits[component] || '';
+    }
+    
+    window.suppressRenderForClientApprove = true;
+    if (typeof window.saveState === 'function') window.saveState();
+    if (typeof window.saveSocialDraft === 'function') setTimeout(() => window.saveSocialDraft(true), 50);
+    setTimeout(() => { window.suppressRenderForClientApprove = false; }, 3000);
+    
+    if (btnEl) {
+        if (!isApproved) {
+            btnEl.style.background = '#10b981';
+            btnEl.style.color = 'white';
+            btnEl.style.borderColor = '#10b981';
+            btnEl.textContent = 'تمت الموافقة';
+            const editBtn = btnEl.previousElementSibling || btnEl.nextElementSibling;
+            if (editBtn && editBtn.textContent.includes('يوجد تعديل')) {
+                 editBtn.style.background = 'white';
+                 editBtn.style.color = '#f97316';
+                 editBtn.style.borderColor = '#fed7aa';
+                 editBtn.textContent = 'يوجد تعديل';
+            }
+            const wrapper = document.getElementById(`clientEditsInputWrapper_${component}`);
+            if (wrapper) wrapper.style.setProperty('display', 'none', 'important');
+        } else {
+            btnEl.style.background = 'white';
+            btnEl.style.color = '#10b981';
+            btnEl.style.borderColor = '#bbf7d0';
+            btnEl.textContent = 'موافق';
+        }
+    }
+    
+    if (typeof window.updateLiveDiff === 'function') setTimeout(window.updateLiveDiff, 100);
+    
+    const card = document.getElementById(`mobile-post-card-${postId}`);
+    if (card) {
+        const actionsContainer = card.querySelector('.sm-client-card-actions');
+        if (actionsContainer && typeof window.renderClientCardActions === 'function') {
+            window.renderClientCardActions(postId, actionsContainer);
+        }
+    }
+};
+
+window.requestClientComponentEdit = function(postId, component, btnEl) {
+    const wrapper = document.getElementById(`clientEditsInputWrapper_${component}`);
+    if (wrapper) {
+        wrapper.style.setProperty('display', 'flex', 'important');
+        const input = document.getElementById(`clientEditsInput_${component}`);
+        if (input) input.focus();
+    }
+    
+    if (btnEl) {
+        btnEl.style.background = '#fff7ed';
+        btnEl.style.color = '#f97316';
+        btnEl.style.borderColor = '#f97316';
+        
+        const appBtn = btnEl.nextElementSibling || btnEl.previousElementSibling;
+        if (appBtn && appBtn.textContent.includes('موافق')) {
+            appBtn.style.background = 'white';
+            appBtn.style.color = '#10b981';
+            appBtn.style.borderColor = '#bbf7d0';
+            appBtn.textContent = 'موافق';
+        }
+    }
+};
+
+window.approveClientComponent = function(postId, component, btnEl) {
+    window.saveComponentEdit(postId, component, "تمت الموافقة ✅");
+    
+    // Hide the input wrapper if it exists
+    const wrapper = document.getElementById(`clientEditsInputWrapper_${component}`);
+    if (wrapper) {
+        wrapper.style.setProperty('display', 'none', 'important');
+    }
+    
+    if (btnEl) {
+        btnEl.style.background = '#10b981';
+        btnEl.style.color = 'white';
+        btnEl.style.borderColor = '#10b981';
+        btnEl.textContent = 'تمت الموافقة';
+        
+        const reqBtn = btnEl.previousElementSibling || btnEl.nextElementSibling;
+        if (reqBtn && reqBtn.textContent.includes('تعديل')) {
+            reqBtn.style.background = 'white';
+            reqBtn.style.color = '#f97316';
+            reqBtn.style.borderColor = '#fed7aa';
+        }
+    }
+    
+    // Update the card UI
+    const card = document.getElementById(`mobile-post-card-${postId}`);
+    if (card) {
+        const actionsContainer = card.querySelector('.sm-client-card-actions');
+        if (actionsContainer && typeof window.renderClientCardActions === 'function') {
+            window.renderClientCardActions(postId, actionsContainer);
+        }
+    }
+};
+
+window.saveComponentEdit = function(postId, component, value) {
+    if (typeof boards === 'undefined' || typeof activeBoardId === 'undefined') return;
+    const activeBoard = boards.find(b => b.id === activeBoardId);
+    if (!activeBoard || !activeBoard.cards) return;
+    const post = activeBoard.cards.find(c => c.id === postId);
+    if (!post) return;
+    
+    if (!post.componentEdits) post.componentEdits = {};
+    post.componentEdits[component] = value;
+    
+    if (typeof window.saveState === 'function') window.saveState();
+    if (typeof window.saveSocialDraft === 'function') setTimeout(() => window.saveSocialDraft(true), 50);
+    if (typeof window.updateLiveDiff === 'function') setTimeout(window.updateLiveDiff, 100);
+};
+
+window.getComponentApprovalHtml = function(postId, component, currentEdits) {
+    const isApproved = currentEdits === "تمت الموافقة ✅";
+    const hasEdit = currentEdits && currentEdits !== "تمت الموافقة ✅" && currentEdits.trim() !== "";
+    
+    return `
+    <div class="sm-component-approval" data-component="${component}" style="width: 100%; display: flex; flex-direction: column; margin-top: 12px; padding-top: 12px; border-top: 1px solid #f1f5f9;">
+        <div style="display: flex; gap: 8px; width: 100%; margin-bottom: ${hasEdit ? '12px' : '0'};">
+            <button onclick="window.requestClientComponentEdit('${postId}', '${component}', this)" 
+                style="background: ${hasEdit ? '#fff7ed' : 'white'}; color: #f97316; border: 1px solid ${hasEdit ? '#f97316' : '#fed7aa'}; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;"
+                onmouseover="this.style.background='#fff7ed'; this.style.borderColor='#f97316';"
+                onmouseout="this.style.background='${hasEdit ? '#fff7ed' : 'white'}'; this.style.borderColor='${hasEdit ? '#f97316' : '#fed7aa'}';">يوجد تعديل</button>
+            <button onclick="window.approveClientComponent('${postId}', '${component}', this)" 
+                style="background: ${isApproved ? '#10b981' : 'white'}; color: ${isApproved ? 'white' : '#10b981'}; border: 1px solid ${isApproved ? '#10b981' : '#bbf7d0'}; cursor:pointer; transition: all 0.2s ease; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight:700; flex:1;"
+                onmouseover="this.style.background='${isApproved ? '#059669' : '#dcfce7'}'; this.style.borderColor='${isApproved ? '#059669' : '#10b981'}';"
+                onmouseout="this.style.background='${isApproved ? '#10b981' : 'white'}'; this.style.borderColor='${isApproved ? '#10b981' : '#bbf7d0'}';">${isApproved ? 'تمت الموافقة' : 'موافق'}</button>
+        </div>
+        <div id="clientEditsInputWrapper_${component}" style="display: ${hasEdit ? 'flex' : 'none'}; flex-direction: column; width: 100%;">
+            <textarea id="clientEditsInput_${component}" 
+                oninput="window.saveComponentEdit('${postId}', '${component}', this.value)" 
+                placeholder="اكتب ملاحظاتك أو طلبات التعديل هنا..." 
+                style="width:100%; min-height: 60px; border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 6px; padding: 12px; font-size: 13px; outline:none; resize: vertical; box-sizing: border-box;"
+            >${hasEdit ? (window.smEscapeHTML ? window.smEscapeHTML(currentEdits) : currentEdits) : ''}</textarea>
+        </div>
+    </div>
+    `;
+};
+
+window.getAggregatedPostStatus = function(post) {
+    if (!post) return { isApproved: false, hasEdit: false, summaries: [] };
+    
+    // Legacy support
+    if (post.clientModified && post.clientEdits) {
+        if (post.clientEdits === "تمت الموافقة ✅") {
+            return { isApproved: true, hasEdit: false, summaries: [{ label: 'عام', text: post.clientEdits }] };
+        } else {
+            return { isApproved: false, hasEdit: true, summaries: [{ label: 'عام', text: post.clientEdits }] };
+        }
+    }
+    
+    if (!post.componentEdits || Object.keys(post.componentEdits).length === 0) {
+        return { isApproved: false, hasEdit: false, summaries: [] };
+    }
+    
+    const comps = Object.keys(post.componentEdits);
+    let allApproved = true;
+    let anyEdit = false;
+    let summaries = [];
+    
+    const labels = {
+        'fb': 'فيسبوك',
+        'ig': 'انستغرام',
+        'sc': 'سناب شات',
+        'tt': 'تيك توك',
+        'video': 'الفيديو',
+        'idea': 'الفكرة',
+        'design': 'التصميم'
+    };
+    
+    for (const c of comps) {
+        const val = post.componentEdits[c];
+        if (val === "تمت الموافقة ✅") {
+            summaries.push({ label: labels[c] || c, text: val, type: 'approved' });
+        } else if (val && val.trim().length > 0) {
+            allApproved = false;
+            anyEdit = true;
+            summaries.push({ label: labels[c] || c, text: val, type: 'edit' });
+        }
+    }
+    
+    // If there is any edit, it's not fully approved.
+    if (comps.length > 0 && allApproved) {
+        return { isApproved: true, hasEdit: false, summaries };
+    } else if (anyEdit) {
+        return { isApproved: false, hasEdit: true, summaries };
+    }
+    
+    return { isApproved: false, hasEdit: false, summaries: [] };
+};
