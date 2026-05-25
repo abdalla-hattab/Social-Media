@@ -108,7 +108,7 @@ if (superShortId) {
                     document.head.appendChild(cpStyle);
                 } else if (window.shareType === 'publishing_plan') {
                     const ppStyle = document.createElement('style');
-                    ppStyle.innerHTML = '#idea-wrap, #design-wrap { display: none !important; }';
+                    ppStyle.innerHTML = '#idea-wrap, #design-wrap, #title-for-idea-wrap, #title-for-design-wrap { display: none !important; }';
                     document.head.appendChild(ppStyle);
                 }
                 
@@ -1740,6 +1740,9 @@ window.openCreatePostModal = function(postId = null) {
                     if (!wrap.previousElementSibling?.classList?.contains('client-view-title')) {
                         const newTitleContainer = document.createElement('div');
                         newTitleContainer.className = 'client-view-title';
+                        if (wrap.id) {
+                            newTitleContainer.id = 'title-for-' + wrap.id;
+                        }
                         if (['post-content-wrap', 'post-content-wrap-instagram', 'post-content-wrap-snapchat', 'post-content-wrap-tiktok'].includes(wrap.id)) {
                             newTitleContainer.classList.add('social-platform-title');
                         }
