@@ -2513,44 +2513,64 @@ window.openCreatePostModal = function(postId = null) {
                         }
                     });
                     const platformShows = [
-                        { w: wrapFb, t: document.querySelector('.sm-textarea') },
-                        { w: wrapIg, t: document.querySelector('.sm-textarea-instagram') },
-                        { w: wrapSc, t: document.querySelector('.sm-textarea-snapchat') },
-                        { w: wrapTt, t: document.querySelector('.sm-textarea-tiktok') }
+                        { wId: 'post-content-wrap', t: document.querySelector('.sm-textarea') },
+                        { wId: 'post-content-wrap-instagram', t: document.querySelector('.sm-textarea-instagram') },
+                        { wId: 'post-content-wrap-snapchat', t: document.querySelector('.sm-textarea-snapchat') },
+                        { wId: 'post-content-wrap-tiktok', t: document.querySelector('.sm-textarea-tiktok') }
                     ];
+                    let ppDynStyle = document.getElementById('pp-dynamic-hides');
+                    if (!ppDynStyle) {
+                        ppDynStyle = document.createElement('style');
+                        ppDynStyle.id = 'pp-dynamic-hides';
+                        document.head.appendChild(ppDynStyle);
+                    }
+                    let cssRules = '';
                     platformShows.forEach(item => {
-                        if (item.w) {
-                            if (item.t && item.t.value.trim() === '') {
-                                item.w.style.setProperty("display", "none", "important");
-                                const titleEl = document.getElementById('title-for-' + item.w.id);
-                                if (titleEl) titleEl.style.setProperty("display", "none", "important");
-                            } else {
-                                item.w.style.setProperty("display", "block", "important");
-                                const titleEl = document.getElementById('title-for-' + item.w.id);
-                                if (titleEl) titleEl.style.setProperty("display", "flex", "important");
-                            }
+                        const wrapEl = document.getElementById(item.wId);
+                        const titleEl = document.getElementById('title-for-' + item.wId);
+                        
+                        if (item.t && item.t.value.trim() === '') {
+                            cssRules += `#${item.wId}, #title-for-${item.wId} { display: none !important; }\n`;
+                            // Clear any inline display property so the style block takes effect
+                            if (wrapEl) wrapEl.style.removeProperty('display');
+                            if (titleEl) titleEl.style.removeProperty('display');
+                        } else {
+                            // Ensure it is visible if not empty
+                            if (wrapEl) wrapEl.style.setProperty("display", "block", "important");
+                            if (titleEl) titleEl.style.setProperty("display", "flex", "important");
                         }
                     });
+                    ppDynStyle.innerHTML = cssRules;
                 } else {
                     const platformShows = [
-                        { w: wrapFb, t: document.querySelector('.sm-textarea') },
-                        { w: wrapIg, t: document.querySelector('.sm-textarea-instagram') },
-                        { w: wrapSc, t: document.querySelector('.sm-textarea-snapchat') },
-                        { w: wrapTt, t: document.querySelector('.sm-textarea-tiktok') }
+                        { wId: 'post-content-wrap', t: document.querySelector('.sm-textarea') },
+                        { wId: 'post-content-wrap-instagram', t: document.querySelector('.sm-textarea-instagram') },
+                        { wId: 'post-content-wrap-snapchat', t: document.querySelector('.sm-textarea-snapchat') },
+                        { wId: 'post-content-wrap-tiktok', t: document.querySelector('.sm-textarea-tiktok') }
                     ];
+                    let ppDynStyle = document.getElementById('pp-dynamic-hides');
+                    if (!ppDynStyle) {
+                        ppDynStyle = document.createElement('style');
+                        ppDynStyle.id = 'pp-dynamic-hides';
+                        document.head.appendChild(ppDynStyle);
+                    }
+                    let cssRules = '';
                     platformShows.forEach(item => {
-                        if (item.w) {
-                            if (item.t && item.t.value.trim() === '') {
-                                item.w.style.setProperty("display", "none", "important");
-                                const titleEl = document.getElementById('title-for-' + item.w.id);
-                                if (titleEl) titleEl.style.setProperty("display", "none", "important");
-                            } else {
-                                item.w.style.setProperty("display", "block", "important");
-                                const titleEl = document.getElementById('title-for-' + item.w.id);
-                                if (titleEl) titleEl.style.setProperty("display", "flex", "important");
-                            }
+                        const wrapEl = document.getElementById(item.wId);
+                        const titleEl = document.getElementById('title-for-' + item.wId);
+                        
+                        if (item.t && item.t.value.trim() === '') {
+                            cssRules += `#${item.wId}, #title-for-${item.wId} { display: none !important; }\n`;
+                            // Clear any inline display property so the style block takes effect
+                            if (wrapEl) wrapEl.style.removeProperty('display');
+                            if (titleEl) titleEl.style.removeProperty('display');
+                        } else {
+                            // Ensure it is visible if not empty
+                            if (wrapEl) wrapEl.style.setProperty("display", "block", "important");
+                            if (titleEl) titleEl.style.setProperty("display", "flex", "important");
                         }
                     });
+                    ppDynStyle.innerHTML = cssRules;
                 }
                 
                 // Hide or disable fields not relevant for clients
