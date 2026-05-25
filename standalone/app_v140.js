@@ -1975,10 +1975,8 @@ window.openCreatePostModal = function(postId = null) {
                             if (cct) cct.innerText = tiktokArea.value.length + ' حرف';
                         }
                         
-                        const ideaArea = document.querySelector('.sm-textarea-idea');
                         if (ideaArea) ideaArea.value = post.idea || '';
                         
-                        const designArea = document.querySelector('.sm-textarea-design');
                         if (designArea) designArea.value = post.designContent || '';
                         const cc = document.querySelector('.sm-char-count');
                         if (cc) cc.innerText = textArea.value.length + ' حرف';
@@ -1996,7 +1994,7 @@ window.openCreatePostModal = function(postId = null) {
                                 [textArea, ideaArea, designArea, instagramArea, snapchatArea, tiktokArea].forEach(ta => {
                                     if (ta) ta.style.height = ta.scrollHeight + 'px';
                                 });
-                            }, 100);
+                            }, 300);
                         }
                     }
                     
@@ -2627,21 +2625,13 @@ window.openCreatePostModal = function(postId = null) {
                     }
                     
                     // Remove existing injected approval if any
-                    const existing = wrapEl.parentElement.querySelector(`.sm-component-approval[data-component="${componentKey}"]`);
+                    const existing = wrapEl.querySelector(`.sm-component-approval[data-component="${componentKey}"]`);
                     if (existing) existing.remove();
                     
                     const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits[componentKey] : '';
                     
-                    // Create a container to hold the approval
-                    const approvalDiv = document.createElement('div');
-                    approvalDiv.innerHTML = window.getComponentApprovalHtml(postId, componentKey, postEdits);
-                    
-                    // Append after the wrapper
-                    if (wrapEl.nextSibling) {
-                        wrapEl.parentNode.insertBefore(approvalDiv.firstElementChild, wrapEl.nextSibling);
-                    } else {
-                        wrapEl.parentNode.appendChild(approvalDiv.firstElementChild);
-                    }
+                    // Append inside the wrapper using insertAdjacentHTML
+                    wrapEl.insertAdjacentHTML('beforeend', window.getComponentApprovalHtml(postId, componentKey, postEdits));
                 };
                 
                 // Inject for Text Areas
@@ -2661,14 +2651,7 @@ window.openCreatePostModal = function(postId = null) {
                     if (existing) existing.remove();
                     
                     const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits['video'] : '';
-                    const approvalDiv = document.createElement('div');
-                    approvalDiv.innerHTML = window.getComponentApprovalHtml(postId, 'video', postEdits);
-                    
-                    if (mediaGallery.nextSibling) {
-                        mediaGallery.parentNode.insertBefore(approvalDiv.firstElementChild, mediaGallery.nextSibling);
-                    } else {
-                        mediaGallery.parentNode.appendChild(approvalDiv.firstElementChild);
-                    }
+                    mediaGallery.insertAdjacentHTML('afterend', window.getComponentApprovalHtml(postId, 'video', postEdits));
                 }
 
             } else {
@@ -2712,7 +2695,7 @@ window.openCreatePostModal = function(postId = null) {
                     const wrapEl = document.getElementById(wrapperId);
                     if (!wrapEl) return;
                     
-                    const existing = wrapEl.parentElement.querySelector(`.sm-agency-component-edits[data-component="${componentKey}"]`);
+                    const existing = wrapEl.querySelector(`.sm-agency-component-edits[data-component="${componentKey}"]`);
                     if (existing) existing.remove();
                     
                     const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits[componentKey] : '';
@@ -2720,21 +2703,12 @@ window.openCreatePostModal = function(postId = null) {
                     
                     const isApproved = postEdits === "تمت الموافقة ✅";
                     
-                    const editDiv = document.createElement('div');
-                    editDiv.className = 'sm-agency-component-edits';
-                    editDiv.dataset.component = componentKey;
-                    editDiv.style.cssText = `margin-top: 8px; padding: 12px; background: ${isApproved ? '#dcfce7' : '#fef3c7'}; border: 1px solid ${isApproved ? '#bbf7d0' : '#fde68a'}; border-radius: 8px;`;
-                    
                     const titleHtml = `<div style="color: ${isApproved ? '#166534' : '#b45309'}; font-size: 13px; font-weight: 700; margin-bottom: 4px;">${isApproved ? 'حالة العميل: تمت الموافقة' : 'ملاحظات العميل:'}</div>`;
                     const textHtml = isApproved ? '' : `<div style="color: #92400e; font-size: 13px; white-space: pre-wrap;">${window.smEscapeHTML ? window.smEscapeHTML(postEdits) : postEdits}</div>`;
                     
-                    editDiv.innerHTML = titleHtml + textHtml;
+                    const html = `<div class="sm-agency-component-edits" data-component="${componentKey}" style="margin-top: 8px; padding: 12px; background: ${isApproved ? '#dcfce7' : '#fef3c7'}; border: 1px solid ${isApproved ? '#bbf7d0' : '#fde68a'}; border-radius: 8px;">${titleHtml}${textHtml}</div>`;
                     
-                    if (wrapEl.nextSibling) {
-                        wrapEl.parentNode.insertBefore(editDiv, wrapEl.nextSibling);
-                    } else {
-                        wrapEl.parentNode.appendChild(editDiv);
-                    }
+                    wrapEl.insertAdjacentHTML('beforeend', html);
                 };
 
                 injectAgencyEdits('idea-wrap', 'idea');
@@ -5156,7 +5130,8 @@ function renderSocialSchedulerApp(activeBoard) {
     const dayNamesArabic = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
     if (window.isClientView && activeBoard) {
-        document.title = 'خطة المحتوى للسوشيال ميديا - ' + activeBoard.title + ' | ' + monthNamesArabic[currentMonth] + ' ' + currentYear;
+        const pageTitleBase = window.shareType === 'publishing_plan' ? 'خطة النشر للسوشيال ميديا' : 'خطة المحتوى للسوشيال ميديا';
+        document.title = pageTitleBase + ' - ' + activeBoard.title + ' | ' + monthNamesArabic[currentMonth] + ' ' + currentYear;
     }
     
     const firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -6455,7 +6430,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center;">
                                 <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;">
                                     ${window.isClientView 
-                                        ? `<div style="display: flex; flex-direction: column; align-items: center;">خطة المحتوى - ${activeBoard.title}<div style="font-size: 14px; color: #64748b; margin-top: 4px; font-weight: 600;">${monthNamesArabic[currentMonth]} ${currentYear}</div></div>` 
+                                        ? `<div style="display: flex; flex-direction: column; align-items: center;">${window.shareType === 'publishing_plan' ? 'خطة النشر' : 'خطة المحتوى'} - ${activeBoard.title}<div style="font-size: 14px; color: #64748b; margin-top: 4px; font-weight: 600;">${monthNamesArabic[currentMonth]} ${currentYear}</div></div>` 
                                         : `${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}`}
                                 </h3>
                             </div>
