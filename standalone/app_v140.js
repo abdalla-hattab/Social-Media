@@ -1984,7 +1984,7 @@ window.openCreatePostModal = function(postId = null) {
                         if (cc) cc.innerText = textArea.value.length + ' حرف';
                         
                         if (window.isClientView) {
-                            [textArea, ideaArea, designArea, snapchatArea, tiktokArea].forEach(ta => {
+                            [textArea, ideaArea, designArea, instagramArea, snapchatArea, tiktokArea].forEach(ta => {
                                 if (ta) {
                                     ta.readOnly = true;
                                     ta.style.setProperty('outline', 'none', 'important');
@@ -1993,7 +1993,7 @@ window.openCreatePostModal = function(postId = null) {
                                 }
                             });
                             setTimeout(() => {
-                                [textArea, ideaArea, designArea].forEach(ta => {
+                                [textArea, ideaArea, designArea, instagramArea, snapchatArea, tiktokArea].forEach(ta => {
                                     if (ta) ta.style.height = ta.scrollHeight + 'px';
                                 });
                             }, 100);
