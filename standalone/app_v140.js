@@ -2768,6 +2768,34 @@ window.openCreatePostModal = function(postId = null) {
                     }
                 }
             }
+        }
+        
+
+        createPostModal.classList.add('active');
+    }
+};
+const closeCreatePostModal = document.getElementById('closeCreatePostModal');
+
+
+
+const pipedriveDomainInput = document.getElementById('pipedriveDomain');
+const pipedriveTokenInput = document.getElementById('pipedriveToken');
+const fetchPipedrivePipelinesBtn = document.getElementById('fetchPipedrivePipelinesBtn');
+const pipedrivePipelineSelectGroup = document.getElementById('pipedrivePipelineSelectGroup');
+const pipedrivePipelineSelect = document.getElementById('pipedrivePipelineSelect');
+const savePipedriveSettingsBtn = document.getElementById('savePipedriveSettingsBtn');
+
+if (closePipedriveSettingsModal) {
+    if(closePipedriveSettingsModal) closePipedriveSettingsModal.onclick = () => pipedriveSettingsModal.classList.remove('active');
+}
+
+if (closeCreatePostModal && createPostModal) {
+    window.handleModalDismiss = () => {
+        const createPostModal = document.getElementById('createPostModal');
+        const textArea = document.querySelector('.sm-textarea');
+        const ideaArea = document.querySelector('.sm-textarea-idea');
+        const designArea = document.querySelector('.sm-textarea-design');
+        try {
             
             const isEmpty = !textContent && !ideaContent && !designContentStr && !hasGalleryItems;
             
