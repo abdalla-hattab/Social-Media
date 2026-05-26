@@ -2867,10 +2867,23 @@ if (closeCreatePostModal && createPostModal) {
             const textContent = textArea ? textArea.value.trim() : '';
             const ideaContent = ideaArea ? ideaArea.value.trim() : '';
             const designContentStr = designArea ? designArea.value.trim() : '';
+            
+            // Check platform specific text
+            const igArea = document.querySelector('.sm-textarea-instagram');
+            const snapArea = document.querySelector('.sm-textarea-snapchat');
+            const tiktokArea = document.querySelector('.sm-textarea-tiktok');
+            const igContent = igArea ? igArea.value.trim() : '';
+            const snapContent = snapArea ? snapArea.value.trim() : '';
+            const tiktokContent = tiktokArea ? tiktokArea.value.trim() : '';
+            
+            // Check script data
+            const scriptScenesData = typeof window.getScriptScenesData === 'function' ? window.getScriptScenesData() : [];
+            const hasScriptContent = scriptScenesData.some(s => s.content.trim() || s.visual.trim() || s.voiceover.trim());
+            
             const mediaInput = document.getElementById('smMediaInput');
             const hasGalleryItems = (mediaInput && mediaInput.files && mediaInput.files.length > 0) || document.querySelectorAll('#smMediaGallery .sm-gallery-img, #smMediaGallery .sm-gallery-vid, #smMediaGallery .frame-io-media, #smMediaGallery .product-link-media').length > 0;
             
-            const isEmpty = !textContent && !ideaContent && !designContentStr && !hasGalleryItems;
+            const isEmpty = !textContent && !igContent && !snapContent && !tiktokContent && !ideaContent && !designContentStr && !hasGalleryItems && !hasScriptContent;
             
             if (isEmpty) {
                 if (window.currentEditingSocialPostId) {
