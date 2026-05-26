@@ -107,7 +107,6 @@ if (superShortId) {
                     cpStyle.innerHTML = `
                         #post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title, .sm-modal-left-col { display: none !important; }
                         .sm-modal-right-col { width: 100% !important; border: none !important; padding-right: 0 !important; }
-                        .sm-component-approval[data-component="video"] > div:first-child { justify-content: center; max-width: 400px; margin-left: auto; margin-right: auto; }
                     `;
                     document.head.appendChild(cpStyle);
                 } else if (window.shareType === 'publishing_plan') {
@@ -2735,7 +2734,7 @@ window.openCreatePostModal = function(postId = null) {
                 };
                 
                 // Inject for Text Areas
-                if (window.shareType !== 'publishing_plan' && window.shareType !== 'content_plan') {
+                if (window.shareType !== 'publishing_plan') {
                     injectComponentApproval('idea-wrap', 'idea');
                     injectComponentApproval('design-wrap', 'design');
                 }
@@ -2756,9 +2755,7 @@ window.openCreatePostModal = function(postId = null) {
                 
                 if (mediaGallery) {
                     const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits['video'] : '';
-                    if (window.shareType === 'content_plan' && rightCol) {
-                        rightCol.insertAdjacentHTML('beforeend', window.getComponentApprovalHtml(postId, 'video', postEdits));
-                    } else {
+                    if (window.shareType !== 'content_plan') {
                         mediaGallery.insertAdjacentHTML('afterend', window.getComponentApprovalHtml(postId, 'video', postEdits));
                     }
                 }
@@ -8984,7 +8981,7 @@ window.getAggregatedPostStatus = function(post) {
     
     let compsToProcess = comps;
     if (window.shareType === 'content_plan') {
-        compsToProcess = comps.filter(c => c === 'video');
+        compsToProcess = comps.filter(c => ['idea', 'design'].includes(c));
     } else if (window.shareType !== 'publishing_plan') {
         compsToProcess = comps.filter(c => !['fb', 'ig', 'sc', 'tt'].includes(c));
     }
