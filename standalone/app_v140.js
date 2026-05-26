@@ -5207,7 +5207,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             if (window.smShowClientEditsToggle === false || aggStatus.summaries.length === 0) return '';
                             return aggStatus.summaries.map(sum => `
                                 <div class="sm-thumb-edit" style="width:100%; margin-top:4px; padding:4px; background:${sum.type === 'approved' ? '#bbf7d0' : '#fef3c7'}; color:${sum.type === 'approved' ? '#166534' : '#b45309'}; border-radius:4px; font-size:10px; font-weight:700; text-align:right;">
-                                    تحديث ${sum.label}
+                                    ${sum.type === 'approved' ? 'موافق' : 'تعديل'} ${sum.label}
                                     ${sum.type !== 'approved' ? `<br><span style="font-weight:500;">${window.smEscapeHTML(sum.text)}</span>` : ''}
                                 </div>
                             `).join('');
@@ -6412,7 +6412,7 @@ function renderSocialSchedulerApp(activeBoard) {
                                 if (window.smShowClientEditsToggle === false || aggStatus.summaries.length === 0) return '';
                                 return aggStatus.summaries.map(sum => `
                                     <div class="sm-thumb-edit" style="width:100%; margin-top:12px; padding:8px 12px; background:${sum.type === "approved" ? '#bbf7d0' : '#fef3c7'}; color:${sum.type === "approved" ? '#166534' : '#b45309'}; border-radius:8px; font-size:13px; font-weight:700; text-align:right;">
-                                        تحديث ${sum.label}
+                                        ${sum.type === 'approved' ? 'موافق' : 'تعديل'} ${sum.label}
                                         ${sum.type !== 'approved' ? `<br><span style="font-weight:500; font-size:12px; margin-top:4px; display:block; color:#92400e;">${window.smEscapeHTML(sum.text)}</span>` : ''}
                                     </div>
                                 `).join('');
