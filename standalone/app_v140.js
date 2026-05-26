@@ -110,6 +110,10 @@ if (superShortId) {
                     const ppStyle = document.createElement('style');
                     ppStyle.innerHTML = '#idea-wrap, #design-wrap, #title-for-idea-wrap, #title-for-design-wrap { display: none !important; }';
                     document.head.appendChild(ppStyle);
+                } else if (window.shareType === 'script_plan') {
+                    const spStyle = document.createElement('style');
+                    spStyle.innerHTML = '#post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title, #idea-wrap, #design-wrap, #title-for-idea-wrap, #title-for-design-wrap { display: none !important; }';
+                    document.head.appendChild(spStyle);
                 }
                 
                 if (window.shortClientMonth && window.shortClientYear) {
@@ -2594,6 +2598,18 @@ window.openCreatePostModal = function(postId = null) {
                     const wrapIdea = document.getElementById('idea-wrap');
                     const wrapDesign = document.getElementById('design-wrap');
                     const hides = [wrapIdea, wrapDesign];
+                    hides.forEach(w => {
+                        if (w) {
+                            w.style.setProperty("display", "none", "important");
+                            if (w.previousElementSibling && w.previousElementSibling.classList.contains('client-view-title')) {
+                                w.previousElementSibling.style.setProperty("display", "none", "important");
+                            }
+                        }
+                    });
+                } else if (window.shareType === 'script_plan') {
+                    const wrapIdea = document.getElementById('idea-wrap');
+                    const wrapDesign = document.getElementById('design-wrap');
+                    const hides = [wrapFb, wrapIg, wrapSc, wrapTt, wrapIdea, wrapDesign];
                     hides.forEach(w => {
                         if (w) {
                             w.style.setProperty("display", "none", "important");
@@ -5244,7 +5260,7 @@ function renderSocialSchedulerApp(activeBoard) {
     const dayNamesArabic = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
 
     if (window.isClientView && activeBoard) {
-        const pageTitleBase = window.shareType === 'publishing_plan' ? 'خطة النشر للسوشيال ميديا' : 'خطة المحتوى للسوشيال ميديا';
+        const pageTitleBase = window.shareType === 'publishing_plan' ? 'خطة النشر للسوشيال ميديا' : (window.shareType === 'script_plan' ? 'خطة السكربتات للسوشيال ميديا' : 'خطة المحتوى للسوشيال ميديا');
         document.title = pageTitleBase + ' - ' + activeBoard.title + ' | ' + monthNamesArabic[currentMonth] + ' ' + currentYear;
     }
     
@@ -6231,9 +6247,13 @@ function renderSocialSchedulerApp(activeBoard) {
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                             1. مشاركة خطة المحتوى
                         </button>
+                        <button class="sm-action-btn" title="مشاركة السكربتات" style="display:flex; align-items:center; justify-content:center; gap:6px; padding: 8px 12px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 13px; flex: 1;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.generateDirectShareLink('${activeBoard.id}', this, event, 'script_plan')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                            2. مشاركة السكربتات
+                        </button>
                         <button class="sm-action-btn" title="فتح مساحة العميل في صفحة جديدة" style="display:flex; align-items:center; justify-content:center; gap:6px; padding: 8px 12px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 13px; flex: 1;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.generateDirectShareLink('${activeBoard.id}', this, event, 'publishing_plan')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-                            2. مشاركة خطة النشر
+                            3. مشاركة خطة النشر
                         </button>
                     </div>
                 </div>
@@ -6512,7 +6532,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             <div style="display:flex; align-items:center; justify-content:${(postFrameIoLink && window.shareType !== 'publishing_plan') ? 'space-between' : 'center'}; width: 100%;">
                                 <button onclick="window.openCreatePostModal('${p.id}');" style="background: white; color: #334155; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; display:flex; align-items:center; gap:6px; cursor:pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.03); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.color='#334155';">
                                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                    ${window.shareType === 'publishing_plan' ? 'عرض التصميم ومحتوى النشر' : 'عرض الفكرة ومحتوى التصميم'}
+                                    ${window.shareType === 'publishing_plan' ? 'عرض التصميم ومحتوى النشر' : (window.shareType === 'script_plan' ? 'عرض السكربتات' : 'عرض الفكرة ومحتوى التصميم')}
                                 </button>
                                 ${(postFrameIoLink && window.shareType !== 'publishing_plan') ? `<a href="${postFrameIoLink}" target="_blank" onclick="event.stopPropagation();" style="background: #1e293b; color: white; border-radius: 10px; padding: 8px 16px; font-size: 13px; font-weight:700; text-decoration: none; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); white-space: nowrap; transition: all 0.2s ease;" onmouseover="this.style.background='#0f172a'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)';" onmouseout="this.style.background='#1e293b'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>عرض الفيديو</a>` : ''}
                             </div>
@@ -6544,7 +6564,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             <div style="display: flex; align-items: center; gap: 24px; flex-wrap: wrap; justify-content: center;">
                                 <h3 class="sm-cal-month-title" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0;">
                                     ${window.isClientView 
-                                        ? `<div style="display: flex; flex-direction: column; align-items: center;">${window.shareType === 'publishing_plan' ? 'خطة النشر' : 'خطة المحتوى'} - ${activeBoard.title}<div style="font-size: 14px; color: #64748b; margin-top: 4px; font-weight: 600;">${monthNamesArabic[currentMonth]} ${currentYear}</div></div>` 
+                                        ? `<div style="display: flex; flex-direction: column; align-items: center;">${window.shareType === 'publishing_plan' ? 'خطة النشر' : (window.shareType === 'script_plan' ? 'خطة السكربتات' : 'خطة المحتوى')} - ${activeBoard.title}<div style="font-size: 14px; color: #64748b; margin-top: 4px; font-weight: 600;">${monthNamesArabic[currentMonth]} ${currentYear}</div></div>` 
                                         : `${monthNamesArabic[currentMonth]} ${currentYear} - ${activeBoard.title}`}
                                 </h3>
                             </div>
