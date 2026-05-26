@@ -6450,6 +6450,22 @@ function renderSocialSchedulerApp(activeBoard) {
             if (activeBoard.cards) {
                 activeBoard.cards.forEach(c => {
                     if (c.dateStr && c.dateStr.startsWith(`${currentYear}-${currentMonth}-`) && (window.smShowClientEditsToggle !== false || !c.isClientDayNote)) {
+                        if (window.shareType === 'publishing_plan') {
+                            const items = c.mediaItems || (c.mediaObj ? [c.mediaObj] : []);
+                            if (items.length === 0) return;
+                        }
+                        if (window.shareType === 'script_plan') {
+                            let hasScript = false;
+                            if (c.scriptScenes && Array.isArray(c.scriptScenes) && c.scriptScenes.length > 0) {
+                                const first = c.scriptScenes[0];
+                                if ((first.content && first.content.trim() !== '') ||
+                                    (first.visual && first.visual.trim() !== '') ||
+                                    (first.voiceover && first.voiceover.trim() !== '')) {
+                                    hasScript = true;
+                                }
+                            }
+                            if (!hasScript) return;
+                        }
                         if (!postsByDate[c.dateStr]) postsByDate[c.dateStr] = [];
                         postsByDate[c.dateStr].push(c);
                     }
