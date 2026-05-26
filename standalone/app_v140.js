@@ -7936,7 +7936,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             }
         }
         const scriptScenesData = typeof window.getScriptScenesData === 'function' ? window.getScriptScenesData() : [];
-        const hasScriptContent = scriptScenesData.some(s => s.content.trim() || s.visual.trim() || s.voiceOver.trim());
+        const hasScriptContent = scriptScenesData.some(s => s.content.trim() || s.visual.trim() || s.voiceover.trim());
         
         if (!textContent && !instagramContent && !snapchatContent && !tiktokContent && !ideaContent && !designContentStr && mediaItems.length === 0 && !hasScriptContent) {
             if (!isAutoSave) {
@@ -7958,36 +7958,8 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                 
                 return;
             } else {
-                // If the post is auto-saving but has become completely empty, we brutally delete it
-                // ONLY DO THIS IF THE MODAL IS ACTUALLY OPEN! If it's closed, the DOM is empty and we shouldn't kill the post.
-                const createPostModal = document.getElementById('createPostModal');
-                const isModalOpen = createPostModal && createPostModal.classList.contains('active');
-                
-                if (!isModalOpen) return;
-
-                if (window.currentEditingSocialPostId) {
-                    const idx = activeBoard.cards.findIndex(c => c.id === window.currentEditingSocialPostId);
-                    if (idx > -1) {
-                        if (typeof window.pushUndoState === 'function') window.pushUndoState();
-                        activeBoard.cards.splice(idx, 1);
-                        saveState();
-                        render();
-                        
-                        const listEl = document.getElementById('smModalPostsList');
-                        if (listEl) {
-                            const activeSidebarItem = listEl.querySelector(`div[data-id="${window.currentEditingSocialPostId}"]`);
-                            if (activeSidebarItem) activeSidebarItem.remove();
-                        }
-                        
-                        // Since it's totally empty and deleted, clear the current editing id
-                        // so any further typing spawns a fresh new post
-                        window.currentEditingSocialPostId = null;
-                        
-                        // highlight the "+ new post" area intuitively
-                        setTimeout(() => window.openCreatePostModal(null), 50);
-                    }
-                }
-                return;
+                // If it's an auto-save but completely empty, we no longer delete it per user request.
+                // Just proceed to save the empty state.
             }
         }
         
@@ -8436,25 +8408,27 @@ window.updateUndoButtonVisibility = function() {
 
 window.deleteSocialPost = function(postId) {
     window.showConfirmModal(() => {
-        const board = boards.find(b => b.id === activeBoardId);
-        if (!board) return;
-        
-        const idx = board.cards.findIndex(c => c.id === postId);
-        if (idx > -1) {
-            window.pushUndoState();
-            board.cards.splice(idx, 1);
-            saveState();
-            render();
-            
-            if (window.currentEditingSocialPostId === postId) {
-                // If we deleted the post we were currently viewing, empty the modal
-                window.openCreatePostModal(null);
-            } else {
-                // If we deleted another post from the sidebar, refresh the sidebar
-                window.openCreatePostModal(window.currentEditingSocialPostId);
-            }
-        }
-    }, "حذف المنشور", "هل أنت متأكد من رغبتك في حذف هذا المنشور؟ لا يمكن التراجع عن هذا الإجراء.");
+        window.showConfirmModal(() => {
+            window.showConfirmModal(() => {
+                const board = boards.find(b => b.id === activeBoardId);
+                if (!board) return;
+                
+                const idx = board.cards.findIndex(c => c.id === postId);
+                if (idx > -1) {
+                    window.pushUndoState();
+                    board.cards.splice(idx, 1);
+                    saveState();
+                    render();
+                    
+                    if (window.currentEditingSocialPostId === postId) {
+                        window.openCreatePostModal(null);
+                    } else {
+                        window.openCreatePostModal(window.currentEditingSocialPostId);
+                    }
+                }
+            }, "تأكيد الحذف النهائي (3/3)", "هذا هو التأكيد الأخير. هل أنت متأكد نهائياً من رغبتك في حذف هذا المنشور؟");
+        }, "تأكيد الحذف (2/3)", "هل أنت متأكد من رغبتك في حذف هذا المنشور؟ لا يمكن التراجع.");
+    }, "تأكيد الحذف (1/3)", "لقد طلبت حذف هذا المنشور. هل ترغب في الاستمرار؟");
 };
 
 if(document) document.addEventListener('DOMContentLoaded', () => {
