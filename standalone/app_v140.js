@@ -104,18 +104,12 @@ if (superShortId) {
                 // Inject CSS overrides now that shareType is known
                 if (window.shareType === 'content_plan') {
                     const cpStyle = document.createElement('style');
-                    cpStyle.innerHTML = '#post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title { display: none !important; }';
+                    cpStyle.innerHTML = `
+                        #post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title, .sm-modal-left-col { display: none !important; }
+                        .sm-modal-right-col { width: 100% !important; border: none !important; padding-right: 0 !important; }
+                        .sm-component-approval[data-component="video"] > div:first-child { justify-content: center; max-width: 400px; margin-left: auto; margin-right: auto; }
+                    `;
                     document.head.appendChild(cpStyle);
-                    
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const rightCol = document.querySelector('.sm-modal-right-col');
-                        const clientEdits = document.getElementById('clientEditsContainer');
-                        const agencyEdits = document.getElementById('agencyClientEditsContainer');
-                        if (rightCol) {
-                            if (clientEdits) rightCol.appendChild(clientEdits);
-                            if (agencyEdits) rightCol.appendChild(agencyEdits);
-                        }
-                    });
                 } else if (window.shareType === 'publishing_plan') {
                     const ppStyle = document.createElement('style');
                     ppStyle.innerHTML = '#idea-wrap, #design-wrap, #title-for-idea-wrap, #title-for-design-wrap { display: none !important; }';
@@ -2755,12 +2749,18 @@ window.openCreatePostModal = function(postId = null) {
                 
                 // Inject for Video/Media
                 const mediaGallery = document.getElementById('smMediaGallery');
+                const rightCol = document.querySelector('.sm-modal-right-col');
+                
+                // Remove existing ones anywhere
+                document.querySelectorAll(`.sm-component-approval[data-component="video"]`).forEach(el => el.remove());
+                
                 if (mediaGallery) {
-                    const existing = mediaGallery.parentElement.querySelector(`.sm-component-approval[data-component="video"]`);
-                    if (existing) existing.remove();
-                    
                     const postEdits = (currentPost && currentPost.componentEdits) ? currentPost.componentEdits['video'] : '';
-                    mediaGallery.insertAdjacentHTML('afterend', window.getComponentApprovalHtml(postId, 'video', postEdits));
+                    if (window.shareType === 'content_plan' && rightCol) {
+                        rightCol.insertAdjacentHTML('beforeend', window.getComponentApprovalHtml(postId, 'video', postEdits));
+                    } else {
+                        mediaGallery.insertAdjacentHTML('afterend', window.getComponentApprovalHtml(postId, 'video', postEdits));
+                    }
                 }
 
             } else {
