@@ -8763,7 +8763,12 @@ window.getAggregatedPostStatus = function(post) {
         'design': 'التصميم'
     };
     
-    for (const c of comps) {
+    let compsToProcess = comps;
+    if (window.shareType !== 'publishing_plan') {
+        compsToProcess = comps.filter(c => !['fb', 'ig', 'sc', 'tt'].includes(c));
+    }
+    
+    for (const c of compsToProcess) {
         const val = post.componentEdits[c];
         if (val === "تمت الموافقة ✅") {
             summaries.push({ label: labels[c] || c, text: val, type: 'approved' });
@@ -8775,7 +8780,7 @@ window.getAggregatedPostStatus = function(post) {
     }
     
     // If there is any edit, it's not fully approved.
-    if (comps.length > 0 && allApproved) {
+    if (compsToProcess.length > 0 && allApproved) {
         return { isApproved: true, hasEdit: false, summaries };
     } else if (anyEdit) {
         return { isApproved: false, hasEdit: true, summaries };
