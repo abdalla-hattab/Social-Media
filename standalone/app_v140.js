@@ -5275,6 +5275,11 @@ function renderSocialSchedulerApp(activeBoard) {
                 const dayPosts = (activeBoard.cards || []).filter(c => {
                     if (c.dateStr !== `${currentYear}-${currentMonth}-${dayCounter}`) return false;
                     if (window.smShowClientEditsToggle === false && c.isClientDayNote) return false;
+                    if (window.shareType === 'content_plan') {
+                        const hasIdea = c.idea && c.idea.trim() !== '';
+                        const hasDesign = c.designContent && c.designContent.trim() !== '';
+                        if (!hasIdea && !hasDesign) return false;
+                    }
                     if (window.shareType === 'publishing_plan') {
                         const items = c.mediaItems || (c.mediaObj ? [c.mediaObj] : []);
                         if (items.length === 0) return false;
@@ -6451,6 +6456,11 @@ function renderSocialSchedulerApp(activeBoard) {
             if (activeBoard.cards) {
                 activeBoard.cards.forEach(c => {
                     if (c.dateStr && c.dateStr.startsWith(`${currentYear}-${currentMonth}-`) && (window.smShowClientEditsToggle !== false || !c.isClientDayNote)) {
+                        if (window.shareType === 'content_plan') {
+                            const hasIdea = c.idea && c.idea.trim() !== '';
+                            const hasDesign = c.designContent && c.designContent.trim() !== '';
+                            if (!hasIdea && !hasDesign) return;
+                        }
                         if (window.shareType === 'publishing_plan') {
                             const items = c.mediaItems || (c.mediaObj ? [c.mediaObj] : []);
                             if (items.length === 0) return;
@@ -7227,6 +7237,11 @@ function renderSocialSchedulerApp(activeBoard) {
                 const todayPosts = (activeBoard.cards || []).filter(c => {
                     if (c.dateStr !== `${currentYear}-${currentMonth}-${dateNum}`) return false;
                     if (window.smShowClientEditsToggle === false && c.isClientDayNote) return false;
+                    if (window.shareType === 'content_plan') {
+                        const hasIdea = c.idea && c.idea.trim() !== '';
+                        const hasDesign = c.designContent && c.designContent.trim() !== '';
+                        if (!hasIdea && !hasDesign) return false;
+                    }
                     if (window.shareType === 'publishing_plan') {
                         const items = c.mediaItems || (c.mediaObj ? [c.mediaObj] : []);
                         if (items.length === 0) return false;
