@@ -2506,6 +2506,8 @@ window.openCreatePostModal = function(postId = null) {
                                         const newOrderDOMIds = Array.from(listEl.children).map(c => c.getAttribute('data-id')).filter(id => id);
                                         const rearrangedDayCards = newOrderDOMIds.map(id => originalDayCards.find(c => c.id === id)).filter(c => c);
                                         
+                                        if (typeof window.pushUndoState === 'function') window.pushUndoState();
+                                        
                                         let replacementIndex = 0;
                                         board.cards = board.cards.map(c => {
                                             if (c.dateStr === dateStr) {
@@ -4700,6 +4702,8 @@ function render() {
     
     // Clear global animation flags after render sequence wraps
     window.isFilterFadingIn = false;
+    
+    if (typeof window.updateUndoButtonVisibility === 'function') window.updateUndoButtonVisibility();
 }
 
 window.toggleSentimentFilter = function(listId, type, color) {
@@ -6586,6 +6590,11 @@ function renderSocialSchedulerApp(activeBoard) {
                                 ${window.isClientView ? '' : `
                                 ${(currentMonth !== today.getMonth() || currentYear !== today.getFullYear()) ? `<button class="sm-icon-btn" onclick="window.resetSocialMonthToToday()" style="width:auto; padding: 0 12px; font-weight: 600; font-family: inherit; font-size: 13px;">اليوم</button>` : ''}
                                 
+                                <button id="smUndoBtn" class="sm-icon-btn" onclick="window.undoLastAction()" style="display:none; width:auto; padding: 0 12px; font-weight: 600; font-family: inherit; font-size: 13px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; gap: 6px;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path></svg>
+                                    تراجع
+                                </button>
+                                
                                 ${monthStatsHtml}
 
                                 <button class="sm-icon-btn" onclick="window.toggleClientEditsVisibility()" title="${window.smShowClientEditsToggle !== false ? 'إخفاء تعديلات العميل' : 'إظهار تعديلات العميل'}" style="margin-left: 4px; border: none; color:${window.smShowClientEditsToggle !== false ? '#16a34a' : '#64748b'};" onmouseover="this.style.background='${window.smShowClientEditsToggle !== false ? '#f0fdf4' : '#f1f5f9'}';" onmouseout="this.style.background='transparent';">
@@ -7647,6 +7656,7 @@ window.handleCalDrop = function(event, dropzone) {
             if (cardIndex === -1) return;
             
             // Remove the card from its current position
+            if (typeof window.pushUndoState === 'function') window.pushUndoState();
             const [draggedCard] = targetBoard.cards.splice(cardIndex, 1);
             draggedCard.dateStr = newDateStrRaw;
             
@@ -8381,6 +8391,41 @@ window.viewMediaFull = function(src, type) {
     if (closeBtn) if(closeBtn) closeBtn.onclick = closeOverlay;
 };
 
+window.smUndoStack = [];
+window.pushUndoState = function() {
+    if (typeof boards === 'undefined' || typeof activeBoardId === 'undefined') return;
+    const board = boards.find(b => b.id === activeBoardId);
+    if (!board || !board.cards) return;
+    const cardsCopy = JSON.parse(JSON.stringify(board.cards));
+    window.smUndoStack.push({ boardId: activeBoardId, cards: cardsCopy });
+    if (window.smUndoStack.length > 20) window.smUndoStack.shift();
+    if (typeof window.updateUndoButtonVisibility === 'function') window.updateUndoButtonVisibility();
+};
+
+window.undoLastAction = function() {
+    if (!window.smUndoStack || window.smUndoStack.length === 0) return;
+    const state = window.smUndoStack.pop();
+    const board = boards.find(b => b.id === state.boardId);
+    if (board) {
+        board.cards = state.cards;
+        if (typeof saveState === 'function') saveState();
+        if (typeof render === 'function') render();
+    }
+    if (typeof window.updateUndoButtonVisibility === 'function') window.updateUndoButtonVisibility();
+};
+
+window.updateUndoButtonVisibility = function() {
+    const btn = document.getElementById('smUndoBtn');
+    if (btn) {
+        if (window.smUndoStack && window.smUndoStack.length > 0) {
+            btn.style.setProperty('display', 'inline-flex', 'important');
+            btn.style.alignItems = 'center';
+        } else {
+            btn.style.setProperty('display', 'none', 'important');
+        }
+    }
+};
+
 window.deleteSocialPost = function(postId) {
     window.showConfirmModal(() => {
         const board = boards.find(b => b.id === activeBoardId);
@@ -8388,6 +8433,7 @@ window.deleteSocialPost = function(postId) {
         
         const idx = board.cards.findIndex(c => c.id === postId);
         if (idx > -1) {
+            window.pushUndoState();
             board.cards.splice(idx, 1);
             saveState();
             render();
