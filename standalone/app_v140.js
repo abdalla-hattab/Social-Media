@@ -2411,7 +2411,7 @@ window.openCreatePostModal = function(postId = null) {
                     html += dayPosts.map((p, idx) => {
                         const safeFullText = p.fullText ? window.smEscapeHTML(p.fullText) : '';
                         const safeDesc = p.description ? window.smEscapeHTML(p.description) : '';
-                        const defaultText = window.shareType === 'script_plan' ? 'عرض السكربت' : 'مسودة منشور...';
+                        const defaultText = window.shareType === 'script_plan' ? 'عرض السكربت' : (window.shareType === 'publishing_plan' ? 'عرض التصميم ومحتوى النشر' : 'مسودة منشور...');
                         const textSnippetRaw = p.fullText ? p.fullText.substring(0, 30) + '...' : (p.description ? p.description.substring(0, 30) + '...' : defaultText);
                         const textSnippet = window.smEscapeHTML(textSnippetRaw);
                         const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
@@ -5293,7 +5293,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 const postThumbnailsHtml = dayPosts.slice(0, 5).map((p, idx) => {
                     const safeFullText = p.fullText ? window.smEscapeHTML(p.fullText) : '';
                     const safeDesc = p.description ? window.smEscapeHTML(p.description) : '';
-                    const defaultText = window.shareType === 'script_plan' ? 'عرض السكربت' : 'مسودة منشور...';
+                    const defaultText = window.shareType === 'script_plan' ? 'عرض السكربت' : (window.shareType === 'publishing_plan' ? 'عرض التصميم ومحتوى النشر' : 'مسودة منشور...');
                     const textSnippetRaw = p.fullText ? p.fullText.substring(0, 25) + '...' : (p.description ? p.description.substring(0, 25) + '...' : defaultText);
                     const textSnippet = window.smEscapeHTML(textSnippetRaw);
                     const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
@@ -6476,7 +6476,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     postsByDate[dateStr].forEach(p => {
                         const safeFullText = p.fullText ? window.smEscapeHTML(p.fullText) : '';
                         const safeDesc = p.description ? window.smEscapeHTML(p.description) : '';
-                        const defaultText = window.shareType === 'script_plan' ? 'عرض السكربت' : 'مسودة منشور...';
+                        const defaultText = window.shareType === 'script_plan' ? 'عرض السكربت' : (window.shareType === 'publishing_plan' ? 'عرض التصميم ومحتوى النشر' : 'مسودة منشور...');
                         const textSnippetRaw = p.fullText ? p.fullText.substring(0, 150) + '...' : (p.description ? p.description.substring(0, 150) + '...' : defaultText);
                         const textSnippet = window.smEscapeHTML(textSnippetRaw);
                         const items = p.mediaItems || (p.mediaObj ? [p.mediaObj] : []);
