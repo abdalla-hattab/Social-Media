@@ -112,7 +112,21 @@ if (superShortId) {
                     document.head.appendChild(ppStyle);
                 } else if (window.shareType === 'script_plan') {
                     const spStyle = document.createElement('style');
-                    spStyle.innerHTML = '#post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title, #idea-wrap, #design-wrap, #title-for-idea-wrap, #title-for-design-wrap { display: none !important; }';
+                    spStyle.innerHTML = `
+                        #post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, 
+                        .social-platform-title, #idea-wrap, #design-wrap, #title-for-idea-wrap, #title-for-design-wrap,
+                        .sm-head-title, .sm-upload-zone, #smMediaPreviewContainer, .sm-client-card-actions, .sm-modal-left-col { 
+                            display: none !important; 
+                        }
+                        .sm-modal-right-col {
+                            width: 100% !important;
+                            border: none !important;
+                            padding-right: 0 !important;
+                        }
+                        .sm-modal-box {
+                            max-width: 800px !important;
+                        }
+                    `;
                     document.head.appendChild(spStyle);
                 }
                 
