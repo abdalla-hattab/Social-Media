@@ -106,6 +106,16 @@ if (superShortId) {
                     const cpStyle = document.createElement('style');
                     cpStyle.innerHTML = '#post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title { display: none !important; }';
                     document.head.appendChild(cpStyle);
+                    
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const rightCol = document.querySelector('.sm-modal-right-col');
+                        const clientEdits = document.getElementById('clientEditsContainer');
+                        const agencyEdits = document.getElementById('agencyClientEditsContainer');
+                        if (rightCol) {
+                            if (clientEdits) rightCol.appendChild(clientEdits);
+                            if (agencyEdits) rightCol.appendChild(agencyEdits);
+                        }
+                    });
                 } else if (window.shareType === 'publishing_plan') {
                     const ppStyle = document.createElement('style');
                     ppStyle.innerHTML = '#idea-wrap, #design-wrap, #title-for-idea-wrap, #title-for-design-wrap { display: none !important; }';
