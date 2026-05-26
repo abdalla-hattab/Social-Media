@@ -5275,6 +5275,18 @@ function renderSocialSchedulerApp(activeBoard) {
                         const items = c.mediaItems || (c.mediaObj ? [c.mediaObj] : []);
                         if (items.length === 0) return false;
                     }
+                    if (window.shareType === 'script_plan') {
+                        let hasScript = false;
+                        if (c.scriptScenes && Array.isArray(c.scriptScenes) && c.scriptScenes.length > 0) {
+                            const first = c.scriptScenes[0];
+                            if ((first.content && first.content.trim() !== '') ||
+                                (first.visual && first.visual.trim() !== '') ||
+                                (first.voiceover && first.voiceover.trim() !== '')) {
+                                hasScript = true;
+                            }
+                        }
+                        if (!hasScript) return false;
+                    }
                     return true;
                 });
                 const postThumbnailsHtml = dayPosts.slice(0, 5).map((p, idx) => {
@@ -7190,7 +7202,27 @@ function renderSocialSchedulerApp(activeBoard) {
                 sidebarDateFull.textContent = `${dateNum} ${monthNamesArabic[currentMonth]}`;
                 
                 // Render the day's posts into the sidebar
-                const todayPosts = (activeBoard.cards || []).filter(c => c.dateStr === `${currentYear}-${currentMonth}-${dateNum}` && (window.smShowClientEditsToggle !== false || !c.isClientDayNote));
+                const todayPosts = (activeBoard.cards || []).filter(c => {
+                    if (c.dateStr !== `${currentYear}-${currentMonth}-${dateNum}`) return false;
+                    if (window.smShowClientEditsToggle === false && c.isClientDayNote) return false;
+                    if (window.shareType === 'publishing_plan') {
+                        const items = c.mediaItems || (c.mediaObj ? [c.mediaObj] : []);
+                        if (items.length === 0) return false;
+                    }
+                    if (window.shareType === 'script_plan') {
+                        let hasScript = false;
+                        if (c.scriptScenes && Array.isArray(c.scriptScenes) && c.scriptScenes.length > 0) {
+                            const first = c.scriptScenes[0];
+                            if ((first.content && first.content.trim() !== '') ||
+                                (first.visual && first.visual.trim() !== '') ||
+                                (first.voiceover && first.voiceover.trim() !== '')) {
+                                hasScript = true;
+                            }
+                        }
+                        if (!hasScript) return false;
+                    }
+                    return true;
+                });
                 const postCountEl = appContainer.querySelector('.sm-post-count');
                 const sidebarBody = appContainer.querySelector('.sm-sidebar-body');
                 
