@@ -1767,10 +1767,12 @@ window.openCreatePostModal = function(postId = null) {
         
         if (postForEdits && postForEdits.scriptMode) {
             if (typeof window.setSmMode === 'function') window.setSmMode('script');
-            if (typeof window.renderScriptScenes === 'function') window.renderScriptScenes(postForEdits.scriptScenes || []);
         } else {
             if (typeof window.setSmMode === 'function') window.setSmMode('content');
-            if (typeof window.renderScriptScenes === 'function') window.renderScriptScenes([]);
+        }
+        
+        if (typeof window.renderScriptScenes === 'function') {
+            window.renderScriptScenes((postForEdits && postForEdits.scriptScenes) ? postForEdits.scriptScenes : []);
         }
         
         if (!window.isClientView) {
