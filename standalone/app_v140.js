@@ -2600,7 +2600,8 @@ window.openCreatePostModal = function(postId = null) {
                 // Note: Wrappers are no longer hidden here so the client can see the content for all platforms
                 
                 if (window.shareType === 'content_plan') {
-                    const hides = [wrapFb, wrapIg, wrapSc, wrapTt];
+                    const wrapScript = document.getElementById('sm-script-builder-view');
+                    const hides = [wrapFb, wrapIg, wrapSc, wrapTt, wrapScript];
                     hides.forEach(w => {
                         if (w) {
                             w.style.setProperty("display", "none", "important");
@@ -2612,7 +2613,8 @@ window.openCreatePostModal = function(postId = null) {
                 } else if (window.shareType === 'publishing_plan') {
                     const wrapIdea = document.getElementById('idea-wrap');
                     const wrapDesign = document.getElementById('design-wrap');
-                    const hides = [wrapIdea, wrapDesign];
+                    const wrapScript = document.getElementById('sm-script-builder-view');
+                    const hides = [wrapIdea, wrapDesign, wrapScript];
                     hides.forEach(w => {
                         if (w) {
                             w.style.setProperty("display", "none", "important");
