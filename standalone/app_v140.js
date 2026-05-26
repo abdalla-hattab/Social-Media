@@ -107,6 +107,7 @@ if (superShortId) {
                     cpStyle.innerHTML = `
                         #post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, .social-platform-title, .sm-modal-left-col { display: none !important; }
                         .sm-modal-right-col { width: 100% !important; border: none !important; padding-right: 0 !important; }
+                        .sm-textarea-header { display: none !important; }
                     `;
                     document.head.appendChild(cpStyle);
                 } else if (window.shareType === 'publishing_plan') {
