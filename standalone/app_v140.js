@@ -2770,6 +2770,11 @@ if (closeCreatePostModal && createPostModal) {
         const ideaArea = document.querySelector('.sm-textarea-idea');
         const designArea = document.querySelector('.sm-textarea-design');
         try {
+            const textContent = textArea ? textArea.value.trim() : '';
+            const ideaContent = ideaArea ? ideaArea.value.trim() : '';
+            const designContentStr = designArea ? designArea.value.trim() : '';
+            const mediaInput = document.getElementById('smMediaInput');
+            const hasGalleryItems = (mediaInput && mediaInput.files && mediaInput.files.length > 0) || document.querySelectorAll('#smMediaGallery .sm-gallery-img, #smMediaGallery .sm-gallery-vid, #smMediaGallery .frame-io-media, #smMediaGallery .product-link-media').length > 0;
             
             const isEmpty = !textContent && !ideaContent && !designContentStr && !hasGalleryItems;
             
@@ -8021,6 +8026,10 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         }
         
         if (originalState) newDraft.originalState = originalState;
+        
+        if (existingPost && existingPost.componentEdits) {
+            newDraft.componentEdits = existingPost.componentEdits;
+        }
         
         // Anchor the UI explicitly to this new post ID so further auto-saves 
         // properly update this exact post record and it's visible upon reload
