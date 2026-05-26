@@ -7936,7 +7936,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             }
         }
         const scriptScenesData = typeof window.getScriptScenesData === 'function' ? window.getScriptScenesData() : [];
-        const hasScriptContent = window.currentSmMode === 'script' && scriptScenesData.some(s => s.content.trim() || s.visual.trim() || s.voiceOver.trim());
+        const hasScriptContent = scriptScenesData.some(s => s.content.trim() || s.visual.trim() || s.voiceOver.trim());
         
         if (!textContent && !instagramContent && !snapchatContent && !tiktokContent && !ideaContent && !designContentStr && mediaItems.length === 0 && !hasScriptContent) {
             if (!isAutoSave) {
@@ -7968,6 +7968,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                 if (window.currentEditingSocialPostId) {
                     const idx = activeBoard.cards.findIndex(c => c.id === window.currentEditingSocialPostId);
                     if (idx > -1) {
+                        if (typeof window.pushUndoState === 'function') window.pushUndoState();
                         activeBoard.cards.splice(idx, 1);
                         saveState();
                         render();
@@ -8175,7 +8176,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             platforms: platformsArray,
             platformsConfig: platformsConfig,
             scriptMode: window.currentSmMode === 'script',
-            scriptScenes: window.currentSmMode === 'script' ? scriptScenesData : null
+            scriptScenes: scriptScenesData.length > 0 ? scriptScenesData : null
         };
         
         if (existingPost && existingPost.isClientDayNote) newDraft.isClientDayNote = true;
