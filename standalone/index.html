@@ -1799,7 +1799,13 @@
                         </script>
                     </div>
 
-                    <div id="smPostTypeSelector" class="sm-post-type-selector"
+                    <div id="smContentScriptToggle" style="display: flex; gap: 8px; margin-bottom: 24px; width: 100%; background: #f8fafc; padding: 6px; border-radius: 12px; border: 1px solid #e2e8f0; box-sizing: border-box;">
+                        <button type="button" id="smModeContentBtn" onclick="window.setSmMode('content')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: white; color: #0f172a; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">المحتوى</button>
+                        <button type="button" id="smModeScriptBtn" onclick="window.setSmMode('script')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: transparent; color: #64748b; font-weight: 600; cursor: pointer; transition: 0.2s;">السكربت</button>
+                    </div>
+
+                    <div id="sm-standard-content-view">
+                        <div id="smPostTypeSelector" class="sm-post-type-selector"
                         style="flex-shrink: 0; display: block; margin-bottom: 20px; background: #fff; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
                         <h4
                             style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600; color: #475569; display: flex; align-items: center; gap: 6px;">
@@ -2168,6 +2174,15 @@
                         <div class="sm-char-count-tiktok"
                             style="text-align: left; font-size: 12px; color: #94a3b8; font-weight: 600; margin-top: 8px;">
                             0 حرف</div>
+                    </div>
+                    </div> <!-- End of sm-standard-content-view -->
+
+                    <div id="sm-script-builder-view" style="display: none; width: 100%; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+                        <div id="smScriptScenesContainer" style="display: flex; flex-direction: column; gap: 16px;"></div>
+                        <button type="button" onclick="window.addScriptScene()" style="width: 100%; padding: 12px; background: white; border: 2px dashed #cbd5e1; border-radius: 12px; color: #64748b; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;" onmouseover="this.style.borderColor='#f97316'; this.style.color='#f97316'; this.style.background='#fffaf5'" onmouseout="this.style.borderColor='#cbd5e1'; this.style.color='#64748b'; this.style.background='white'">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            إضافة مشهد جديد
+                        </button>
                     </div>
 
                     <script type="module">
@@ -2784,7 +2799,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-    <script src="app_v140.js?v=15"></script>
+    <script src="app_v140.js?v=16"></script>
     <!-- Global Confirmation Modal -->
     <div class="modal-overlay" id="globalConfirmModal" style="z-index: 9999;">
         <div class="modal-content"

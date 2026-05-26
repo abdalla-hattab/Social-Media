@@ -1520,6 +1520,134 @@ window.hideAllMonthEvents = function(monthIndex) {
     }
 };
 
+window.setSmMode = function(mode) {
+    const btnContent = document.getElementById('smModeContentBtn');
+    const btnScript = document.getElementById('smModeScriptBtn');
+    const viewContent = document.getElementById('sm-standard-content-view');
+    const viewScript = document.getElementById('sm-script-builder-view');
+    
+    if (!btnContent || !btnScript || !viewContent || !viewScript) return;
+    
+    if (mode === 'content') {
+        btnContent.style.background = 'white';
+        btnContent.style.color = '#0f172a';
+        btnContent.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+        
+        btnScript.style.background = 'transparent';
+        btnScript.style.color = '#64748b';
+        btnScript.style.boxShadow = 'none';
+        
+        viewContent.style.display = 'block';
+        viewScript.style.display = 'none';
+        window.currentSmMode = 'content';
+    } else {
+        btnScript.style.background = 'white';
+        btnScript.style.color = '#0f172a';
+        btnScript.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+        
+        btnContent.style.background = 'transparent';
+        btnContent.style.color = '#64748b';
+        btnContent.style.boxShadow = 'none';
+        
+        viewContent.style.display = 'none';
+        viewScript.style.display = 'flex';
+        window.currentSmMode = 'script';
+    }
+    
+    if (window.isClientView) {
+        if (btnContent && btnContent.parentElement) btnContent.parentElement.style.setProperty('display', 'none', 'important');
+        const addBtn = viewScript.querySelector('button[onclick="window.addScriptScene()"]');
+        if (addBtn) addBtn.style.setProperty('display', 'none', 'important');
+    } else {
+        if (btnContent && btnContent.parentElement) btnContent.parentElement.style.setProperty('display', 'flex', 'important');
+        const addBtn = viewScript.querySelector('button[onclick="window.addScriptScene()"]');
+        if (addBtn) addBtn.style.setProperty('display', 'flex', 'important');
+    }
+    
+    if (typeof window.updateLiveDiff === 'function') window.updateLiveDiff();
+    if (typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) {
+        window.saveSocialDraft(true);
+    }
+};
+
+window.addScriptScene = function(data = { content: '', visual: '', voiceover: '' }) {
+    const container = document.getElementById('smScriptScenesContainer');
+    if (!container) return;
+    
+    const sceneCount = container.children.length + 1;
+    const sceneId = 'scene-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
+    const isReadonly = window.isClientView ? 'readonly' : '';
+    const deleteBtn = window.isClientView ? '' : `
+            <button type="button" onclick="this.closest('.sm-script-scene').remove(); if(typeof window.saveSocialDraft === 'function') window.saveSocialDraft(true);" style="position: absolute; top: 12px; left: 12px; background: transparent; border: none; color: #ef4444; cursor: pointer; padding: 4px; border-radius: 6px; transition: 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'" title="حذف المشهد">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+            </button>`;
+    
+    const sceneHtml = `
+        <div class="sm-script-scene" id="${sceneId}" style="background: #fffaf5; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px; position: relative;">
+            ${deleteBtn}
+            <div style="font-weight: 700; color: #c2410c; margin-bottom: 12px; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                <span class="scene-number" style="background: #ffedd5; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px;">${sceneCount}</span>
+                مشهد
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">المحتوى (Content):</label>
+                    <textarea class="sm-scene-content" placeholder="اكتب النص أو الحوار هنا..." style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; resize: vertical; box-sizing: border-box; background: ${window.isClientView ? '#f8fafc' : 'white'};" oninput="if(typeof window.saveSocialDraft === 'function') window.saveSocialDraft(true);" ${isReadonly}>${window.smEscapeHTML ? window.smEscapeHTML(data.content) : data.content}</textarea>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">Visual (المرئيات):</label>
+                    <textarea class="sm-scene-visual" placeholder="صف ما يظهر في الشاشة..." style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; resize: vertical; box-sizing: border-box; background: ${window.isClientView ? '#f8fafc' : 'white'};" oninput="if(typeof window.saveSocialDraft === 'function') window.saveSocialDraft(true);" ${isReadonly}>${window.smEscapeHTML ? window.smEscapeHTML(data.visual) : data.visual}</textarea>
+                </div>
+                <div>
+                    <label style="display: block; font-size: 13px; font-weight: 700; color: #475569; margin-bottom: 6px;">Voice Over (التعليق الصوتي):</label>
+                    <textarea class="sm-scene-voiceover" placeholder="اكتب التعليق الصوتي إن وجد..." style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; resize: vertical; box-sizing: border-box; background: ${window.isClientView ? '#f8fafc' : 'white'};" oninput="if(typeof window.saveSocialDraft === 'function') window.saveSocialDraft(true);" ${isReadonly}>${window.smEscapeHTML ? window.smEscapeHTML(data.voiceover) : data.voiceover}</textarea>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', sceneHtml);
+    if(typeof window.saveSocialDraft === 'function' && container.children.length > 1) { // Only save on add if not first render
+        window.saveSocialDraft(true);
+    }
+};
+
+window.getScriptScenesData = function() {
+    const container = document.getElementById('smScriptScenesContainer');
+    if (!container) return [];
+    
+    const scenes = [];
+    const sceneElements = container.querySelectorAll('.sm-script-scene');
+    
+    sceneElements.forEach((el, index) => {
+        const numSpan = el.querySelector('.scene-number');
+        if (numSpan) numSpan.textContent = index + 1;
+        
+        const content = el.querySelector('.sm-scene-content').value;
+        const visual = el.querySelector('.sm-scene-visual').value;
+        const voiceover = el.querySelector('.sm-scene-voiceover').value;
+        
+        scenes.push({ content, visual, voiceover });
+    });
+    
+    return scenes;
+};
+
+window.renderScriptScenes = function(scenes) {
+    const container = document.getElementById('smScriptScenesContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (!scenes || scenes.length === 0) {
+        window.addScriptScene();
+        return;
+    }
+    
+    scenes.forEach(scene => window.addScriptScene(scene));
+};
+
 window.openCreatePostModal = function(postId = null) {
     if (window.isLiveModeActive && !postId) {
         if (typeof showToast === 'function') {
@@ -1636,6 +1764,14 @@ window.openCreatePostModal = function(postId = null) {
         
         const isClientModified = postForEdits ? postForEdits.clientModified : false;
         const editsVal = postForEdits ? (postForEdits.clientEdits || '') : '';
+        
+        if (postForEdits && postForEdits.scriptMode) {
+            if (typeof window.setSmMode === 'function') window.setSmMode('script');
+            if (typeof window.renderScriptScenes === 'function') window.renderScriptScenes(postForEdits.scriptScenes || []);
+        } else {
+            if (typeof window.setSmMode === 'function') window.setSmMode('content');
+            if (typeof window.renderScriptScenes === 'function') window.renderScriptScenes([]);
+        }
         
         if (!window.isClientView) {
             // Agency View
@@ -8017,7 +8153,9 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             clientEdits: clientEdits,
             clientModified: isClientModified,
             platforms: platformsArray,
-            platformsConfig: platformsConfig
+            platformsConfig: platformsConfig,
+            scriptMode: window.currentSmMode === 'script',
+            scriptScenes: window.currentSmMode === 'script' ? (typeof window.getScriptScenesData === 'function' ? window.getScriptScenesData() : []) : null
         };
         
         if (existingPost && existingPost.isClientDayNote) newDraft.isClientDayNote = true;
