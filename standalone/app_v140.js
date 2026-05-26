@@ -7935,8 +7935,10 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                 }
             }
         }
+        const scriptScenesData = typeof window.getScriptScenesData === 'function' ? window.getScriptScenesData() : [];
+        const hasScriptContent = window.currentSmMode === 'script' && scriptScenesData.some(s => s.content.trim() || s.visual.trim() || s.voiceOver.trim());
         
-        if (!textContent && !instagramContent && !snapchatContent && !tiktokContent && !ideaContent && !designContentStr && mediaItems.length === 0) {
+        if (!textContent && !instagramContent && !snapchatContent && !tiktokContent && !ideaContent && !designContentStr && mediaItems.length === 0 && !hasScriptContent) {
             if (!isAutoSave) {
                 const textareaWrap = document.querySelector('.sm-textarea-wrap');
                 if (textareaWrap) {
@@ -8149,9 +8151,14 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             });
         }
 
+        let combinedText = (textContent || snapchatContent || tiktokContent || '');
+        if (!combinedText && hasScriptContent && scriptScenesData.length > 0) {
+            combinedText = scriptScenesData[0].content || scriptScenesData[0].visual || scriptScenesData[0].voiceOver || 'سكربت';
+        }
+
         const newDraft = {
             id: window.currentEditingSocialPostId || ('post-' + Date.now()),
-            title: (textContent || snapchatContent || tiktokContent || '').substring(0, 50) + ((textContent || snapchatContent || tiktokContent || '').length > 50 ? '...' : ''),
+            title: combinedText.substring(0, 50) + (combinedText.length > 50 ? '...' : ''),
             fullText: textContent,
             fullTextInstagram: instagramContent,
             fullTextSnapchat: snapchatContent,
@@ -8168,7 +8175,7 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             platforms: platformsArray,
             platformsConfig: platformsConfig,
             scriptMode: window.currentSmMode === 'script',
-            scriptScenes: window.currentSmMode === 'script' ? (typeof window.getScriptScenesData === 'function' ? window.getScriptScenesData() : []) : null
+            scriptScenes: window.currentSmMode === 'script' ? scriptScenesData : null
         };
         
         if (existingPost && existingPost.isClientDayNote) newDraft.isClientDayNote = true;
