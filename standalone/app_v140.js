@@ -115,7 +115,8 @@ if (superShortId) {
                     spStyle.innerHTML = `
                         #post-content-wrap, #post-content-wrap-instagram, #post-content-wrap-snapchat, #post-content-wrap-tiktok, 
                         .social-platform-title, #idea-wrap, #design-wrap, #title-for-idea-wrap, #title-for-design-wrap,
-                        .sm-head-title, .sm-upload-zone, #smMediaPreviewContainer, .sm-client-card-actions, .sm-modal-left-col { 
+                        .sm-head-title, .sm-upload-zone, #smMediaPreviewContainer, .sm-client-card-actions, .sm-modal-left-col,
+                        #sm-script-builder-view > button { 
                             display: none !important; 
                         }
                         .sm-modal-right-col {
