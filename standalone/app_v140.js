@@ -1521,53 +1521,7 @@ window.hideAllMonthEvents = function(monthIndex) {
 };
 
 window.setSmMode = function(mode) {
-    const btnContent = document.getElementById('smModeContentBtn');
-    const btnScript = document.getElementById('smModeScriptBtn');
-    const viewContent = document.getElementById('sm-standard-content-view');
-    const viewScript = document.getElementById('sm-script-builder-view');
-    
-    if (!btnContent || !btnScript || !viewContent || !viewScript) return;
-    
-    if (mode === 'content') {
-        btnContent.style.background = 'white';
-        btnContent.style.color = '#0f172a';
-        btnContent.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-        
-        btnScript.style.background = 'transparent';
-        btnScript.style.color = '#64748b';
-        btnScript.style.boxShadow = 'none';
-        
-        viewContent.style.display = 'block';
-        viewScript.style.display = 'none';
-        window.currentSmMode = 'content';
-    } else {
-        btnScript.style.background = 'white';
-        btnScript.style.color = '#0f172a';
-        btnScript.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-        
-        btnContent.style.background = 'transparent';
-        btnContent.style.color = '#64748b';
-        btnContent.style.boxShadow = 'none';
-        
-        viewContent.style.display = 'none';
-        viewScript.style.display = 'flex';
-        window.currentSmMode = 'script';
-    }
-    
-    if (window.isClientView) {
-        if (btnContent && btnContent.parentElement) btnContent.parentElement.style.setProperty('display', 'none', 'important');
-        const addBtn = viewScript.querySelector('button[onclick="window.addScriptScene()"]');
-        if (addBtn) addBtn.style.setProperty('display', 'none', 'important');
-    } else {
-        if (btnContent && btnContent.parentElement) btnContent.parentElement.style.setProperty('display', 'flex', 'important');
-        const addBtn = viewScript.querySelector('button[onclick="window.addScriptScene()"]');
-        if (addBtn) addBtn.style.setProperty('display', 'flex', 'important');
-    }
-    
-    if (typeof window.updateLiveDiff === 'function') window.updateLiveDiff();
-    if (typeof window.saveSocialDraft === 'function' && window.currentEditingSocialPostId) {
-        window.saveSocialDraft(true);
-    }
+    // Mode switching removed per user request (unified view)
 };
 
 window.addScriptScene = function(data = { content: '', visual: '', voiceover: '' }) {
@@ -1765,11 +1719,8 @@ window.openCreatePostModal = function(postId = null) {
         const isClientModified = postForEdits ? postForEdits.clientModified : false;
         const editsVal = postForEdits ? (postForEdits.clientEdits || '') : '';
         
-        if (postForEdits && postForEdits.scriptMode) {
-            if (typeof window.setSmMode === 'function') window.setSmMode('script');
-        } else {
-            if (typeof window.setSmMode === 'function') window.setSmMode('content');
-        }
+        // Modals are now unified, no need to toggle modes
+        window.currentSmMode = 'unified';
         
         if (typeof window.renderScriptScenes === 'function') {
             window.renderScriptScenes((postForEdits && postForEdits.scriptScenes) ? postForEdits.scriptScenes : []);
