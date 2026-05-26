@@ -2771,14 +2771,17 @@ window.openCreatePostModal = function(postId = null) {
                 };
                 
                 // Inject for Text Areas
-                if (window.shareType !== 'publishing_plan') {
+                if (window.shareType !== 'publishing_plan' && window.shareType !== 'content_plan') {
                     injectComponentApproval('idea-wrap', 'idea');
                     injectComponentApproval('design-wrap', 'design');
                 }
-                injectComponentApproval('post-content-wrap', 'fb');
-                injectComponentApproval('post-content-wrap-instagram', 'ig');
-                injectComponentApproval('post-content-wrap-snapchat', 'sc');
-                injectComponentApproval('post-content-wrap-tiktok', 'tt');
+                
+                if (window.shareType !== 'content_plan') {
+                    injectComponentApproval('post-content-wrap', 'fb');
+                    injectComponentApproval('post-content-wrap-instagram', 'ig');
+                    injectComponentApproval('post-content-wrap-snapchat', 'sc');
+                    injectComponentApproval('post-content-wrap-tiktok', 'tt');
+                }
                 
                 // Inject for Video/Media
                 const mediaGallery = document.getElementById('smMediaGallery');
@@ -8902,7 +8905,9 @@ window.getAggregatedPostStatus = function(post) {
     };
     
     let compsToProcess = comps;
-    if (window.shareType !== 'publishing_plan') {
+    if (window.shareType === 'content_plan') {
+        compsToProcess = comps.filter(c => c === 'video');
+    } else if (window.shareType !== 'publishing_plan') {
         compsToProcess = comps.filter(c => !['fb', 'ig', 'sc', 'tt'].includes(c));
     }
     
