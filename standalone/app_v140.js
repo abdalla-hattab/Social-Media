@@ -5087,24 +5087,24 @@ window.generatePipelineHtml = function(board) {
     let contractHtml = '';
     if (!window.isClientView) {
         contractHtml = `
-            <div onclick="window.editContract(${currentYr}, ${currentMn})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; margin-left: 24px;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
-                <div style="display: flex; align-items: center; margin-bottom: 4px; white-space: nowrap; gap: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
+            <div onclick="window.editContract(${currentYr}, ${currentMn})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; margin-left: 6px; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
+                <div style="display: flex; align-items: center; margin-bottom: 2px; white-space: nowrap; gap: 4px;">
+                    <span style="font-size: 11px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
                 </div>
-                <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe; white-space: nowrap;">
+                <span style="font-size: 12px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; padding: 2px 8px; border-radius: 20px; border: 1px solid #bfdbfe; white-space: nowrap;">
                     ${getMediaCountHtml(contractStats.images, contractStats.videos, '#2563eb')}
                 </span>
             </div>
         `;
     }
 
-    let monthsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; width: 100%;">`;
+    let monthsHtml = `<div style="display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 6px; justify-content: center; align-items: center; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; padding-bottom: 4px; width: 100%;">`;
     monthsHtml += contractHtml;
     
     monthNamesAll.forEach((m, idx) => {
         monthsHtml += `
-            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 68px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
-                <span style="font-size: 13px; font-weight: 700; color: #475569;">${m}</span>
+            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; height: 50px; flex-shrink: 0; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                <span style="font-size: 11px; font-weight: 700; color: #475569;">${m}</span>
             </div>
         `;
     });
