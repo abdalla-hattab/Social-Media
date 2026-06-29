@@ -5103,8 +5103,8 @@ window.generatePipelineHtml = function(board) {
     
     monthNamesAll.forEach((m, idx) => {
         monthsHtml += `
-            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 62px; height: 62px; flex-shrink: 0; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
-                <span style="font-size: 13px; font-weight: 700; color: #475569;">${m}</span>
+            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 76px; height: 76px; flex-shrink: 0; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                <span style="font-size: 14px; font-weight: 700; color: #475569;">${m}</span>
             </div>
         `;
     });
