@@ -5058,6 +5058,23 @@ window.generatePipelineHtml = function(board) {
 
     html += `</div>`; 
     html += `</div>`;
+
+    const monthNamesAll = [
+        "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", 
+        "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
+    ];
+    let monthsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; width: 100%;">`;
+    monthNamesAll.forEach((m, idx) => {
+        monthsHtml += `
+            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 68px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span style="font-size: 11px; font-weight: 700; color: #475569;">${m}</span>
+            </div>
+        `;
+    });
+    monthsHtml += `</div>`;
+    html += monthsHtml;
+
     html += `</div>`;
     html += `</div>`;
     return html;
