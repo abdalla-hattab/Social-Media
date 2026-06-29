@@ -5063,7 +5063,44 @@ window.generatePipelineHtml = function(board) {
         "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", 
         "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
     ];
-    let monthsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; width: 100%;">`;
+    
+    const todayDate = new Date();
+    const currentYr = window.activeSocialMonthView ? window.activeSocialMonthView.year : todayDate.getFullYear();
+    const currentMn = window.activeSocialMonthView ? window.activeSocialMonthView.month : todayDate.getMonth();
+    const monthKey = `${currentYr}-${currentMn}`;
+    const contractStats = (board.monthlyContract && board.monthlyContract[monthKey]) || { images: 0, videos: 0 };
+    
+    const getMediaCountHtml = (images, videos, color) => {
+        let parts = [];
+        if (images > 0) {
+            let imgText = (images === 1) ? 'صورة' : 'صور';
+            parts.push(`<span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;"><strong style="color: ${color}; font-size: 14px; font-weight: 800;">${images}</strong> <span>${imgText}</span> <span>🖼️</span></span>`);
+        }
+        if (videos > 0) {
+            let vidText = (videos >= 3 && videos <= 10) ? 'فيديوهات' : 'فيديو';
+            parts.push(`<span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap;"><strong style="color: ${color}; font-size: 14px; font-weight: 800;">${videos}</strong> <span>${vidText}</span> <span>▶️</span></span>`);
+        }
+        if (parts.length === 0) return `<span style="display:flex; align-items:center; flex-direction:row; gap:4px; white-space:nowrap; color: #94a3b8;">لا يوجد</span>`;
+        return parts.join(` <span style="color: ${color === '#ea580c' ? '#fed7aa' : '#bfdbfe'}; font-weight: 400; margin: 0 4px;">|</span> `);
+    };
+
+    let contractHtml = '';
+    if (!window.isClientView) {
+        contractHtml = `
+            <div onclick="window.editContract(${currentYr}, ${currentMn})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; margin-left: 24px;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
+                <div style="display: flex; align-items: center; margin-bottom: 4px; white-space: nowrap; gap: 6px;">
+                    <span style="font-size: 12px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
+                </div>
+                <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 4px 12px; border-radius: 20px; border: 1px solid #bfdbfe; white-space: nowrap;">
+                    ${getMediaCountHtml(contractStats.images, contractStats.videos, '#2563eb')}
+                </span>
+            </div>
+        `;
+    }
+
+    let monthsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; width: 100%;">`;
+    monthsHtml += contractHtml;
+    
     monthNamesAll.forEach((m, idx) => {
         monthsHtml += `
             <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 68px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
@@ -6465,7 +6502,6 @@ function renderSocialSchedulerApp(activeBoard) {
 
         const monthStatsHtml = `
             <div style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 16px;">
-                ${contractHtml}
                 <div style="display: inline-flex; flex-direction: column; align-items: center;">
                     <span style="font-size: 12px; font-weight: 700; color: #ea580c; margin-bottom: 4px; white-space: nowrap;">${window.isClientView ? 'سيتم تسوية' : 'تم تسوية'}</span>
                     <span style="font-size: 13px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #fffcf8; padding: 4px 12px; border-radius: 20px; border: 1px solid #fed7aa; white-space: nowrap;">
