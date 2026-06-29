@@ -4903,10 +4903,12 @@ window.onMonthClick = function(e, idx) {
     if (e) {
         e.stopPropagation();
     }
+    const targetCircle = e ? e.currentTarget : null;
     const existing = document.getElementById('month-qty-popup');
     if (existing) existing.remove();
 
-    const rect = e.currentTarget.getBoundingClientRect();
+    if (!targetCircle) return;
+    const rect = targetCircle.getBoundingClientRect();
     
     const popup = document.createElement('div');
     popup.id = 'month-qty-popup';
@@ -4943,7 +4945,7 @@ window.onMonthClick = function(e, idx) {
         currentQty++;
         qtyDisplay.innerText = currentQty;
         board.monthlyQuantities[idx] = currentQty;
-        updateMonthBadge(e.currentTarget, currentQty);
+        updateMonthBadge(targetCircle, currentQty);
     };
 
     const minusBtn = document.createElement('button');
@@ -4955,7 +4957,7 @@ window.onMonthClick = function(e, idx) {
             currentQty--;
             qtyDisplay.innerText = currentQty;
             board.monthlyQuantities[idx] = currentQty;
-            updateMonthBadge(e.currentTarget, currentQty);
+            updateMonthBadge(targetCircle, currentQty);
         }
     };
 
