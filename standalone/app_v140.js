@@ -4898,6 +4898,82 @@ function updateAllTrackersSummaries(activeBoard) {
 
 let animatingOutIds = new Set();
 let animatingOrigins = {};
+
+window.onMonthClick = function(e, idx) {
+    if (e) {
+        e.stopPropagation();
+    }
+    const existing = document.getElementById('month-qty-popup');
+    if (existing) existing.remove();
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    
+    const popup = document.createElement('div');
+    popup.id = 'month-qty-popup';
+    popup.style.position = 'fixed';
+    popup.style.top = (rect.bottom + 8) + 'px';
+    popup.style.left = (rect.left + (rect.width / 2)) + 'px';
+    popup.style.transform = 'translateX(-50%)';
+    popup.style.background = '#ffffff';
+    popup.style.border = '1px solid #e2e8f0';
+    popup.style.borderRadius = '8px';
+    popup.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+    popup.style.padding = '8px';
+    popup.style.zIndex = '1000';
+    popup.style.display = 'flex';
+    popup.style.alignItems = 'center';
+    popup.style.gap = '12px';
+
+    const board = window.boards[window.currentBoardId];
+    if (!board.monthlyQuantities) board.monthlyQuantities = {};
+    let currentQty = board.monthlyQuantities[idx] || 0;
+
+    const qtyDisplay = document.createElement('span');
+    qtyDisplay.innerText = currentQty;
+    qtyDisplay.style = 'font-weight: 700; font-size: 14px; min-width: 20px; text-align: center; color: #1e293b;';
+
+    const plusBtn = document.createElement('button');
+    plusBtn.innerText = '+';
+    plusBtn.style = 'width: 28px; height: 28px; border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #2563eb;';
+    plusBtn.onclick = (ev) => {
+        ev.stopPropagation();
+        currentQty++;
+        qtyDisplay.innerText = currentQty;
+        board.monthlyQuantities[idx] = currentQty;
+        window.saveToLocalStorage();
+        if (window.render) window.render();
+    };
+
+    const minusBtn = document.createElement('button');
+    minusBtn.innerText = '-';
+    minusBtn.style = 'width: 28px; height: 28px; border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #ef4444;';
+    minusBtn.onclick = (ev) => {
+        ev.stopPropagation();
+        if (currentQty > 0) {
+            currentQty--;
+            qtyDisplay.innerText = currentQty;
+            board.monthlyQuantities[idx] = currentQty;
+            window.saveToLocalStorage();
+            if (window.render) window.render();
+        }
+    };
+
+    popup.appendChild(plusBtn);
+    popup.appendChild(qtyDisplay);
+    popup.appendChild(minusBtn);
+
+    document.body.appendChild(popup);
+
+    setTimeout(() => {
+        const closeHandler = (ev) => {
+            if (!popup.contains(ev.target)) {
+                popup.remove();
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        document.addEventListener('click', closeHandler);
+    }, 10);
+};
 window.generatePipelineHtml = function(board) {
     if (!board.pipeline) {
         // Find existing stages from any other board
@@ -5137,9 +5213,19 @@ window.generatePipelineHtml = function(board) {
                 <span style="font-size: 13px; font-weight: 700; color: ${color};">${m}</span>
             `;
         }
+        let badgeHtml = '';
+        const qty = (board.monthlyQuantities && board.monthlyQuantities[idx]) || 0;
+        if (qty > 0) {
+            badgeHtml = `
+                <div style="position: absolute; top: -4px; right: -4px; background: #2563eb; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
+                    ${qty}
+                </div>
+            `;
+        }
 
         monthsHtml += `
-            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='${isStart ? '#ca8a04' : '#3b82f6'}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+            <div onclick="if(window.onMonthClick) window.onMonthClick(event, ${idx})" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='${isStart ? '#ca8a04' : '#3b82f6'}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                ${badgeHtml}
                 ${contentHtml}
             </div>
         `;
