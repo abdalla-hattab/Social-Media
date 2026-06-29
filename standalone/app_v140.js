@@ -4944,7 +4944,7 @@ window.onMonthClick = function(e, idx) {
         qtyDisplay.innerText = currentQty;
         board.monthlyQuantities[idx] = currentQty;
         if(typeof saveState === 'function') saveState();
-        if (typeof window.render === 'function') window.render();
+        updateMonthBadge(e.currentTarget, currentQty);
     };
 
     const minusBtn = document.createElement('button');
@@ -4957,9 +4957,26 @@ window.onMonthClick = function(e, idx) {
             qtyDisplay.innerText = currentQty;
             board.monthlyQuantities[idx] = currentQty;
             if(typeof saveState === 'function') saveState();
-            if (typeof window.render === 'function') window.render();
+            updateMonthBadge(e.currentTarget, currentQty);
         }
     };
+
+    function updateMonthBadge(circleEl, qty) {
+        if (!circleEl) return;
+        let badge = circleEl.querySelector('.month-qty-badge');
+        if (qty > 0) {
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.className = 'month-qty-badge';
+                badge.style = "position: absolute; top: -4px; right: -4px; background: #2563eb; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
+                // Insert it as the first child so it overlays properly
+                circleEl.insertBefore(badge, circleEl.firstChild);
+            }
+            badge.innerText = qty;
+        } else if (badge) {
+            badge.remove();
+        }
+    }
 
     popup.appendChild(plusBtn);
     popup.appendChild(qtyDisplay);
@@ -5055,16 +5072,12 @@ window.generatePipelineHtml = function(board) {
         }
 
         html += `<div style="display: flex; justify-content: center; width: 100%; margin-bottom: 4px;">
-                    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 6px 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap;">
+                    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap;">
                         <div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: #f8fafc; border-radius: 50%; border: 1px solid #f1f5f9;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </div>
                         <span style="letter-spacing: 0.2px;">تاريخ بداية هذا العقد:</span> 
                         <span style="font-weight: 800; font-size: 14px; letter-spacing: 0.5px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${board.contractStartDate}</span>
-                        <span style="display: flex; align-items: center; gap: 4px; background: ${diffBg}; color: ${diffColor}; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; margin-right: 2px; border: 1px solid ${diffBorder}; letter-spacing: 0.2px;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            ${diffDaysStr}
-                        </span>
                     </div>
                  </div>`;
     }
