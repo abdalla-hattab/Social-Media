@@ -4943,7 +4943,6 @@ window.onMonthClick = function(e, idx) {
         currentQty++;
         qtyDisplay.innerText = currentQty;
         board.monthlyQuantities[idx] = currentQty;
-        if(typeof saveState === 'function') saveState();
         updateMonthBadge(e.currentTarget, currentQty);
     };
 
@@ -4956,7 +4955,6 @@ window.onMonthClick = function(e, idx) {
             currentQty--;
             qtyDisplay.innerText = currentQty;
             board.monthlyQuantities[idx] = currentQty;
-            if(typeof saveState === 'function') saveState();
             updateMonthBadge(e.currentTarget, currentQty);
         }
     };
@@ -4969,7 +4967,6 @@ window.onMonthClick = function(e, idx) {
                 badge = document.createElement('div');
                 badge.className = 'month-qty-badge';
                 badge.style = "position: absolute; top: -4px; right: -4px; background: #2563eb; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
-                // Insert it as the first child so it overlays properly
                 circleEl.insertBefore(badge, circleEl.firstChild);
             }
             badge.innerText = qty;
@@ -4989,6 +4986,7 @@ window.onMonthClick = function(e, idx) {
             if (!popup.contains(ev.target)) {
                 popup.remove();
                 document.removeEventListener('click', closeHandler);
+                if(typeof saveState === 'function') saveState();
             }
         };
         document.addEventListener('click', closeHandler);
