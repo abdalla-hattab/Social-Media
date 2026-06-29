@@ -4924,7 +4924,10 @@ window.onMonthClick = function(e, idx) {
     popup.style.alignItems = 'center';
     popup.style.gap = '12px';
 
-    const board = window.boards[window.currentBoardId];
+    const allBoards = typeof boards !== 'undefined' ? boards : [];
+    const board = allBoards.find(b => b.id === (typeof activeBoardId !== 'undefined' ? activeBoardId : null));
+    if (!board) return;
+
     if (!board.monthlyQuantities) board.monthlyQuantities = {};
     let currentQty = board.monthlyQuantities[idx] || 0;
 
@@ -4940,8 +4943,8 @@ window.onMonthClick = function(e, idx) {
         currentQty++;
         qtyDisplay.innerText = currentQty;
         board.monthlyQuantities[idx] = currentQty;
-        window.saveToLocalStorage();
-        if (window.render) window.render();
+        if(typeof saveState === 'function') saveState();
+        if (typeof window.render === 'function') window.render();
     };
 
     const minusBtn = document.createElement('button');
@@ -4953,8 +4956,8 @@ window.onMonthClick = function(e, idx) {
             currentQty--;
             qtyDisplay.innerText = currentQty;
             board.monthlyQuantities[idx] = currentQty;
-            window.saveToLocalStorage();
-            if (window.render) window.render();
+            if(typeof saveState === 'function') saveState();
+            if (typeof window.render === 'function') window.render();
         }
     };
 
