@@ -5063,11 +5063,11 @@ window.generatePipelineHtml = function(board) {
         "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", 
         "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
     ];
-    let monthsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; width: 100%;">`;
+    let monthsHtml = `<div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; width: 100%;">`;
     monthNamesAll.forEach((m, idx) => {
         monthsHtml += `
-            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: inline-flex; align-items: center; justify-content: center; padding: 6px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe'; this.style.color='#1d4ed8'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0'; this.style.color='#475569'; this.style.transform='translateY(0)';">
-                <span style="font-size: 12px; font-weight: 600; color: inherit;">${m}</span>
+            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 68px; height: 68px; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                <span style="font-size: 13px; font-weight: 700; color: #475569;">${m}</span>
             </div>
         `;
     });
