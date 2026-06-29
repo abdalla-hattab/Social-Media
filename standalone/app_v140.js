@@ -5087,7 +5087,7 @@ window.generatePipelineHtml = function(board) {
     let contractHtml = '';
     if (!window.isClientView) {
         contractHtml = `
-            <div onclick="window.editContract(${currentYr}, ${currentMn})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; margin-left: 6px; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
+            <div onclick="window.editContract(${currentYr}, ${currentMn})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
                 <div style="display: flex; align-items: center; margin-bottom: 2px; white-space: nowrap; gap: 4px;">
                     <span style="font-size: 11px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
                 </div>
@@ -5098,7 +5098,7 @@ window.generatePipelineHtml = function(board) {
         `;
     }
 
-    let monthsHtml = `<div style="display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 6px; justify-content: center; align-items: center; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; padding-bottom: 4px; width: 100%;">`;
+    let monthsHtml = `<div style="display: flex; flex-wrap: nowrap; overflow-x: auto; justify-content: space-between; align-items: center; gap: 4px; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; padding-bottom: 4px; width: 100%;">`;
     monthsHtml += contractHtml;
     
     monthNamesAll.forEach((m, idx) => {
