@@ -5120,8 +5120,8 @@ window.generatePipelineHtml = function(board) {
         const isStart = (idx === contractStartMn);
         const bg = '#ffffff';
         const border = isStart ? '#eab308' : '#e2e8f0';
-        const borderWidth = isStart ? '3px' : '2px';
-        const color = isStart ? '#ca8a04' : '#475569';
+        const borderWidth = '2px';
+        const color = '#475569';
         
         let contentHtml = `<span style="font-size: 14px; font-weight: 700; color: ${color};">${m}</span>`;
         if (isStart) {
