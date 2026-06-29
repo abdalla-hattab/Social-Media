@@ -5139,7 +5139,7 @@ window.generatePipelineHtml = function(board) {
         }
 
         monthsHtml += `
-            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 78px; height: 78px; flex-shrink: 0; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='${isStart ? '#ca8a04' : '#3b82f6'}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='${isStart ? '#ca8a04' : '#3b82f6'}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
                 ${contentHtml}
             </div>
         `;
