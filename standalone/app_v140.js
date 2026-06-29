@@ -5098,13 +5098,41 @@ window.generatePipelineHtml = function(board) {
         `;
     }
 
+    let contractStartMn = -1;
+    let contractStartDay = -1;
+    if (board.contractStartDate) {
+        const parts = board.contractStartDate.split('-');
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                contractStartMn = parseInt(parts[1], 10) - 1;
+                contractStartDay = parseInt(parts[2], 10);
+            } else {
+                contractStartMn = parseInt(parts[1], 10) - 1;
+                contractStartDay = parseInt(parts[0], 10);
+            }
+        }
+    }
+
     let monthsHtml = `<div style="display: flex; flex-wrap: nowrap; overflow-x: auto; justify-content: space-between; align-items: center; gap: 5px; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; padding-bottom: 4px; width: 100%;">`;
     monthsHtml += contractHtml;
     
     monthNamesAll.forEach((m, idx) => {
+        const isStart = (idx === contractStartMn);
+        const bg = isStart ? '#fef08a' : '#ffffff';
+        const border = isStart ? '#eab308' : '#e2e8f0';
+        const color = isStart ? '#854d0e' : '#475569';
+        
+        let contentHtml = `<span style="font-size: 15px; font-weight: 700; color: ${color};">${m}</span>`;
+        if (isStart) {
+            contentHtml = `
+                <span style="font-size: 16px; font-weight: 900; color: ${color}; margin-bottom: 2px;">${contractStartDay}</span>
+                <span style="font-size: 13px; font-weight: 700; color: ${color};">${m}</span>
+            `;
+        }
+
         monthsHtml += `
-            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 96px; height: 96px; flex-shrink: 0; background: #ffffff; border: 2px solid #e2e8f0; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#3b82f6'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
-                <span style="font-size: 15px; font-weight: 700; color: #475569;">${m}</span>
+            <div onclick="if(window.onMonthClick) window.onMonthClick(${idx})" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 96px; height: 96px; flex-shrink: 0; background: ${bg}; border: 2px solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='${isStart ? '#fef08a' : '#eff6ff'}'; this.style.borderColor='${isStart ? '#ca8a04' : '#3b82f6'}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+                ${contentHtml}
             </div>
         `;
     });
