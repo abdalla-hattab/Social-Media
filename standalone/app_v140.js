@@ -5071,8 +5071,11 @@ window.generatePipelineHtml = function(board) {
             diffBorder = '#ffe4e6';
         }
 
+        const tDate = new Date();
+        const curY = window.activeSocialMonthView ? window.activeSocialMonthView.year : tDate.getFullYear();
+        const curM = window.activeSocialMonthView ? window.activeSocialMonthView.month : tDate.getMonth();
         const cursorStyle = window.isClientView ? 'default' : 'pointer';
-        const clickHandler = window.isClientView ? '' : `onclick="window.editContract(${currentYr}, ${currentMn})"`;
+        const clickHandler = window.isClientView ? '' : `onclick="window.editContract(${curY}, ${curM})"`;
 
         html += `<div style="display: flex; justify-content: center; width: 100%; margin-bottom: 4px;">
                     <div ${clickHandler} style="cursor: ${cursorStyle}; display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap; transition: all 0.2s;" onmouseover="if(!window.isClientView){this.style.transform='scale(1.02)'; this.style.borderColor='#cbd5e1';}" onmouseout="if(!window.isClientView){this.style.transform='scale(1)'; this.style.borderColor='#e2e8f0';}">
