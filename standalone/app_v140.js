@@ -5071,8 +5071,11 @@ window.generatePipelineHtml = function(board) {
             diffBorder = '#ffe4e6';
         }
 
+        const cursorStyle = window.isClientView ? 'default' : 'pointer';
+        const clickHandler = window.isClientView ? '' : `onclick="window.editContract(${currentYr}, ${currentMn})"`;
+
         html += `<div style="display: flex; justify-content: center; width: 100%; margin-bottom: 4px;">
-                    <div style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap;">
+                    <div ${clickHandler} style="cursor: ${cursorStyle}; display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap; transition: all 0.2s;" onmouseover="if(!window.isClientView){this.style.transform='scale(1.02)'; this.style.borderColor='#cbd5e1';}" onmouseout="if(!window.isClientView){this.style.transform='scale(1)'; this.style.borderColor='#e2e8f0';}">
                         <div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: #f8fafc; border-radius: 50%; border: 1px solid #f1f5f9;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </div>
