@@ -5208,10 +5208,12 @@ window.generatePipelineHtml = function(board) {
     let monthsHtml = `<div style="display: flex; flex-wrap: nowrap; overflow-x: auto; justify-content: space-between; align-items: center; gap: 5px; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; padding-bottom: 4px; width: 100%;">`;
     monthsHtml += contractHtml;
     
+    const currentRealMonth = new Date().getMonth();
     monthNamesAll.forEach((m, idx) => {
         const isStart = (idx === contractStartMn);
+        const isCurrentMonth = (idx === currentRealMonth);
         const bg = '#ffffff';
-        const border = isStart ? '#eab308' : '#e2e8f0';
+        const border = isStart ? '#eab308' : (isCurrentMonth ? '#3b82f6' : '#e2e8f0');
         const borderWidth = '2px';
         const color = '#475569';
         
