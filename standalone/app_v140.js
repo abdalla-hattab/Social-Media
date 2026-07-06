@@ -5336,7 +5336,7 @@ window.generatePipelineHtml = function(board) {
     let contractHtml = '';
     if (!window.isClientView) {
         contractHtml = `
-            <div onclick="window.editContract(${currentYr}, ${currentMn})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
+            <div onclick="window.editContract(${curY}, ${curM})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
                 <div style="display: flex; align-items: center; margin-bottom: 4px; white-space: nowrap; gap: 6px;">
                     <span style="font-size: 13px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
                 </div>
