@@ -4943,10 +4943,6 @@ window.onMonthClick = function(e, idx) {
     popup.style.alignItems = 'center';
     popup.style.gap = '8px';
 
-    const allBoards = typeof boards !== 'undefined' ? boards : [];
-    const board = allBoards.find(b => b.id === (typeof activeBoardId !== 'undefined' ? activeBoardId : null));
-    if (!board) return;
-
     if (!board.monthlyQuantities) board.monthlyQuantities = {};
     if (!board.monthlyQuantities2) board.monthlyQuantities2 = {};
     
@@ -5320,10 +5316,7 @@ window.generatePipelineHtml = function(board) {
         "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"
     ];
     
-    const todayDate = new Date();
-    const currentYr = window.activeSocialMonthView ? window.activeSocialMonthView.year : todayDate.getFullYear();
-    const currentMn = window.activeSocialMonthView ? window.activeSocialMonthView.month : todayDate.getMonth();
-    const monthKey = `${currentYr}-${currentMn}`;
+    // (already declared at top of function: tDate, curY, curM, monthKey)
     const contractStats = (board.monthlyContract && board.monthlyContract[monthKey]) || { images: 0, videos: 0 };
     
     const getMediaCountHtml = (images, videos, color) => {
