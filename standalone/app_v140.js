@@ -4909,6 +4909,22 @@ window.onMonthClick = function(e, idx) {
 
     if (!targetCircle) return;
     const rect = targetCircle.getBoundingClientRect();
+
+    if (!window.activeSocialMonthView) {
+        window.activeSocialMonthView = { year: new Date().getFullYear(), month: idx };
+    } else {
+        window.activeSocialMonthView.month = idx;
+    }
+
+    const allBoards = typeof boards !== 'undefined' ? boards : [];
+    const board = allBoards.find(b => b.id === (typeof activeBoardId !== 'undefined' ? activeBoardId : null));
+    if (!board) return;
+
+    if (typeof renderSocialSchedulerApp !== 'undefined') {
+        renderSocialSchedulerApp(board);
+    }
+    
+    const getCircle = () => document.getElementById('month-circle-' + idx) || targetCircle;
     
     const popup = document.createElement('div');
     popup.id = 'month-qty-popup';
@@ -4953,7 +4969,7 @@ window.onMonthClick = function(e, idx) {
         currentQty++;
         qtyDisplay.innerText = currentQty;
         board.monthlyQuantities[idx] = currentQty;
-        updateMonthBadge(targetCircle, currentQty);
+        updateMonthBadge(getCircle(), currentQty);
     };
 
     const minusBtn = document.createElement('button');
@@ -4965,7 +4981,7 @@ window.onMonthClick = function(e, idx) {
             currentQty--;
             qtyDisplay.innerText = currentQty;
             board.monthlyQuantities[idx] = currentQty;
-            updateMonthBadge(targetCircle, currentQty);
+            updateMonthBadge(getCircle(), currentQty);
         }
     };
     
@@ -4993,7 +5009,7 @@ window.onMonthClick = function(e, idx) {
         currentQty2++;
         qtyDisplay2.innerText = currentQty2;
         board.monthlyQuantities2[idx] = currentQty2;
-        updateMonthBadge2(targetCircle, currentQty2);
+        updateMonthBadge2(getCircle(), currentQty2);
     };
 
     const minusBtn2 = document.createElement('button');
@@ -5005,7 +5021,7 @@ window.onMonthClick = function(e, idx) {
             currentQty2--;
             qtyDisplay2.innerText = currentQty2;
             board.monthlyQuantities2[idx] = currentQty2;
-            updateMonthBadge2(targetCircle, currentQty2);
+            updateMonthBadge2(getCircle(), currentQty2);
         }
     };
 
@@ -5088,7 +5104,7 @@ window.onMonthClick = function(e, idx) {
         currentQty3++;
         qtyDisplay3.innerText = currentQty3;
         board.monthlyQuantities3[idx] = currentQty3;
-        updateMonthBadge3(targetCircle, currentQty3);
+        updateMonthBadge3(getCircle(), currentQty3);
     };
 
     const minusBtn3 = document.createElement('button');
@@ -5100,7 +5116,7 @@ window.onMonthClick = function(e, idx) {
             currentQty3--;
             qtyDisplay3.innerText = currentQty3;
             board.monthlyQuantities3[idx] = currentQty3;
-            updateMonthBadge3(targetCircle, currentQty3);
+            updateMonthBadge3(getCircle(), currentQty3);
         }
     };
 
@@ -5406,7 +5422,7 @@ window.generatePipelineHtml = function(board) {
         }
 
         monthsHtml += `
-            <div onclick="if(window.onMonthClick) window.onMonthClick(event, ${idx})" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='${isStart ? '#ca8a04' : '#3b82f6'}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+            <div id="month-circle-${idx}" onclick="if(window.onMonthClick) window.onMonthClick(event, ${idx})" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='${isStart ? '#ca8a04' : '#3b82f6'}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
                 ${badgeHtml}
                 ${contentHtml}
             </div>
