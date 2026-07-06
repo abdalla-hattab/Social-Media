@@ -4923,15 +4923,23 @@ window.onMonthClick = function(e, idx) {
     popup.style.padding = '8px';
     popup.style.zIndex = '1000';
     popup.style.display = 'flex';
+    popup.style.flexDirection = 'column';
     popup.style.alignItems = 'center';
-    popup.style.gap = '12px';
+    popup.style.gap = '8px';
 
     const allBoards = typeof boards !== 'undefined' ? boards : [];
     const board = allBoards.find(b => b.id === (typeof activeBoardId !== 'undefined' ? activeBoardId : null));
     if (!board) return;
 
     if (!board.monthlyQuantities) board.monthlyQuantities = {};
+    if (!board.monthlyQuantities2) board.monthlyQuantities2 = {};
+    
     let currentQty = board.monthlyQuantities[idx] || 0;
+    let currentQty2 = board.monthlyQuantities2[idx] || 0;
+
+    // Row 1
+    const row1 = document.createElement('div');
+    row1.style = 'display: flex; align-items: center; gap: 12px;';
 
     const qtyDisplay = document.createElement('span');
     qtyDisplay.innerText = currentQty;
@@ -4960,6 +4968,50 @@ window.onMonthClick = function(e, idx) {
             updateMonthBadge(targetCircle, currentQty);
         }
     };
+    
+    row1.appendChild(plusBtn);
+    row1.appendChild(qtyDisplay);
+    row1.appendChild(minusBtn);
+
+    // Divider
+    const divider = document.createElement('div');
+    divider.style = 'width: 100%; height: 1px; background: #eab308; margin: 2px 0;';
+
+    // Row 2
+    const row2 = document.createElement('div');
+    row2.style = 'display: flex; align-items: center; gap: 12px;';
+
+    const qtyDisplay2 = document.createElement('span');
+    qtyDisplay2.innerText = currentQty2;
+    qtyDisplay2.style = 'font-weight: 700; font-size: 14px; min-width: 20px; text-align: center; color: #1e293b;';
+
+    const plusBtn2 = document.createElement('button');
+    plusBtn2.innerText = '+';
+    plusBtn2.style = 'width: 28px; height: 28px; border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #eab308;';
+    plusBtn2.onclick = (ev) => {
+        ev.stopPropagation();
+        currentQty2++;
+        qtyDisplay2.innerText = currentQty2;
+        board.monthlyQuantities2[idx] = currentQty2;
+        updateMonthBadge2(targetCircle, currentQty2);
+    };
+
+    const minusBtn2 = document.createElement('button');
+    minusBtn2.innerText = '-';
+    minusBtn2.style = 'width: 28px; height: 28px; border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #ef4444;';
+    minusBtn2.onclick = (ev) => {
+        ev.stopPropagation();
+        if (currentQty2 > 0) {
+            currentQty2--;
+            qtyDisplay2.innerText = currentQty2;
+            board.monthlyQuantities2[idx] = currentQty2;
+            updateMonthBadge2(targetCircle, currentQty2);
+        }
+    };
+
+    row2.appendChild(plusBtn2);
+    row2.appendChild(qtyDisplay2);
+    row2.appendChild(minusBtn2);
 
     function updateMonthBadge(circleEl, qty) {
         if (!circleEl) return;
@@ -4977,9 +5029,25 @@ window.onMonthClick = function(e, idx) {
         }
     }
 
-    popup.appendChild(plusBtn);
-    popup.appendChild(qtyDisplay);
-    popup.appendChild(minusBtn);
+    function updateMonthBadge2(circleEl, qty) {
+        if (!circleEl) return;
+        let badge = circleEl.querySelector('.month-qty-badge-2');
+        if (qty > 0) {
+            if (!badge) {
+                badge = document.createElement('div');
+                badge.className = 'month-qty-badge-2';
+                badge.style = "position: absolute; top: -4px; left: -4px; background: #eab308; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
+                circleEl.insertBefore(badge, circleEl.firstChild);
+            }
+            badge.innerText = qty;
+        } else if (badge) {
+            badge.remove();
+        }
+    }
+
+    popup.appendChild(row1);
+    popup.appendChild(divider);
+    popup.appendChild(row2);
 
     document.body.appendChild(popup);
 
@@ -5240,9 +5308,17 @@ window.generatePipelineHtml = function(board) {
         let badgeHtml = '';
         const qty = (board.monthlyQuantities && board.monthlyQuantities[idx]) || 0;
         if (qty > 0) {
-            badgeHtml = `
+            badgeHtml += `
                 <div style="position: absolute; top: -4px; right: -4px; background: #2563eb; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
                     ${qty}
+                </div>
+            `;
+        }
+        const qty2 = (board.monthlyQuantities2 && board.monthlyQuantities2[idx]) || 0;
+        if (qty2 > 0) {
+            badgeHtml += `
+                <div style="position: absolute; top: -4px; left: -4px; background: #eab308; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
+                    ${qty2}
                 </div>
             `;
         }
