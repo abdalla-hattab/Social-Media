@@ -5139,10 +5139,24 @@ window.generatePipelineHtml = function(board) {
         saveState();
     }
 
-    const pl = board.pipeline;
-    const stages = pl.stages || [];
-    const activeIndex = pl.activeStageIndex || 0;
-    const entries = pl.stageEntries || {};
+    const tDate = new Date();
+    const curY = window.activeSocialMonthView ? window.activeSocialMonthView.year : tDate.getFullYear();
+    const curM = window.activeSocialMonthView ? window.activeSocialMonthView.month : tDate.getMonth();
+    const monthKey = `${curY}-${curM}`;
+
+    if (!board.monthlyPipelines) board.monthlyPipelines = {};
+    if (!board.monthlyPipelines[monthKey]) {
+        board.monthlyPipelines[monthKey] = {
+            activeStageIndex: board.pipeline && board.pipeline.activeStageIndex ? board.pipeline.activeStageIndex : 0,
+            stageEntries: board.pipeline && board.pipeline.stageEntries ? {...board.pipeline.stageEntries} : { "0": Date.now() },
+            stageAccumulated: board.pipeline && board.pipeline.stageAccumulated ? {...board.pipeline.stageAccumulated} : {}
+        };
+    }
+
+    const currentPl = board.monthlyPipelines[monthKey];
+    const stages = board.pipeline.stages || [];
+    const activeIndex = currentPl.activeStageIndex || 0;
+    const entries = currentPl.stageEntries || {};
 
     let html = `<div style="display: flex; flex-direction: column; width: 100%; margin: 16px 0 24px 0;">`;
     html += `<div class="sm-pipeline-wrapper" style="padding: 16px 24px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 16px; border: 1px solid #f1f5f9; position: relative;">`;
@@ -5443,20 +5457,35 @@ window.changePipelineStage = function(boardId, index) {
 
     if (!board || !board.pipeline) return;
 
-    const oldIndex = board.pipeline.activeStageIndex !== undefined ? board.pipeline.activeStageIndex : 0;
+    const tDate = new Date();
+    const curY = window.activeSocialMonthView ? window.activeSocialMonthView.year : tDate.getFullYear();
+    const curM = window.activeSocialMonthView ? window.activeSocialMonthView.month : tDate.getMonth();
+    const monthKey = `${curY}-${curM}`;
+
+    if (!board.monthlyPipelines) board.monthlyPipelines = {};
+    if (!board.monthlyPipelines[monthKey]) {
+        board.monthlyPipelines[monthKey] = {
+            activeStageIndex: board.pipeline.activeStageIndex || 0,
+            stageEntries: board.pipeline.stageEntries ? {...board.pipeline.stageEntries} : { "0": Date.now() },
+            stageAccumulated: board.pipeline.stageAccumulated ? {...board.pipeline.stageAccumulated} : {}
+        };
+    }
+
+    const currentPl = board.monthlyPipelines[monthKey];
+    const oldIndex = currentPl.activeStageIndex !== undefined ? currentPl.activeStageIndex : 0;
     
-    if (!board.pipeline.stageEntries) board.pipeline.stageEntries = {};
-    if (!board.pipeline.stageAccumulated) board.pipeline.stageAccumulated = {};
+    if (!currentPl.stageEntries) currentPl.stageEntries = {};
+    if (!currentPl.stageAccumulated) currentPl.stageAccumulated = {};
     
     if (oldIndex !== index) {
-        if (board.pipeline.stageEntries[oldIndex]) {
-            const timeSpent = Date.now() - board.pipeline.stageEntries[oldIndex];
-            board.pipeline.stageAccumulated[oldIndex] = (board.pipeline.stageAccumulated[oldIndex] || 0) + timeSpent;
+        if (currentPl.stageEntries[oldIndex]) {
+            const timeSpent = Date.now() - currentPl.stageEntries[oldIndex];
+            currentPl.stageAccumulated[oldIndex] = (currentPl.stageAccumulated[oldIndex] || 0) + timeSpent;
         }
     }
 
-    board.pipeline.activeStageIndex = index;
-    board.pipeline.stageEntries[index] = Date.now();
+    currentPl.activeStageIndex = index;
+    currentPl.stageEntries[index] = Date.now();
 
     if (typeof saveState !== 'undefined') saveState();
     if (typeof renderSocialSchedulerApp !== 'undefined') renderSocialSchedulerApp(board);
