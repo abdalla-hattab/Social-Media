@@ -5370,9 +5370,13 @@ window.generatePipelineHtml = function(board) {
         const isStart = (idx === contractStartMn);
         const isCurrentMonth = (idx === currentRealMonth);
         const bg = '#ffffff';
-        const border = isStart ? '#eab308' : (isCurrentMonth ? '#3b82f6' : '#e2e8f0');
+        const border = isStart ? '#eab308' : (isCurrentMonth ? '#10b981' : '#e2e8f0');
         const borderWidth = '2px';
         const color = '#475569';
+        
+        const hoverBg = isCurrentMonth ? '#ecfdf5' : '#eff6ff';
+        const hoverBorder = isStart ? '#ca8a04' : (isCurrentMonth ? '#059669' : '#3b82f6');
+        const hoverShadow = isCurrentMonth ? '0 4px 6px rgba(16,185,129,0.1)' : '0 4px 6px rgba(59,130,246,0.1)';
         
         let contentHtml = `<span style="font-size: 14px; font-weight: 700; color: ${color};">${m}</span>`;
         if (isStart) {
@@ -5415,7 +5419,7 @@ window.generatePipelineHtml = function(board) {
         }
 
         monthsHtml += `
-            <div id="month-circle-${idx}" onclick="if(window.onMonthClick) window.onMonthClick(event, ${idx})" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='${isStart ? '#ca8a04' : '#3b82f6'}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px rgba(59,130,246,0.1)';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+            <div id="month-circle-${idx}" onclick="if(window.onMonthClick) window.onMonthClick(event, ${idx})" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='${hoverBg}'; this.style.borderColor='${hoverBorder}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='${hoverShadow}';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
                 ${badgeHtml}
                 ${contentHtml}
             </div>
