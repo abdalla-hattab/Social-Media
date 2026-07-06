@@ -5906,7 +5906,14 @@ function renderSocialSchedulerApp(activeBoard) {
                         </div>
                         <div>
                             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">مستوى الأهمية (ترتيب)</label>
-                            <input type="number" id="renameClientImportance" class="modal-input" placeholder="رقم الأهمية (مثال: 1, 2...)" min="1" step="1" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
+                            <input type="number" id="renameClientImportance" class="modal-input" placeholder="رقم الأهمية (مثال: 1, 2...)" min="1" step="1" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s; margin-bottom: 16px;" dir="rtl">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">حالة العميل</label>
+                            <select id="renameClientStatus" class="modal-input" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
+                                <option value="active">نشط</option>
+                                <option value="inactive">غير نشط</option>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer" style="padding-top: 16px; margin-top: 16px; border-top: 1px solid #edf2f7; display: flex; justify-content: space-between; gap: 8px;">
@@ -5933,8 +5940,10 @@ function renderSocialSchedulerApp(activeBoard) {
         
         const input = document.getElementById('renameClientInput');
         const importanceInput = document.getElementById('renameClientImportance');
+        const statusInput = document.getElementById('renameClientStatus');
         input.value = board.title;
         if(importanceInput) importanceInput.value = board.importanceLevel || '';
+        if(statusInput) statusInput.value = board.isInactive ? 'inactive' : 'active';
         
         document.getElementById('renameClientConfirmBtn').onclick = () => {
             const newName = input.value.trim();
@@ -5955,6 +5964,14 @@ function renderSocialSchedulerApp(activeBoard) {
                 }
             } else if (board.importanceLevel !== undefined) {
                 delete board.importanceLevel;
+                changed = true;
+            }
+            
+            const newStatus = statusInput ? statusInput.value : 'active';
+            const newInactive = (newStatus === 'inactive');
+            if (!!board.isInactive !== newInactive) {
+                if (newInactive) board.isInactive = true;
+                else delete board.isInactive;
                 changed = true;
             }
             
@@ -6021,6 +6038,9 @@ function renderSocialSchedulerApp(activeBoard) {
             ${(() => {
                 let clients = socialBoards.slice(2);
                 clients.sort((a, b) => {
+                    if (a.isInactive && !b.isInactive) return 1;
+                    if (!a.isInactive && b.isInactive) return -1;
+                    
                     let aVal = a.importanceLevel;
                     let bVal = b.importanceLevel;
                     if (aVal === undefined && bVal === undefined) return 0;
@@ -6127,10 +6147,15 @@ function renderSocialSchedulerApp(activeBoard) {
                     }, 10);
                 };
 
+                let emojiOrLabelHtml = window.getClientEmojiSvg(b.clientSentiment || 'grey', 18);
+                if (b.isInactive) {
+                    emojiOrLabelHtml = `<span style="font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 12px; margin-right: 2px;">غير نشط</span>`;
+                }
+
                 return `
-                <div data-id="${b.id}" style="display: inline-flex; margin-left: 8px; margin-bottom: 8px; vertical-align: top; background: ${bg}; border: ${border}; box-shadow: ${shadow}; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 12px;">
-                    <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%;" onclick="window.switchSocialClient('${b.id}')" ondblclick="window.toggleClientEmojiPopup(event, '${b.id}')">
-                        ${window.getClientEmojiSvg(b.clientSentiment || 'grey', 18)}
+                <div data-id="${b.id}" style="display: inline-flex; margin-left: 8px; margin-bottom: 8px; vertical-align: top; background: ${bg}; border: ${border}; box-shadow: ${shadow}; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 12px; ${b.isInactive ? 'opacity: 0.6; filter: grayscale(0.8);' : ''}">
+                    <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; ${b.isInactive ? '' : 'border-radius: 50%;'}" onclick="window.switchSocialClient('${b.id}')" ondblclick="window.toggleClientEmojiPopup(event, '${b.id}')">
+                        ${emojiOrLabelHtml}
                     </div>
                     <button 
                         data-id="${b.id}"
