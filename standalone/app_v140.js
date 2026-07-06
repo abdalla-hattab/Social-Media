@@ -5260,7 +5260,7 @@ window.generatePipelineHtml = function(board) {
 
         let tooltipTimeStr = "";
         
-        let accumulatedMs = (pl.stageAccumulated && pl.stageAccumulated[index]) ? pl.stageAccumulated[index] : 0;
+        let accumulatedMs = (currentPl.stageAccumulated && currentPl.stageAccumulated[index]) ? currentPl.stageAccumulated[index] : 0;
         let diffMs = accumulatedMs;
         
         if (isActive && entries[index]) {
