@@ -4920,8 +4920,18 @@ window.onMonthClick = function(e, idx) {
     const board = allBoards.find(b => b.id === (typeof activeBoardId !== 'undefined' ? activeBoardId : null));
     if (!board) return;
 
+    const prevWrapper = document.querySelector('.sm-app-wrapper');
+    const savedScrollTop = prevWrapper ? prevWrapper.scrollTop : window.scrollY;
+
     if (typeof renderSocialSchedulerApp !== 'undefined') {
         renderSocialSchedulerApp(board);
+    }
+
+    const nextWrapper = document.querySelector('.sm-app-wrapper');
+    if (nextWrapper) {
+        nextWrapper.scrollTop = savedScrollTop;
+    } else {
+        window.scrollTo(0, savedScrollTop);
     }
     
     const getCircle = () => document.getElementById('month-circle-' + idx) || targetCircle;
