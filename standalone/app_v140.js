@@ -5390,7 +5390,7 @@ window.generatePipelineHtml = function(board) {
         const isCurrentMonth = (idx === currentRealMonth);
         const bg = '#ffffff';
         const border = isStart ? '#eab308' : (isCurrentMonth ? '#10b981' : '#e2e8f0');
-        const borderWidth = '2px';
+        const borderWidth = isStart ? '3px' : '2px';
         const color = '#475569';
         
         const hoverBg = isCurrentMonth ? '#ecfdf5' : '#eff6ff';
