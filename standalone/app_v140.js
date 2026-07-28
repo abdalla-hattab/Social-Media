@@ -5396,7 +5396,7 @@ window.generatePipelineHtml = function(board) {
         const qty = (board.monthlyQuantities && board.monthlyQuantities[idx]) || 0;
         if (qty > 0) {
             badgeHtml += `
-                <div style="position: absolute; top: -4px; right: -4px; background: #2563eb; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
+                <div style="position: absolute; top: -4px; right: -4px; background: #16a34a; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
                     ${qty}
                 </div>
             `;
@@ -5404,7 +5404,7 @@ window.generatePipelineHtml = function(board) {
         const qty2 = (board.monthlyQuantities2 && board.monthlyQuantities2[idx]) || 0;
         if (qty2 > 0) {
             badgeHtml += `
-                <div style="position: absolute; top: -4px; left: -4px; background: #eab308; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
+                <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #eab308; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
                     ${qty2}
                 </div>
             `;
@@ -5412,7 +5412,7 @@ window.generatePipelineHtml = function(board) {
         const qty3 = (board.monthlyQuantities3 && board.monthlyQuantities3[idx]) || 0;
         if (qty3 > 0) {
             badgeHtml += `
-                <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
+                <div style="position: absolute; top: -4px; left: -4px; background: #ef4444; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
                     ${qty3}
                 </div>
             `;
