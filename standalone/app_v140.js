@@ -4925,12 +4925,14 @@ window.onMonthClick = function(e, idx) {
     }
     
     const getCircle = () => document.getElementById('month-circle-' + idx) || targetCircle;
+    const activeCircle = getCircle();
+    const activeRect = activeCircle ? activeCircle.getBoundingClientRect() : rect;
     
     const popup = document.createElement('div');
     popup.id = 'month-qty-popup';
-    popup.style.position = 'fixed';
-    popup.style.top = (rect.bottom + 8) + 'px';
-    popup.style.left = (rect.left + (rect.width / 2)) + 'px';
+    popup.style.position = 'absolute';
+    popup.style.top = (window.scrollY + activeRect.bottom + 8) + 'px';
+    popup.style.left = (window.scrollX + activeRect.left + (activeRect.width / 2)) + 'px';
     popup.style.transform = 'translateX(-50%)';
     popup.style.background = '#ffffff';
     popup.style.border = '1px solid #e2e8f0';
