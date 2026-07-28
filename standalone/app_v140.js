@@ -4928,11 +4928,17 @@ window.onMonthClick = function(e, idx) {
     const activeCircle = getCircle();
     const activeRect = activeCircle ? activeCircle.getBoundingClientRect() : rect;
     
+    const wrapper = document.querySelector('.sm-app-wrapper') || document.body;
+    const isWrapper = wrapper.classList.contains('sm-app-wrapper');
+    const scrollTop = isWrapper ? wrapper.scrollTop : window.scrollY;
+    const scrollLeft = isWrapper ? wrapper.scrollLeft : window.scrollX;
+    const wrapperRect = wrapper.getBoundingClientRect();
+    
     const popup = document.createElement('div');
     popup.id = 'month-qty-popup';
     popup.style.position = 'absolute';
-    popup.style.top = (window.scrollY + activeRect.bottom + 8) + 'px';
-    popup.style.left = (window.scrollX + activeRect.left + (activeRect.width / 2)) + 'px';
+    popup.style.top = (activeRect.bottom - wrapperRect.top + scrollTop + 8) + 'px';
+    popup.style.left = (activeRect.left - wrapperRect.left + scrollLeft + (activeRect.width / 2)) + 'px';
     popup.style.transform = 'translateX(-50%)';
     popup.style.background = '#ffffff';
     popup.style.border = '1px solid #e2e8f0';
@@ -5123,7 +5129,8 @@ window.onMonthClick = function(e, idx) {
     row3.appendChild(minusBtn3);
     popup.appendChild(row3);
 
-    document.body.appendChild(popup);
+    const targetWrapper = document.querySelector('.sm-app-wrapper') || document.body;
+    targetWrapper.appendChild(popup);
 
     setTimeout(() => {
         const closeHandler = (ev) => {
