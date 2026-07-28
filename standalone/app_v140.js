@@ -5388,10 +5388,15 @@ window.generatePipelineHtml = function(board) {
     monthNamesAll.forEach((m, idx) => {
         const isStart = (idx === contractStartMn);
         const isCurrentMonth = (idx === currentRealMonth);
-        const bg = '#ffffff';
-        const border = isStart ? '#eab308' : (isCurrentMonth ? '#10b981' : '#e2e8f0');
-        const borderWidth = isStart ? '3px' : '2px';
-        const color = '#475569';
+        const isSelected = (idx === curM);
+        
+        const bg = isSelected ? (isCurrentMonth ? '#ecfdf5' : '#eff6ff') : '#ffffff';
+        const border = isSelected 
+            ? (isStart ? '#ca8a04' : (isCurrentMonth ? '#059669' : '#3b82f6'))
+            : (isStart ? '#eab308' : (isCurrentMonth ? '#10b981' : '#e2e8f0'));
+            
+        const borderWidth = (isStart || isSelected) ? '3px' : '2px';
+        const color = isSelected ? '#1e293b' : '#475569';
         
         const hoverBg = isCurrentMonth ? '#ecfdf5' : '#eff6ff';
         const hoverBorder = isStart ? '#ca8a04' : (isCurrentMonth ? '#059669' : '#3b82f6');
