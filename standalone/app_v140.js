@@ -5407,13 +5407,13 @@ window.generatePipelineHtml = function(board) {
             themeSelectedBg = '#fefce8';
             themeSelectedBorder = '#ca8a04';
         } else if (isCurrentMonth) {
-            baseBg = '#ecfdf5';
-            baseBorder = '#10b981';
-            themeHoverBg = '#ecfdf5';
-            themeHoverBorder = '#059669';
-            themeHoverShadow = '0 4px 6px rgba(16,185,129,0.1)';
-            themeSelectedBg = '#ecfdf5';
-            themeSelectedBorder = '#059669';
+            baseBg = '#fff7ed';
+            baseBorder = '#f97316';
+            themeHoverBg = '#fff7ed';
+            themeHoverBorder = '#ea580c';
+            themeHoverShadow = '0 4px 6px rgba(249,115,22,0.15)';
+            themeSelectedBg = '#fff7ed';
+            themeSelectedBorder = '#ea580c';
         }
 
         const bg = isSelected ? themeSelectedBg : baseBg;
