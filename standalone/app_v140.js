@@ -5390,17 +5390,40 @@ window.generatePipelineHtml = function(board) {
         const isCurrentMonth = (idx === currentRealMonth);
         const isSelected = (idx === curM);
         
-        const bg = isSelected ? (isCurrentMonth ? '#ecfdf5' : '#eff6ff') : '#ffffff';
-        const border = isSelected 
-            ? (isStart ? '#ca8a04' : (isCurrentMonth ? '#059669' : '#3b82f6'))
-            : (isStart ? '#eab308' : (isCurrentMonth ? '#10b981' : '#e2e8f0'));
-            
+        let baseBg = '#ffffff';
+        let baseBorder = '#e2e8f0';
+        let themeHoverBg = '#eff6ff';
+        let themeHoverBorder = '#3b82f6';
+        let themeHoverShadow = '0 4px 6px rgba(59,130,246,0.1)';
+        let themeSelectedBg = '#eff6ff';
+        let themeSelectedBorder = '#3b82f6';
+
+        if (isStart) {
+            baseBg = '#fefce8';
+            baseBorder = '#eab308';
+            themeHoverBg = '#fefce8';
+            themeHoverBorder = '#ca8a04';
+            themeHoverShadow = '0 4px 6px rgba(234,179,8,0.1)';
+            themeSelectedBg = '#fefce8';
+            themeSelectedBorder = '#ca8a04';
+        } else if (isCurrentMonth) {
+            baseBg = '#ecfdf5';
+            baseBorder = '#10b981';
+            themeHoverBg = '#ecfdf5';
+            themeHoverBorder = '#059669';
+            themeHoverShadow = '0 4px 6px rgba(16,185,129,0.1)';
+            themeSelectedBg = '#ecfdf5';
+            themeSelectedBorder = '#059669';
+        }
+
+        const bg = isSelected ? themeSelectedBg : baseBg;
+        const border = isSelected ? themeSelectedBorder : baseBorder;
         const borderWidth = (isStart || isSelected) ? '3px' : '2px';
         const color = isSelected ? '#1e293b' : '#475569';
         
-        const hoverBg = isCurrentMonth ? '#ecfdf5' : '#eff6ff';
-        const hoverBorder = isStart ? '#ca8a04' : (isCurrentMonth ? '#059669' : '#3b82f6');
-        const hoverShadow = isCurrentMonth ? '0 4px 6px rgba(16,185,129,0.1)' : '0 4px 6px rgba(59,130,246,0.1)';
+        const hoverBg = themeHoverBg;
+        const hoverBorder = themeHoverBorder;
+        const hoverShadow = themeHoverShadow;
         
         let contentHtml = `<span style="font-size: 14px; font-weight: 700; color: ${color};">${m}</span>`;
         if (isStart) {
