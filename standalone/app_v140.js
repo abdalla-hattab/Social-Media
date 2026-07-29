@@ -4977,7 +4977,7 @@ window.onMonthClick = function(e, idx) {
 
     const plusBtn = document.createElement('button');
     plusBtn.innerText = '+';
-    plusBtn.style = 'width: 28px; height: 28px; border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #2563eb;';
+    plusBtn.style = 'width: 28px; height: 28px; border-radius: 4px; border: 1px solid #e2e8f0; background: #f8fafc; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #16a34a;';
     plusBtn.onclick = (ev) => {
         ev.stopPropagation();
         currentQty++;
@@ -5050,7 +5050,7 @@ window.onMonthClick = function(e, idx) {
             if (!badge) {
                 badge = document.createElement('div');
                 badge.className = 'month-qty-badge';
-                badge.style = "position: absolute; top: -4px; right: -4px; background: #2563eb; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
+                badge.style = "position: absolute; top: -4px; right: -4px; background: #16a34a; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
                 circleEl.insertBefore(badge, circleEl.firstChild);
             }
             badge.innerText = qty;
@@ -5066,7 +5066,7 @@ window.onMonthClick = function(e, idx) {
             if (!badge) {
                 badge = document.createElement('div');
                 badge.className = 'month-qty-badge-2';
-                badge.style = "position: absolute; top: -4px; left: -4px; background: #eab308; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
+                badge.style = "position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #eab308; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
                 circleEl.insertBefore(badge, circleEl.firstChild);
             }
             badge.innerText = qty;
@@ -5082,7 +5082,7 @@ window.onMonthClick = function(e, idx) {
             if (!badge) {
                 badge = document.createElement('div');
                 badge.className = 'month-qty-badge-3';
-                badge.style = "position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
+                badge.style = "position: absolute; top: -4px; left: -4px; background: #ef4444; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;";
                 circleEl.insertBefore(badge, circleEl.firstChild);
             }
             badge.innerText = qty;
