@@ -6220,7 +6220,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         </button>
                     </div>
                     <div class="modal-body" style="padding-top: 12px;">
-                        <input type="text" id="addClientInput" class="modal-input" placeholder="اسم العميل" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
+                        <input type="search" id="addClientInput" class="modal-input sm-plain-input" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="اسم العميل" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
                     </div>
                     <div class="modal-footer" style="padding-top: 16px; margin-top: 16px; border-top: 1px solid #edf2f7; display: flex; justify-content: flex-end; gap: 8px;">
                         <button id="addClientConfirmBtn" style="padding: 8px 16px; border-radius: 6px; border: none; background: #ea580c; color: white; cursor: pointer; font-weight: 600;">إضافة</button>
@@ -6273,7 +6273,7 @@ function renderSocialSchedulerApp(activeBoard) {
         };
         
         addModal.classList.add('active');
-        setTimeout(() => input.focus(), 50);
+        if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => input.focus(), 50);
     };
 
     // Safe scoped setter for switching clients via UI
@@ -6319,7 +6319,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px; padding-top: 12px; margin-bottom: 0;">
                         <div>
                             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">اسم العميل</label>
-                            <input type="text" id="renameClientInput" class="modal-input" placeholder="اسم العميل..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
+                            <input type="search" id="renameClientInput" class="modal-input sm-plain-input" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="اسم العميل..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
                         </div>
                         <div>
                             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">حالة العميل</label>
@@ -6387,7 +6387,7 @@ function renderSocialSchedulerApp(activeBoard) {
         };
         
         rnModal.classList.add('active');
-        setTimeout(() => input.focus(), 50);
+        if (window.matchMedia('(pointer: fine)').matches) setTimeout(() => input.focus(), 50);
     };
 
     const clientTabsHtml = `
@@ -6515,10 +6515,20 @@ function renderSocialSchedulerApp(activeBoard) {
                         stats.innerHTML = `
                             <div class="sm-client-popup-month">فيديوهات ${monthNames[st.month]} ${st.year}</div>
                             <div class="sm-client-popup-numbers"><strong class="${st.state}">${st.done}</strong> ${st.required ? `من <strong>${st.required}</strong> مطلوب` : 'فيديو'}</div>
-                            ${st.required ? `<div class="sm-client-popup-bar"><span class="${st.state}" style="width:${pct}%"></span></div>
-                            <div class="sm-client-popup-left">${left > 0 ? `باقي ${left}` : 'اكتمل المطلوب ✓'}</div>` : '<div class="sm-client-popup-left">ما في عدد مطلوب بالعقد لهالشهر</div>'}
+                            ${st.required ? `<div class="sm-client-popup-bar"><span class="${st.state}" style="width:${pct}%"></span></div>` : ''}
+                            <div class="sm-client-popup-left-row">
+                                <span class="sm-client-popup-left">${st.required ? (left > 0 ? `باقي ${left}` : 'اكتمل المطلوب ✓') : 'ما في عدد مطلوب بالعقد لهالشهر'}</span>
+                                ${window.isClientView ? '' : '<button type="button" class="sm-client-popup-edit">تعديل</button>'}
+                            </div>
                         `;
                         popup.appendChild(stats);
+                        const editBtn = stats.querySelector('.sm-client-popup-edit');
+                        if (editBtn) editBtn.onclick = (ev) => {
+                            ev.stopPropagation();
+                            closePopup();
+                            // Required videos/images for this client and month
+                            window.editContract(st.year, st.month, boardId);
+                        };
                     }
                     const moodRow = document.createElement('div');
                     moodRow.className = 'sm-client-popup-moods';
@@ -8489,9 +8499,9 @@ window.showConfirmModal = function(callback, titleText, descText) {
     };
 };
 
-window.editContract = function(year, month) {
+window.editContract = function(year, month, boardId) {
     if (typeof boards === 'undefined' || typeof activeBoardId === 'undefined') return;
-    const activeBoard = boards.find(b => b.id === activeBoardId);
+    const activeBoard = boards.find(b => b.id === (boardId || activeBoardId));
     if (!activeBoard) return;
     
     const monthKey = `${year}-${month}`;
@@ -8501,6 +8511,13 @@ window.editContract = function(year, month) {
     const modal = document.getElementById('contractEditModal');
     if (!modal) return;
     
+    // Which client and month this is, since it can be opened from any client's pill
+    const subtitle = document.getElementById('contractEditSubtitle');
+    if (subtitle) {
+        const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+        subtitle.textContent = `${activeBoard.title || ''} · ${monthNames[month] || ''} ${year}`;
+    }
+
     document.getElementById('contractImagesInput').value = currentContract.images;
     document.getElementById('contractVideosInput').value = currentContract.videos;
     
