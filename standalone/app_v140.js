@@ -327,37 +327,68 @@ function ensureBoardStructure() {
 
 ensureBoardStructure();
 
+// Saves made by the sync's own render are dropped (they would only echo cloud data back),
+// but real edits made during the 500ms after a sync are queued and written when it ends.
+let isRenderingFirebaseSync = false;
+let hasPendingSaveAfterSync = false;
+
+function flushPendingSaveAfterSync() {
+    if (!hasPendingSaveAfterSync) return;
+    hasPendingSaveAfterSync = false;
+    saveState();
+}
+
 // Setup Firebase real-time listener for Social Scheduler ONLY
 db.ref('ai_social_lists').on('value', (snapshot) => {
     isApplyingFirebaseSync = true;
-    window.isCloudDataLoaded = true;
-    window.fullCloudDataLoaded = true;
-    const data = snapshot.val();
-    if (data) {
-        cloudBoards = data;
-        syncBoardsArray();
-        ensureBoardStructure();
-        if (typeof render === 'function' && !window.suppressRenderForClientApprove) render();
-    } else {
-        // Initial Firebase migration (extract from old local database and push)
-        if (rawOldListsData) {
-            try {
-                let oldBoards = JSON.parse(rawOldListsData);
-                cloudBoards = oldBoards.filter(b => b.type === 'social_scheduler');
-                if (cloudBoards.length > 0) {
-                    db.ref('ai_social_lists').set(cloudBoards);
-                }
-            } catch(e) {}
+    isRenderingFirebaseSync = true;
+    try {
+        window.isCloudDataLoaded = true;
+        window.fullCloudDataLoaded = true;
+        const data = snapshot.val();
+        if (data) {
+            cloudBoards = data;
+            syncBoardsArray();
+            ensureBoardStructure();
+            if (typeof render === 'function' && !window.suppressRenderForClientApprove) render();
+        } else {
+            // Initial Firebase migration (extract from old local database and push)
+            if (rawOldListsData) {
+                try {
+                    let oldBoards = JSON.parse(rawOldListsData);
+                    cloudBoards = oldBoards.filter(b => b.type === 'social_scheduler');
+                    if (cloudBoards.length > 0) {
+                        db.ref('ai_social_lists').set(cloudBoards);
+                    }
+                } catch(e) {}
+            }
+            syncBoardsArray();
+            ensureBoardStructure();
+            if (typeof render === 'function' && !window.suppressRenderForClientApprove) render();
         }
-        syncBoardsArray();
-        ensureBoardStructure();
-        if (typeof render === 'function' && !window.suppressRenderForClientApprove) render();
+    } finally {
+        // Always reopen saving, even if render throws, or every later save would be lost
+        isRenderingFirebaseSync = false;
+        setTimeout(() => {
+            isApplyingFirebaseSync = false;
+            flushPendingSaveAfterSync();
+        }, 500);
     }
-    setTimeout(() => { isApplyingFirebaseSync = false; }, 500); 
+});
+
+// Don't lose an edit queued in the last half second when the tab is closed
+window.addEventListener('beforeunload', () => {
+    if (hasPendingSaveAfterSync) {
+        isApplyingFirebaseSync = false;
+        flushPendingSaveAfterSync();
+    }
 });
 
 function saveState() {
-    if (isApplyingFirebaseSync) return; 
+    if (isApplyingFirebaseSync) {
+        if (!isRenderingFirebaseSync) hasPendingSaveAfterSync = true;
+        return;
+    }
     
     if (window.isClientView && !window.fullCloudDataLoaded) {
         alert("جاري الاتصال بقاعدة البيانات، يرجى المحاولة بعد قليل...");
@@ -1586,7 +1617,9 @@ window.addScriptScene = function(data = { content: '', visual: '', voiceover: ''
     `;
     
     container.insertAdjacentHTML('beforeend', sceneHtml);
-    if(typeof window.saveSocialDraft === 'function' && container.children.length > 1) { // Only save on add if not first render
+    // Only autosave when the user adds a scene. While renderScriptScenes is loading a post,
+    // the other fields are still blank, so saving here would wipe the post's content.
+    if(typeof window.saveSocialDraft === 'function' && container.children.length > 1 && !window.isRenderingScriptScenes) {
         window.saveSocialDraft(true);
     }
 };
@@ -1622,7 +1655,12 @@ window.renderScriptScenes = function(scenes) {
         return;
     }
     
-    scenes.forEach(scene => window.addScriptScene(scene));
+    window.isRenderingScriptScenes = true;
+    try {
+        scenes.forEach(scene => window.addScriptScene(scene));
+    } finally {
+        window.isRenderingScriptScenes = false;
+    }
 };
 
 window.openCreatePostModal = function(postId = null) {
@@ -1669,7 +1707,14 @@ window.openCreatePostModal = function(postId = null) {
             const cc = document.querySelector('.sm-char-count');
             if (cc) cc.innerText = '0 حرف';
         }
-        
+
+        const instagramArea = document.querySelector('.sm-textarea-instagram');
+        if (instagramArea) {
+            instagramArea.value = '';
+            const cc = document.querySelector('.sm-char-count-instagram');
+            if (cc) cc.innerText = '0 حرف';
+        }
+
         const snapchatArea = document.querySelector('.sm-textarea-snapchat');
         if (snapchatArea) {
             snapchatArea.value = '';
@@ -2071,6 +2116,8 @@ window.openCreatePostModal = function(postId = null) {
                         const instagramArea = document.querySelector('.sm-textarea-instagram');
                         if (instagramArea) {
                             instagramArea.value = typeof post.fullTextInstagram !== 'undefined' ? post.fullTextInstagram : (post.fullText || post.description || '');
+                            const cci = document.querySelector('.sm-char-count-instagram');
+                            if (cci) cci.innerText = instagramArea.value.length + ' حرف';
                         }
                         
                         const snapchatArea = document.querySelector('.sm-textarea-snapchat');
@@ -2256,10 +2303,13 @@ window.openCreatePostModal = function(postId = null) {
                                     wrap.className = 'sm-media-item-container';
                                     wrap.style.cssText = 'position: relative; width: 100%; max-width: 160px; border-radius: 8px; overflow: hidden; border: 1px solid #edf2f7; background: #fff; display: flex; flex-direction: column; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);';
                                     const mediaTypeLabel = mi.type === 'video' ? 'فيديو' : 'صورة';
-                                    const mediaElem = mi.type === 'video' 
-                                        ? `<video class="sm-gallery-vid" src="${mi.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1;" muted></video>`
-                                        : `<img class="sm-gallery-img" src="${mi.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1;">`;
-                                    const clickHandler = `window.viewMediaFull(this.closest('.sm-media-item-container').querySelector('.sm-gallery-vid, .sm-gallery-img').src, '${mi.type === 'video' ? 'video' : 'image'}', event)`;
+                                    // Saved videos only keep a JPEG frame, which a <video> tag can't load, so show it as an image
+                                    const isSavedVideoFrame = mi.type === 'video' && typeof mi.dataUrl === 'string' && mi.dataUrl.startsWith('data:image/');
+                                    // data-saved lets saveSocialDraft reuse the stored dataUrl instead of re-encoding (or dropping) it
+                                    const mediaElem = mi.type === 'video' && !isSavedVideoFrame
+                                        ? `<video class="sm-gallery-vid" data-saved="1" src="${mi.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1;" muted></video>`
+                                        : `<img class="${isSavedVideoFrame ? 'sm-gallery-vid' : 'sm-gallery-img'}" data-saved="1" src="${mi.dataUrl}" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top:0; left:0; z-index: 1;">`;
+                                    const clickHandler = `window.viewMediaFull(this.closest('.sm-media-item-container').querySelector('.sm-gallery-vid, .sm-gallery-img').src, '${mi.type === 'video' && !isSavedVideoFrame ? 'video' : 'image'}', event)`;
                                     
                                     wrap.innerHTML = `
                                         <div style="width: 100%; aspect-ratio: 9/16; background: #1e293b; position: relative; overflow: hidden; cursor:pointer;" onclick="${clickHandler}">
@@ -3003,8 +3053,9 @@ if (closeCreatePostModal && createPostModal) {
                     if (timeInput) {
                         // Retrieve the time from the current post if it exists, otherwise default to blank or a placeholder
                         let currentEditingPost = null;
-                        if (window.boards && window.activeBoardId && window.currentEditingSocialPostId) {
-                            const b = boards.find(bd => bd.id === window.activeBoardId);
+                        // boards/activeBoardId are top-level `let`s, so they are never on window
+                        if (typeof boards !== 'undefined' && activeBoardId && window.currentEditingSocialPostId) {
+                            const b = boards.find(bd => bd.id === activeBoardId);
                             if (b && b.cards) currentEditingPost = b.cards.find(c => c.id === window.currentEditingSocialPostId);
                         }
                         const headerTimeInput = document.getElementById('createPostTimeInput');
@@ -4276,8 +4327,9 @@ if(generatePipedriveTrackersBtn) {
     };
 }
 
-if (localStorage.getItem('nav_position') === 'right') topNavBar.classList.add('pos-right');
-if(toggleNavPosBtn) toggleNavPosBtn.onclick = () => {
+// .top-nav-bar no longer exists; without this guard an old 'right' setting throws here and stops the rest of the file from loading
+if (topNavBar && localStorage.getItem('nav_position') === 'right') topNavBar.classList.add('pos-right');
+if(toggleNavPosBtn && topNavBar) toggleNavPosBtn.onclick = () => {
     topNavBar.classList.toggle('pos-right');
     localStorage.setItem('nav_position', topNavBar.classList.contains('pos-right') ? 'right' : 'center');
 };
@@ -8116,20 +8168,24 @@ window.editContract = function(year, month) {
         const newVideos = parseInt(document.getElementById('contractVideosInput').value);
         const durationInput = document.getElementById('contractDurationInput');
         
-        activeBoard.monthlyContract[monthKey] = {
+        // A Firebase sync while the modal was open replaces the board objects, so look it up again
+        const board = boards.find(b => b.id === activeBoard.id) || activeBoard;
+        if (!board.monthlyContract) board.monthlyContract = {};
+        
+        board.monthlyContract[monthKey] = {
             images: isNaN(newImages) ? 0 : newImages,
             videos: isNaN(newVideos) ? 0 : newVideos
         };
         
-        activeBoard.contractStartDate = document.getElementById('contractStartDateInput').value;
+        board.contractStartDate = document.getElementById('contractStartDateInput').value;
         if (durationInput) {
             const newDuration = parseInt(durationInput.value);
-            activeBoard.contractDurationMonths = isNaN(newDuration) ? null : newDuration;
+            board.contractDurationMonths = isNaN(newDuration) ? null : newDuration;
         }
         
         modal.classList.remove('active');
         window.saveState();
-        window.renderDashboard();
+        render();
     };
     
     modal.classList.add('active');
@@ -8376,9 +8432,13 @@ window.saveSocialDraft = async function(isAutoSave = false) {
                         const node = nodes[i];
                         const isVid = node.classList.contains('sm-gallery-vid');
                         let compressedDataUrl = null;
-                        
+
                         try {
-                            if (!isVid && node.src && node.src !== window.location.href) {
+                            if (node.getAttribute('data-saved') === '1' && node.src && node.src.startsWith('data:')) {
+                                // Already compressed when it was first saved: keep it as-is instead of
+                                // re-encoding it (quality loss) or failing to read a saved video frame (item lost)
+                                compressedDataUrl = node.src;
+                            } else if (!isVid && node.src && node.src !== window.location.href) {
                                 if (!node.complete) {
                                     await new Promise(res => { node.onload = res; node.onerror = res; });
                                 }
