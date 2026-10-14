@@ -31,10 +31,14 @@
                 </svg>
             </div>
             <h2 style="margin: 0 0 10px 0; color: #1e293b; font-weight: 800; font-size: 24px;">تسجيل الدخول</h2>
-            <p style="color: #64748b; margin-bottom: 24px; font-size: 15px;">الرجاء إدخال كلمة المرور السريّة للوصول إلى
-                لوحة تحكم الوكالة.</p>
+            <p style="color: #64748b; margin-bottom: 24px; font-size: 15px;">سجّل الدخول بحسابك في فريق الوكالة للوصول إلى
+                لوحة التحكم.</p>
+            <input type="email" id="agencyAuthEmail" placeholder="البريد الإلكتروني..." autocomplete="username"
+                style="width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; transition: border-color 0.2s; text-align: right; direction: ltr; margin-bottom: 12px;"
+                onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e2e8f0'"
+                onkeydown="if(event.key === 'Enter') document.getElementById('agencyAuthInput').focus();">
             <div style="position: relative; width: 100%; margin-bottom: 16px;">
-                <input type="password" id="agencyAuthInput" placeholder="كلمة المرور..."
+                <input type="password" id="agencyAuthInput" placeholder="كلمة المرور..." autocomplete="current-password"
                     style="width: 100%; padding: 14px 16px; padding-left: 45px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; transition: border-color 0.2s; text-align: right; direction: rtl;"
                     onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e2e8f0'"
                     onkeydown="if(event.key === 'Enter') window.verifyAgencyAuth();">
@@ -48,8 +52,7 @@
                     </svg>
                 </button>
             </div>
-            <div id="agencyAuthError" style="color: #ef4444; font-size: 14px; margin-bottom: 16px; display: none;">كلمة
-                المرور خاطئة، يرجى المحاولة مجدداً.</div>
+            <div id="agencyAuthError" style="color: #ef4444; font-size: 14px; margin-bottom: 16px; display: none;"></div>
             <button id="agencyAuthBtn" onclick="window.verifyAgencyAuth()"
                 style="width: 100%; background: #0ea5e9; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; transition: background 0.2s;"
                 onmouseover="this.style.background='#0284c7'" onmouseout="this.style.background='#0ea5e9'">الدخول للوحة
@@ -2797,6 +2800,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
     <script src="app_v140.js?v=38"></script>
     <!-- Global Confirmation Modal -->

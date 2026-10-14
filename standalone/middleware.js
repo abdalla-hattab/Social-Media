@@ -2,11 +2,20 @@ export const config = {
   matcher: '/',
 };
 
+// Values from the short link end up inside HTML, so escape them
+const escapeHtml = (str) => String(str)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 export default async function middleware(req) {
   const url = new URL(req.url);
   const id = url.searchParams.get('id');
 
-  if (!id) {
+  // Share codes are random URL-safe strings; anything else isn't a short link
+  if (!id || !/^[A-Za-z0-9_-]{4,64}$/.test(id)) {
     return;
   }
 
@@ -39,12 +48,13 @@ export default async function middleware(req) {
     let html = await response.text();
 
     const prefix = shareType === 'publishing_plan' ? 'خطة النشر' : 'خطة المحتوى';
-    const newTitle = `${prefix} للسوشيال ميديا - ${title}`;
-    const newDesc = date ? date : `اضغط هنا لعرض ${prefix} الخاصة بك.`;
+    const newTitle = escapeHtml(`${prefix} للسوشيال ميديا - ${title}`);
+    const newDesc = escapeHtml(date ? date : `اضغط هنا لعرض ${prefix} الخاصة بك.`);
 
+    // Function replacers, so "$&" or "$'" in a title can't expand into other parts of the page
     html = html.replace(
       '<title>خطة المحتوى للسوشيال ميديا</title>', 
-      `<title>${newTitle}</title>`
+      () => `<title>${newTitle}</title>`
     );
     
     const ogTags = `
@@ -56,7 +66,7 @@ export default async function middleware(req) {
     <meta name="twitter:description" content="${newDesc}">
     </head>`;
     
-    html = html.replace('</head>', ogTags);
+    html = html.replace('</head>', () => ogTags);
 
     return new Response(html, {
       status: 200,

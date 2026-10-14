@@ -1,0 +1,47 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "agency_users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
+      }
+    },
+    "agency_settings": {
+      ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true"
+    },
+    "ai_accounts_lists": {
+      ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true"
+    },
+    "ai_social_lists": {
+      ".indexOn": [
+        "id"
+      ],
+      ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true || (query.orderByChild === 'id' && query.equalTo != null && (auth != null && root.child('share_grants').child(auth.uid).child(query.equalTo).isString() && root.child('share_grants').child(auth.uid).child(query.equalTo).val() === root.child('board_secrets').child(query.equalTo).val()))",
+      ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
+      "$index": {
+        ".write": "(auth != null && root.child('share_grants').child(auth.uid).child(data.child('id').val()).isString() && root.child('share_grants').child(auth.uid).child(data.child('id').val()).val() === root.child('board_secrets').child(data.child('id').val()).val()) && newData.child('id').val() === data.child('id').val()"
+      }
+    },
+    "board_secrets": {
+      ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true"
+    },
+    "share_grants": {
+      "$uid": {
+        "$boardId": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val() === root.child('board_secrets').child($boardId).val()"
+        }
+      }
+    },
+    "sm_short_links": {
+      ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
+      "$code": {
+        ".read": true
+      }
+    }
+  }
+}

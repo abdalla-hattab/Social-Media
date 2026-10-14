@@ -1,0 +1,173 @@
+{
+  "name": "Instagram Publishing",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "options": {
+          "allowedOrigins": "https://social.masaratkobra.com"
+        },
+        "path": "publish-post",
+        "respondMode": "lastNode"
+      },
+      "id": "c2347c74-cdfb-4e26-b8f8-2c2cffe33490",
+      "name": "Webhook",
+      "position": [
+        144,
+        144
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "webhookId": "52a108d5-42f9-4de0-ab65-de5b814f6939"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (\"Run Once for All Items\"). Put it right after the Webhook node.\n// Lets a request through only if it carries the sign-in token of an agency account.\n// The dashboard sends the token as payload.idToken (publish-post, form POST) or ?token= (zernio-auth, GET).\nconst DB = 'https://socail-media-creation-default-rtdb.firebaseio.com';\nconst helpers = this.helpers || (typeof $helpers !== 'undefined' ? $helpers : null);\nconst decodeBase64 = s => (typeof Buffer !== 'undefined'\n  ? Buffer.from(s, 'base64').toString('utf8')\n  : decodeURIComponent(escape(atob(s))));\n\nconst out = [];\nfor (const item of $input.all()) {\n  const json = item.json;\n  let body = json.body || {};\n  let token = '';\n\n  // publish-post: the whole request is a JSON string in the \"payload\" form field\n  if (body && typeof body.payload === 'string') {\n    const data = JSON.parse(body.payload);\n    token = data.idToken || '';\n    delete data.idToken;\n    body = data; // later nodes keep using $json.body.profileId and $json.body.post\n  }\n  // zernio-auth: token in the query string\n  if (!token && json.query && json.query.token) token = json.query.token;\n  if (!token) throw new Error('Unauthorized: missing sign-in token');\n\n  let uid = '';\n  try {\n    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');\n    uid = JSON.parse(decodeBase64(part)).user_id || '';\n  } catch (e) {}\n  if (!uid) throw new Error('Unauthorized: invalid sign-in token');\n\n  // Firebase verifies the token's signature and expiry here; only accounts listed in agency_users read `true`\n  const allowed = await helpers.httpRequest({\n    url: `${DB}/agency_users/${encodeURIComponent(uid)}.json?auth=${encodeURIComponent(token)}`,\n    method: 'GET',\n    json: true\n  });\n  if (allowed !== true) throw new Error('Unauthorized: not an agency account');\n\n  const query = Object.assign({}, json.query);\n  delete query.token;\n  out.push({ json: Object.assign({}, json, { body, query }) });\n}\nreturn out;\n"
+      },
+      "id": "check-agency-signin",
+      "name": "Check agency sign-in",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.post.mediaItems && $json.body.post.mediaItems[0] ? $json.body.post.mediaItems[0].type : 'none' }}",
+              "value2": "frame-io"
+            }
+          ]
+        }
+      },
+      "id": "if-frame-io",
+      "name": "Is Frame.io?",
+      "position": [
+        592,
+        144
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "var items = $input.all();\n\nfor (var i = 0; i < items.length; i++) {\n  var item = items[i];\n  var url = item.json.body.post.mediaItems[0].url;\n\n  try {\n    var helper = this.helpers;\n    if (!helper && typeof $helpers !== \"undefined\") {\n      helper = $helpers;\n    }\n\n    var res = await helper.httpRequest({\n      url: url,\n      method: \"GET\",\n      resolveWithFullResponse: true,\n      simple: false,\n      followRedirect: true\n    });\n    \n    var finalUrl = \"\";\n    if (res.request && res.request.res && res.request.res.responseUrl) {\n      finalUrl = res.request.res.responseUrl;\n    } else if (res.request && res.request.responseURL) {\n      finalUrl = res.request.responseURL;\n    } else if (res.url) {\n      finalUrl = res.url;\n    } else if (res.request && res.request.href) {\n      finalUrl = res.request.href;\n    } else if (res.headers && res.headers.location) {\n      finalUrl = res.headers.location;\n    } else {\n      finalUrl = url;\n    }\n    \n    var shareId = finalUrl.split(\"share/\")[1];\n    if (shareId) {\n      shareId = shareId.split(\"/\")[0];\n    } else {\n      var reviewParts = finalUrl.split(\"review/\");\n      if (reviewParts.length > 1) {\n        shareId = reviewParts[1].split(\"/\")[0];\n      } else {\n        var urlParts = finalUrl.split(\"/\");\n        shareId = urlParts[urlParts.length - 1];\n      }\n    }\n\n    var publicRes = await helper.httpRequest({\n      url: \"https://next.frame.io/api/share/\" + shareId,\n      method: \"GET\",\n      json: true\n    });\n    \n    var videoUrl = null;\n    if (publicRes.shared_assets && publicRes.shared_assets.length > 0) {\n      var media = publicRes.shared_assets[0].assets || [];\n      var mp4 = media.find(function(m) { return m.ext === \"mp4\" || m.mime_type === \"video/mp4\"; });\n      if (!mp4) {\n        mp4 = publicRes.shared_assets[0];\n      }\n      videoUrl = mp4.url || mp4.master || mp4.h264_1080_download || publicRes.shared_assets[0].original_url;\n    }\n    item.json.finalMediaUrl = videoUrl; \n  } catch (e) {\n    item.json.frameIoError = e.message;\n    item.json.finalMediaUrl = item.json.body.post.mediaItems[0].dataUrl;\n  }\n}\n\nreturn items;"
+      },
+      "id": "frame-io-code",
+      "name": "Extract MP4 from Frame.io",
+      "position": [
+        800,
+        -16
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nfor (let item of items) {\n  item.json.finalMediaUrl = item.json.body && item.json.body.post && item.json.body.post.mediaItems && item.json.body.post.mediaItems[0] ? item.json.body.post.mediaItems[0].dataUrl : '';\n}\nreturn items;"
+      },
+      "id": "standard-url",
+      "name": "Set Standard Upload URL",
+      "position": [
+        800,
+        304
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "instagramAccounts": "={{ [$json.body.profileId] }}"
+      },
+      "type": "n8n-nodes-late.late",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        112
+      ],
+      "id": "891a29f2-2afd-4e1e-8149-149e4da82f15",
+      "name": "Create post",
+      "credentials": {
+        "lateApi": {
+          "id": "q4DzUwtlOEf5cf54",
+          "name": "Zernio account"
+        }
+      },
+      "continueOnFail": true
+    }
+  ],
+  "connections": {
+    "Extract MP4 from Frame.io": {
+      "main": [
+        [
+          {
+            "node": "Create post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Frame.io?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Extract MP4 from Frame.io",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Set Standard Upload URL",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Set Standard Upload URL": {
+      "main": [
+        [
+          {
+            "node": "Create post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check agency sign-in",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check agency sign-in": {
+      "main": [
+        [
+          {
+            "node": "Is Frame.io?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}

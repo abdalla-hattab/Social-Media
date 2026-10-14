@@ -1,0 +1,18 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (\"Run Once for All Items\"). Put it right after the Webhook node.\n// Lets a request through only if it carries the sign-in token of an agency account.\n// The dashboard sends the token as payload.idToken (publish-post, form POST) or ?token= (zernio-auth, GET).\nconst DB = 'https://socail-media-creation-default-rtdb.firebaseio.com';\nconst helpers = this.helpers || (typeof $helpers !== 'undefined' ? $helpers : null);\nconst decodeBase64 = s => (typeof Buffer !== 'undefined'\n  ? Buffer.from(s, 'base64').toString('utf8')\n  : decodeURIComponent(escape(atob(s))));\n\nconst out = [];\nfor (const item of $input.all()) {\n  const json = item.json;\n  let body = json.body || {};\n  let token = '';\n\n  // publish-post: the whole request is a JSON string in the \"payload\" form field\n  if (body && typeof body.payload === 'string') {\n    const data = JSON.parse(body.payload);\n    token = data.idToken || '';\n    delete data.idToken;\n    body = data; // later nodes keep using $json.body.profileId and $json.body.post\n  }\n  // zernio-auth: token in the query string\n  if (!token && json.query && json.query.token) token = json.query.token;\n  if (!token) throw new Error('Unauthorized: missing sign-in token');\n\n  let uid = '';\n  try {\n    const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');\n    uid = JSON.parse(decodeBase64(part)).user_id || '';\n  } catch (e) {}\n  if (!uid) throw new Error('Unauthorized: invalid sign-in token');\n\n  // Firebase verifies the token's signature and expiry here; only accounts listed in agency_users read `true`\n  const allowed = await helpers.httpRequest({\n    url: `${DB}/agency_users/${encodeURIComponent(uid)}.json?auth=${encodeURIComponent(token)}`,\n    method: 'GET',\n    json: true\n  });\n  if (allowed !== true) throw new Error('Unauthorized: not an agency account');\n\n  const query = Object.assign({}, json.query);\n  delete query.token;\n  out.push({ json: Object.assign({}, json, { body, query }) });\n}\nreturn out;\n"
+      },
+      "id": "check-agency-signin",
+      "name": "Check agency sign-in",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        144
+      ]
+    }
+  ],
+  "connections": {}
+}

@@ -12,6 +12,7 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.database();
+const auth = firebase.auth();
 
 let boards = [];
 let localBoards = [];
@@ -36,28 +37,10 @@ let isApplyingFirebaseSync = false;
 
 window.isCloudDataLoaded = false;
 window.fullCloudDataLoaded = false;
-window.fastFetchBoard = function() {
-    if (window.isClientView && activeBoardId && !window.fullCloudDataLoaded) {
-        fetch(`https://socail-media-creation-default-rtdb.firebaseio.com/ai_social_lists.json?orderBy="id"&equalTo="${activeBoardId}"`)
-            .then(res => res.json())
-            .then(data => {
-                if (data && !data.error && !window.fullCloudDataLoaded) {
-                    cloudBoards = Object.values(data);
-                    window.isCloudDataLoaded = true;
-                    if (typeof syncBoardsArray === 'function') {
-                        syncBoardsArray();
-                        if (typeof ensureBoardStructure === 'function') ensureBoardStructure();
-                    } else {
-                        boards = [...cloudBoards];
-                    }
-                    if (typeof render === 'function') render();
-                } else if (data && data.error) {
-                    console.warn("Firebase indexing error, falling back to full WebSocket sync:", data.error);
-                }
-            })
-            .catch(err => console.error("Fast fetch error:", err));
-    }
-};
+// Key of this client's board inside ai_social_lists (client view only); saves go to that one path
+let clientBoardKey = null;
+window.clientShareSecret = null;
+window.clientLinkError = false;
 
 const superShortId = smUrlParams.get('id');
 if (superShortId) {
@@ -100,6 +83,8 @@ if (superShortId) {
                 if (parts.length >= 3) window.shortClientYear = parts[2];
                 if (parts.length >= 4) window.shareType = parts[3];
                 else window.shareType = 'client';
+                // Links made before the security update have no secret and no longer open
+                window.clientShareSecret = parts.length >= 7 ? parts[6] : null;
                 
                 // Inject CSS overrides now that shareType is known
                 if (window.shareType === 'content_plan') {
@@ -141,12 +126,11 @@ if (superShortId) {
                 }
                 
                 window.isResolvingShortLink = false;
-                window.fastFetchBoard();
-                // Delay rendering slightly just to allow other synchronous listeners to trigger
-                setTimeout(() => { if (typeof render === 'function') render(); }, 50);
+                window.startClientSync();
             } else {
                 // Short link does not exist in DB (invalid link)
                 window.isResolvingShortLink = false;
+                window.clientLinkError = true;
                 if (typeof render === 'function') render();
             }
         })
@@ -154,6 +138,7 @@ if (superShortId) {
             console.error('Error fetching short link:', err);
             clearTimeout(timeout);
             window.isResolvingShortLink = false;
+            window.clientLinkError = true;
             if (typeof render === 'function') render();
         });
 }
@@ -171,8 +156,13 @@ if (shortC) {
         activeBoardId = parts[0];
         localStorage.setItem('ai_active_board', activeBoardId);
     }
-    window.fastFetchBoard();
+    // Old link format without a secret: no longer opens
+    window.clientLinkError = true;
 }
+// ?client_view=true without a secure short link can't open a client
+if (window.isClientView && !superShortId && !shortC) window.clientLinkError = true;
+// Nothing else will trigger a render for a refused link, so show its message once the file has loaded
+if (window.isClientView && window.clientLinkError) setTimeout(() => { if (typeof render === 'function') render(); }, 0);
 
 if (window.isClientView) {
     const style = document.createElement('style');
@@ -218,59 +208,86 @@ if (window.isClientView) {
 }
 
 
-window.agencyAuthPassed = false;
-if (!window.isClientView) {
-    if (localStorage.getItem('agency_auth_token') === 'verified') {
-        window.agencyAuthPassed = true;
-    } else {
-        document.addEventListener("DOMContentLoaded", () => {
-            const overlay = document.getElementById('agencyAuthOverlay');
-            const mainContainer = document.getElementById('appContainer');
-            if (overlay && mainContainer) {
-                overlay.style.display = 'flex';
-                mainContainer.style.display = 'none';
-            }
-        });
+window.agencyAuthPassed = window.isClientView;
+
+function setAgencyLoginVisible(visible, errorText) {
+    const overlay = document.getElementById('agencyAuthOverlay');
+    const mainContainer = document.getElementById('appContainer');
+    const errorEl = document.getElementById('agencyAuthError');
+    if (overlay) overlay.style.display = visible ? 'flex' : 'none';
+    if (mainContainer) mainContainer.style.display = visible ? 'none' : '';
+    // errorText undefined keeps the current message (signing out a refused account must not wipe its error)
+    if (errorEl && errorText !== undefined) {
+        errorEl.innerText = errorText;
+        errorEl.style.display = errorText ? 'block' : 'none';
     }
-} else {
-    window.agencyAuthPassed = true;
+}
+
+// Only accounts listed in agency_users (added by the owner in the Firebase console) may use the dashboard
+function isAgencyAccount(user) {
+    return db.ref('agency_users/' + user.uid).once('value').then(snap => snap.val() === true).catch(() => false);
+}
+
+if (!window.isClientView) {
+    auth.onAuthStateChanged(user => {
+        if (!user || user.isAnonymous) {
+            window.agencyAuthPassed = false;
+            setAgencyLoginVisible(true);
+            return;
+        }
+        isAgencyAccount(user).then(allowed => {
+            if (!allowed) {
+                window.agencyAuthPassed = false;
+                auth.signOut();
+                setAgencyLoginVisible(true, 'هذا الحساب غير مصرّح له بالدخول إلى لوحة التحكم.');
+                return;
+            }
+            window.agencyAuthPassed = true;
+            setAgencyLoginVisible(false, '');
+            startAgencySync();
+        });
+    });
 }
 
 window.verifyAgencyAuth = function() {
-    const input = document.getElementById('agencyAuthInput').value;
-    const errorEl = document.getElementById('agencyAuthError');
+    const email = (document.getElementById('agencyAuthEmail').value || '').trim();
+    const password = document.getElementById('agencyAuthInput').value;
     const btn = document.getElementById('agencyAuthBtn');
-    
-    if (!input) return;
+    if (!email || !password) {
+        setAgencyLoginVisible(true, 'أدخل البريد الإلكتروني وكلمة المرور.');
+        return;
+    }
+
     btn.innerText = "جاري التحقق...";
     btn.style.opacity = '0.7';
-    
-    db.ref('agency_settings/password').once('value').then(snap => {
-        let realPassword = snap.val();
-        if (!realPassword) {
-            // Uninitialized password, default to admin123
-            realPassword = 'admin123';
-            db.ref('agency_settings/password').set(realPassword);
-        }
-        
-        if (input === realPassword) {
-            localStorage.setItem('agency_auth_token', 'verified');
-            window.agencyAuthPassed = true;
-            if (document.activeElement) document.activeElement.blur();
-            document.getElementById('agencyAuthOverlay').style.display = 'none';
-            document.getElementById('appContainer').style.display = '';
-            if (typeof render === 'function') render();
-        } else {
-            errorEl.style.display = 'block';
-            btn.innerText = "الدخول للوحة التحكم";
-            btn.style.opacity = '1';
-        }
-    }).catch(e => {
-        errorEl.innerText = "حدث خطأ في الاتصال بالسيرفر";
-        errorEl.style.display = 'block';
+    const resetBtn = () => {
         btn.innerText = "الدخول للوحة التحكم";
         btn.style.opacity = '1';
+    };
+
+    // onAuthStateChanged takes over after a successful sign-in
+    auth.signInWithEmailAndPassword(email, password).then(() => {
+        if (document.activeElement) document.activeElement.blur();
+        resetBtn();
+    }).catch(err => {
+        resetBtn();
+        let message = 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+        if (err && err.code === 'auth/too-many-requests') message = 'محاولات كثيرة، يرجى المحاولة بعد قليل.';
+        else if (err && err.code === 'auth/network-request-failed') message = 'حدث خطأ في الاتصال بالسيرفر.';
+        else if (err && err.code === 'auth/invalid-email') message = 'صيغة البريد الإلكتروني غير صحيحة.';
+        setAgencyLoginVisible(true, message);
     });
+};
+
+// Firebase ID token of the signed-in agency user, sent to n8n so it can refuse anyone else
+// (n8n verifies it by reading agency_users/<uid> with ?auth=<token>; see n8n/check-agency-signin.js)
+function agencyIdToken() {
+    if (!auth.currentUser || auth.currentUser.isAnonymous) return Promise.reject(new Error('Not signed in'));
+    return auth.currentUser.getIdToken();
+}
+
+window.agencySignOut = function() {
+    auth.signOut().then(() => location.reload());
 };
 
 let rawOldListsData = localStorage.getItem('ai_accounts_lists');
@@ -338,8 +355,19 @@ function flushPendingSaveAfterSync() {
     saveState();
 }
 
-// Setup Firebase real-time listener for Social Scheduler ONLY
-db.ref('ai_social_lists').on('value', (snapshot) => {
+// Setup Firebase real-time listener for Social Scheduler ONLY (agency, after sign-in)
+let agencySyncStarted = false;
+function startAgencySync() {
+    if (agencySyncStarted) return;
+    agencySyncStarted = true;
+    db.ref('ai_social_lists').on('value', applyAgencySnapshot, err => {
+        agencySyncStarted = false;
+        console.error('Firebase read denied', err);
+        setAgencyLoginVisible(true, 'لا توجد صلاحية لقراءة البيانات لهذا الحساب.');
+    });
+}
+
+function applyAgencySnapshot(snapshot) {
     isApplyingFirebaseSync = true;
     isRenderingFirebaseSync = true;
     try {
@@ -367,14 +395,61 @@ db.ref('ai_social_lists').on('value', (snapshot) => {
             if (typeof render === 'function' && !window.suppressRenderForClientApprove) render();
         }
     } finally {
-        // Always reopen saving, even if render throws, or every later save would be lost
-        isRenderingFirebaseSync = false;
-        setTimeout(() => {
-            isApplyingFirebaseSync = false;
-            flushPendingSaveAfterSync();
-        }, 500);
+        endFirebaseSync();
     }
-});
+}
+
+function endFirebaseSync() {
+    // Always reopen saving, even if render throws, or every later save would be lost
+    isRenderingFirebaseSync = false;
+    setTimeout(() => {
+        isApplyingFirebaseSync = false;
+        flushPendingSaveAfterSync();
+    }, 500);
+}
+
+// Client links: sign in anonymously, prove the link's secret, then read only this client's board
+window.startClientSync = function() {
+    if (!activeBoardId || !window.clientShareSecret) {
+        window.clientLinkError = true;
+        if (typeof render === 'function') render();
+        return;
+    }
+    const fail = err => {
+        console.error('Client link could not be opened', err);
+        window.clientLinkError = true;
+        if (typeof render === 'function') render();
+    };
+    const boardId = activeBoardId;
+    const signIn = auth.currentUser ? Promise.resolve({ user: auth.currentUser }) : auth.signInAnonymously();
+    signIn
+        .then(cred => db.ref('share_grants/' + cred.user.uid + '/' + boardId).set(window.clientShareSecret))
+        .then(() => {
+            db.ref('ai_social_lists').orderByChild('id').equalTo(boardId).on('value', snapshot => {
+                let board = null;
+                snapshot.forEach(child => {
+                    if (!board && child.val() && child.val().id === boardId) {
+                        clientBoardKey = child.key;
+                        board = child.val();
+                    }
+                });
+                if (!board) { fail('board not found'); return; }
+
+                isApplyingFirebaseSync = true;
+                isRenderingFirebaseSync = true;
+                try {
+                    window.isCloudDataLoaded = true;
+                    window.fullCloudDataLoaded = true;
+                    cloudBoards = [board];
+                    syncBoardsArray();
+                    if (typeof render === 'function' && !window.suppressRenderForClientApprove) render();
+                } finally {
+                    endFirebaseSync();
+                }
+            }, fail);
+        })
+        .catch(fail);
+};
 
 // Don't lose an edit queued in the last half second when the tab is closed
 window.addEventListener('beforeunload', () => {
@@ -384,6 +459,32 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
+// URL-safe random string (64-symbol alphabet, so no modulo bias)
+function randomToken(length) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const bytes = crypto.getRandomValues(new Uint8Array(length));
+    return Array.from(bytes, b => chars[b & 63]).join('');
+}
+
+// One secret per client board; every share link carries it and the database rules check it
+function ensureBoardSecret(boardId) {
+    return db.ref('board_secrets/' + boardId).transaction(current => current || randomToken(32))
+        .then(result => result.snapshot.val());
+}
+
+// Creates sm_short_links/<code> -> "boardId|month|year|shareType|title|date|secret" and returns the code
+window.createSecureShareLink = function(boardId, month, year, shareType) {
+    const targetBoard = boards.find(b => b.id === boardId) || { title: '' };
+    const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+    const tStr = encodeURIComponent(targetBoard.title);
+    const dStr = encodeURIComponent(mNames[month] + ' ' + year);
+    return ensureBoardSecret(boardId).then(secret => {
+        const shortCode = randomToken(14);
+        const shareData = `${boardId}|${month}|${year}|${shareType}|${tStr}|${dStr}|${secret}`;
+        return db.ref('sm_short_links/' + shortCode).set(shareData).then(() => shortCode);
+    });
+};
+
 function saveState() {
     if (isApplyingFirebaseSync) {
         if (!isRenderingFirebaseSync) hasPendingSaveAfterSync = true;
@@ -392,6 +493,15 @@ function saveState() {
     
     if (window.isClientView && !window.fullCloudDataLoaded) {
         alert("جاري الاتصال بقاعدة البيانات، يرجى المحاولة بعد قليل...");
+        return;
+    }
+    // Writing before the first successful read would replace the database with an empty/default list
+    if (!window.fullCloudDataLoaded) return;
+
+    if (window.isClientView) {
+        const ownBoard = boards.find(b => b.id === activeBoardId);
+        if (clientBoardKey === null || !ownBoard) return;
+        db.ref('ai_social_lists/' + clientBoardKey).set(ownBoard).catch(err => console.error("Firebase Sync Error", err));
         return;
     }
     
@@ -4654,6 +4764,19 @@ newBoardTitle.onkeydown = (e) => { if (e.key === 'Enter') confirmAddBoardBtn.cli
 function render() {
     if (window.isResolvingShortLink) return;
     if (!window.agencyAuthPassed) return;
+    if (window.isClientView && window.clientLinkError) {
+        appContainer.innerHTML = `
+            <div dir="rtl" style="display:flex; min-height:100vh; align-items:center; justify-content:center; padding:24px; box-sizing:border-box;">
+                <div style="background:white; border-radius:24px; padding:40px 32px; max-width:420px; width:100%; text-align:center; box-shadow:0 20px 50px -20px rgba(15,23,42,0.25);">
+                    <div style="width:64px; height:64px; margin:0 auto 18px; border-radius:20px; background:rgba(108,92,255,0.1); display:flex; align-items:center; justify-content:center;">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6c5cff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+                    </div>
+                    <h2 style="margin:0 0 10px; font-size:20px; color:#0d1324;">هذا الرابط لم يعد يعمل</h2>
+                    <p style="margin:0; color:#64748b; font-size:15px; line-height:1.8;">الرابط قديم أو غير صحيح. يرجى طلب رابط جديد من فريق الوكالة.</p>
+                </div>
+            </div>`;
+        return;
+    }
     if (isGlobalDragging) return;
     const activeEl = document.activeElement;
     if (activeEl) {
@@ -6482,22 +6605,12 @@ function renderSocialSchedulerApp(activeBoard) {
         let m = window.activeSocialMonthView ? window.activeSocialMonthView.month : new Date().getMonth();
         let y = window.activeSocialMonthView ? window.activeSocialMonthView.year : new Date().getFullYear();
         
-        const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
-        
-        const bList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
-        const targetBoard = bList.find(b => b.id === boardId) || {title: ''};
-        const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-        const tStr = encodeURIComponent(targetBoard.title);
-        const dStr = encodeURIComponent(mNames[m] + ' ' + y);
-        
-        const shareData = `${boardId}|${m}|${y}|${shareType}|${tStr}|${dStr}`;
-        
         const newTab = window.open('about:blank', '_blank');
         if (newTab) {
             newTab.document.write('<div style="font-family:sans-serif; text-align:center; padding:50px; color:#64748b; font-weight:bold; font-size:18px;">جاري تأمين الرابط المختصر...</div>');
         }
         
-        firebase.database().ref('sm_short_links/' + shortCode).set(shareData).then(() => {
+        window.createSecureShareLink(boardId, m, y, shareType).then(shortCode => {
             if(btn) {
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
@@ -6646,6 +6759,11 @@ function renderSocialSchedulerApp(activeBoard) {
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
+                    <!-- Sign out -->
+                    <button type="button" onclick="window.agencySignOut()" class="sm-hero-link sm-hero-link--logout" title="تسجيل الخروج" style="display: flex; align-items: center; gap: 8px; background: white; color: #475569; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 14px; border: 1px solid #e2e8f0; cursor: pointer; font-family: inherit;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        خروج
+                    </button>
                     <!-- Description Button -->
                     <a href="https://description.masaratkobra.com" target="_blank" class="sm-hero-link sm-hero-link--description" style="display: flex; align-items: center; gap: 8px; background: #673de6; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #5a35cc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#5a35cc'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#673de6'; this.style.transform='translateY(0)'" title="الذهاب إلى Description">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -6843,23 +6961,13 @@ function renderSocialSchedulerApp(activeBoard) {
             btn.style.opacity = '0.5';
             btn.style.pointerEvents = 'none';
         }
-        const shortCode = Math.floor(1000 + Math.random() * 9000).toString();
-        
-        const bList = typeof window.boards !== 'undefined' ? window.boards : (typeof boards !== 'undefined' ? boards : []);
-        const targetBoard = bList.find(b => b.id === boardId) || {title: ''};
-        const mNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-        const tStr = encodeURIComponent(targetBoard.title);
-        const dStr = encodeURIComponent(mNames[month] + ' ' + year);
-        
-        const shareData = `${boardId}|${month}|${year}|client|${tStr}|${dStr}`;
-        
         // Open the tab synchronously to bypass popup blockers
         const newTab = window.open('about:blank', '_blank');
         if (newTab) {
             newTab.document.write('<div style="font-family:sans-serif; text-align:center; padding:50px; color:#64748b; font-weight:bold; font-size:18px;">جاري تأمين الرابط ومشاركة العميل...</div>');
         }
         
-        firebase.database().ref('sm_short_links/' + shortCode).set(shareData).then(() => {
+        window.createSecureShareLink(boardId, month, year, 'client').then(shortCode => {
             if(btn) {
                 btn.style.opacity = '1';
                 btn.style.pointerEvents = 'auto';
@@ -8941,14 +9049,18 @@ window.saveSocialDraft = async function(isAutoSave = false) {
 
                 if (typeof showToast === 'function') showToast('⏳ جاري إرسال المنشور إلى منصات التواصل...');
                 
-                fetch('https://abdalla1.app.n8n.cloud/webhook/publish-post', {
+                // n8n checks the sign-in token before posting anything. Sent as a plain form so the browser
+                // makes no CORS preflight (n8n cloud answers preflight requests with 405).
+                agencyIdToken().then(idToken => fetch('https://abdalla1.app.n8n.cloud/webhook/publish-post', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        profileId: activeBoardId,
-                        post: newDraft
+                    body: new URLSearchParams({
+                        payload: JSON.stringify({
+                            idToken: idToken,
+                            profileId: activeBoardId,
+                            post: newDraft
+                        })
                     })
-                }).then(async res => {
+                })).then(async res => {
                     const txt = await res.text();
                     console.log("Publish response:", txt);
                     
@@ -9208,9 +9320,10 @@ window.connectZernioPlatform = function(platformId) {
     if (typeof showToast === 'function') showToast(`جاري إنشاء رابط ${platformId}...`);
     
     // Call the n8n webhook backend
-    fetch(`https://abdalla1.app.n8n.cloud/webhook/zernio-auth?platform=${platformId}&profileId=${activeBoardId}`, {
+    // Token in the query (not a header) keeps this a simple request without a CORS preflight
+    agencyIdToken().then(idToken => fetch(`https://abdalla1.app.n8n.cloud/webhook/zernio-auth?platform=${encodeURIComponent(platformId)}&profileId=${encodeURIComponent(activeBoardId)}&token=${encodeURIComponent(idToken)}`, {
         method: 'GET'
-    })
+    }))
     .then(res => res.json())
     .then(data => {
         // Since n8n HTTP node returns the API response, it should contain authUrl
