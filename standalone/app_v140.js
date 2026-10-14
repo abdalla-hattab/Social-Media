@@ -5241,7 +5241,7 @@ window.generatePipelineHtml = function(board) {
     const activeIndex = currentPl.activeStageIndex || 0;
     const entries = currentPl.stageEntries || {};
 
-    let html = `<div style="display: flex; flex-direction: column; width: 100%; margin: 16px 0 24px 0;">`;
+    let html = `<div class="sm-contract-section" style="display: flex; flex-direction: column; width: 100%; margin: 16px 0 24px 0;">`;
     html += `<div class="sm-pipeline-wrapper" style="padding: 16px 24px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 16px; border: 1px solid #f1f5f9; position: relative;">`;
     if (board.contractStartDate) {
         let diffDaysStr = '';
@@ -5303,12 +5303,12 @@ window.generatePipelineHtml = function(board) {
         const clickHandler = window.isClientView ? '' : `onclick="window.editContract(${curY}, ${curM})"`;
 
         html += `<div style="display: flex; justify-content: center; width: 100%; margin-bottom: 4px;">
-                    <div ${clickHandler} style="cursor: ${cursorStyle}; display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap; transition: all 0.2s;" onmouseover="if(!window.isClientView){this.style.transform='scale(1.02)'; this.style.borderColor='#cbd5e1';}" onmouseout="if(!window.isClientView){this.style.transform='scale(1)'; this.style.borderColor='#e2e8f0';}">
+                    <div ${clickHandler} class="sm-contract-date-pill" style="cursor: ${cursorStyle}; display: inline-flex; align-items: center; gap: 10px; padding: 6px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 999px; font-size: 13px; font-weight: 600; color: #334155; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05); white-space: nowrap; transition: all 0.2s;" onmouseover="if(!window.isClientView){this.style.transform='scale(1.02)'; this.style.borderColor='#cbd5e1';}" onmouseout="if(!window.isClientView){this.style.transform='scale(1)'; this.style.borderColor='#e2e8f0';}">
                         <div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: #f8fafc; border-radius: 50%; border: 1px solid #f1f5f9;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </div>
                         <span style="letter-spacing: 0.2px;">تاريخ بداية هذا العقد:</span> 
-                        <span style="font-weight: 800; font-size: 14px; letter-spacing: 0.5px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${board.contractStartDate}</span>
+                        <span class="sm-contract-date-value" style="font-weight: 800; font-size: 14px; letter-spacing: 0.5px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${board.contractStartDate}</span>
                     </div>
                  </div>`;
     }
@@ -5407,11 +5407,11 @@ window.generatePipelineHtml = function(board) {
     let contractHtml = '';
     if (!window.isClientView) {
         contractHtml = `
-            <div onclick="window.editContract(${curY}, ${curM})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
+            <div class="sm-contract-req" onclick="window.editContract(${curY}, ${curM})" style="cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; transform-origin: center; flex-shrink: 0;" onmouseover="this.style.transform='scale(1.02)'; this.style.opacity='0.9'" onmouseout="this.style.transform='scale(1)'; this.style.opacity='1'">
                 <div style="display: flex; align-items: center; margin-bottom: 4px; white-space: nowrap; gap: 6px;">
-                    <span style="font-size: 13px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
+                    <span class="sm-contract-req-label" style="font-size: 13px; font-weight: 700; color: #2563eb;">المطلوب في العقد</span>
                 </div>
-                <span style="font-size: 14px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 6px 14px; border-radius: 20px; border: 1px solid #bfdbfe; white-space: nowrap;">
+                <span class="sm-contract-req-value" style="font-size: 14px; font-weight: 600; color: #475569; display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; padding: 6px 14px; border-radius: 20px; border: 1px solid #bfdbfe; white-space: nowrap;">
                     ${getMediaCountHtml(contractStats.images, contractStats.videos, '#2563eb')}
                 </span>
             </div>
@@ -5433,7 +5433,7 @@ window.generatePipelineHtml = function(board) {
         }
     }
 
-    let monthsHtml = `<div style="display: flex; flex-wrap: nowrap; overflow-x: auto; justify-content: space-between; align-items: center; gap: 5px; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; padding-bottom: 4px; width: 100%;">`;
+    let monthsHtml = `<div class="sm-months-row" style="display: flex; flex-wrap: nowrap; overflow-x: auto; justify-content: space-between; align-items: center; gap: 5px; margin-top: 16px; border-top: 1px dashed #cbd5e1; padding-top: 16px; padding-bottom: 4px; width: 100%;">`;
     monthsHtml += contractHtml;
     
     const currentRealMonth = new Date().getMonth();
@@ -5477,7 +5477,7 @@ window.generatePipelineHtml = function(board) {
         const hoverBorder = themeHoverBorder;
         const hoverShadow = themeHoverShadow;
         
-        let contentHtml = `<span style="font-size: 14px; font-weight: 700; color: ${color};">${m}</span>`;
+        let contentHtml = `<span class="sm-month-name" style="font-size: 14px; font-weight: 700; color: ${color};">${m}</span>`;
         if (isStart) {
             let suffix = 'th';
             const j = contractStartDay % 10;
@@ -5487,15 +5487,15 @@ window.generatePipelineHtml = function(board) {
             else if (j === 3 && k !== 13) suffix = 'rd';
             
             contentHtml = `
-                <span style="font-size: 16px; font-weight: 900; color: ${color}; margin-bottom: 2px;">${contractStartDay}<span style="font-size: 11px;">${suffix}</span></span>
-                <span style="font-size: 13px; font-weight: 700; color: ${color};">${m}</span>
+                <span class="sm-month-day" style="font-size: 16px; font-weight: 900; color: ${color}; margin-bottom: 2px;">${contractStartDay}<span style="font-size: 11px;">${suffix}</span></span>
+                <span class="sm-month-name" style="font-size: 13px; font-weight: 700; color: ${color};">${m}</span>
             `;
         }
         let badgeHtml = '';
         const qty = (board.monthlyQuantities && board.monthlyQuantities[idx]) || 0;
         if (qty > 0) {
             badgeHtml += `
-                <div style="position: absolute; top: -4px; right: -4px; background: #16a34a; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
+                <div class="month-qty-badge" style="position: absolute; top: -4px; right: -4px; background: #16a34a; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
                     ${qty}
                 </div>
             `;
@@ -5503,7 +5503,7 @@ window.generatePipelineHtml = function(board) {
         const qty2 = (board.monthlyQuantities2 && board.monthlyQuantities2[idx]) || 0;
         if (qty2 > 0) {
             badgeHtml += `
-                <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #eab308; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
+                <div class="month-qty-badge-2" style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #eab308; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
                     ${qty2}
                 </div>
             `;
@@ -5511,14 +5511,14 @@ window.generatePipelineHtml = function(board) {
         const qty3 = (board.monthlyQuantities3 && board.monthlyQuantities3[idx]) || 0;
         if (qty3 > 0) {
             badgeHtml += `
-                <div style="position: absolute; top: -4px; left: -4px; background: #ef4444; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
+                <div class="month-qty-badge-3" style="position: absolute; top: -4px; left: -4px; background: #ef4444; color: white; border-radius: 12px; padding: 2px 6px; font-size: 11px; font-weight: 800; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; line-height: 1;">
                     ${qty3}
                 </div>
             `;
         }
 
         monthsHtml += `
-            <div id="month-circle-${idx}" onclick="if(window.onMonthClick) window.onMonthClick(event, ${idx})" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='${hoverBg}'; this.style.borderColor='${hoverBorder}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='${hoverShadow}';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
+            <div id="month-circle-${idx}" class="sm-month-circle${isStart ? ' is-start' : ''}${isCurrentMonth ? ' is-current' : ''}${isSelected ? ' is-selected' : ''}" onclick="if(window.onMonthClick) window.onMonthClick(event, ${idx})" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0%; max-width: 90px; min-width: 45px; aspect-ratio: 1; background: ${bg}; border: ${borderWidth} solid ${border}; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02);" onmouseover="this.style.background='${hoverBg}'; this.style.borderColor='${hoverBorder}'; this.style.transform='translateY(-2px)'; this.style.boxShadow='${hoverShadow}';" onmouseout="this.style.background='${bg}'; this.style.borderColor='${border}'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
                 ${badgeHtml}
                 ${contentHtml}
             </div>
@@ -6413,11 +6413,12 @@ function renderSocialSchedulerApp(activeBoard) {
                 }
 
                 return `
-                <div data-id="${b.id}" style="display: inline-flex; margin-left: 8px; margin-bottom: 8px; vertical-align: top; background: ${bg}; border: ${border}; box-shadow: ${shadow}; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 12px; ${b.isInactive ? 'opacity: 0.6; filter: grayscale(0.8);' : ''}">
-                    <div style="cursor: pointer; display: flex; align-items: center; justify-content: center; ${b.isInactive ? '' : 'border-radius: 50%;'}" onclick="window.switchSocialClient('${b.id}')" ondblclick="window.toggleClientEmojiPopup(event, '${b.id}')">
+                <div data-id="${b.id}" class="sm-client-pill mood-${b.clientSentiment || 'grey'}${isActive ? ' is-active' : ''}${b.isInactive ? ' is-inactive' : ''}" style="display: inline-flex; margin-left: 8px; margin-bottom: 8px; vertical-align: top; background: ${bg}; border: ${border}; box-shadow: ${shadow}; align-items:center; border-radius: ${btnRadius}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position:relative; padding-right: 12px; ${b.isInactive ? 'opacity: 0.6; filter: grayscale(0.8);' : ''}">
+                    <div class="sm-client-pill-emoji" style="cursor: pointer; display: flex; align-items: center; justify-content: center; ${b.isInactive ? '' : 'border-radius: 50%;'}" onclick="window.switchSocialClient('${b.id}')" ondblclick="window.toggleClientEmojiPopup(event, '${b.id}')">
                         ${emojiOrLabelHtml}
                     </div>
                     <button 
+                        class="sm-client-pill-btn"
                         data-id="${b.id}"
                         onclick="window.switchSocialClient('${b.id}')" 
                         ondblclick="window.renameSocialClient(event, '${b.id}')"
@@ -6446,7 +6447,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 </div>
                 `;
             }).join(''); })()}
-                <button class="sm-non-draggable" onclick="window.openAddClientModal();" style="
+                <button class="sm-non-draggable sm-add-client-btn" onclick="window.openAddClientModal();" style="
                     display: inline-flex; 
                     margin-bottom: 8px;
                     vertical-align: top;
@@ -6641,12 +6642,12 @@ function renderSocialSchedulerApp(activeBoard) {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
                     </div>
                     <div class="sm-title-text" style="display: flex; align-items: center; gap: 8px;">
-                        <h2 style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0; outline: none; padding: 2px 6px; border-radius: 4px;">لوحة تنظيم خدمة السوشال ميديا</h2>
+                        <h2 class="sm-app-title" style="font-size: 20px; font-weight: 800; color: #1a202c; margin: 0; outline: none; padding: 2px 6px; border-radius: 4px;">لوحة تنظيم خدمة السوشال ميديا</h2>
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <!-- Description Button -->
-                    <a href="https://description.masaratkobra.com" target="_blank" style="display: flex; align-items: center; gap: 8px; background: #673de6; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #5a35cc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#5a35cc'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#673de6'; this.style.transform='translateY(0)'" title="الذهاب إلى Description">
+                    <a href="https://description.masaratkobra.com" target="_blank" class="sm-hero-link sm-hero-link--description" style="display: flex; align-items: center; gap: 8px; background: #673de6; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #5a35cc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#5a35cc'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#673de6'; this.style.transform='translateY(0)'" title="الذهاب إلى Description">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                             <polyline points="14 2 14 8 20 8"></polyline>
@@ -6657,14 +6658,14 @@ function renderSocialSchedulerApp(activeBoard) {
                         Description
                     </a>
                     <!-- Ads System (Trello) Button -->
-                    <a href="https://trello.com/b/PQ3Zdn0R/ads-value-stream-a-system-for-every-client-to-make-monthly-20000-sar" target="_blank" style="display: flex; align-items: center; gap: 8px; background: #1e3252; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #162640; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#162640'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#1e3252'; this.style.transform='translateY(0)'" title="الذهاب إلى Ads System">
+                    <a href="https://trello.com/b/PQ3Zdn0R/ads-value-stream-a-system-for-every-client-to-make-monthly-20000-sar" target="_blank" class="sm-hero-link sm-hero-link--ads" style="display: flex; align-items: center; gap: 8px; background: #1e3252; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #162640; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#162640'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#1e3252'; this.style.transform='translateY(0)'" title="الذهاب إلى Ads System">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M19.5 2H4.5C3.119 2 2 3.119 2 4.5V19.5C2 20.881 3.119 22 4.5 22H19.5C20.881 22 22 20.881 22 19.5V4.5C22 3.119 20.881 2 19.5 2ZM10.5 17.5C10.5 17.776 10.276 18 10 18H5C4.724 18 4.5 17.776 4.5 17.5V5.5C4.5 5.224 4.724 5 5 5H10C10.276 5 10.5 5.224 10.5 5.5V17.5ZM19.5 12.5C19.5 12.776 19.276 13 19 13H14C13.724 13 13.5 12.776 13.5 12.5V5.5C13.5 5.224 13.724 5 14 5H19C19.276 5 19.5 5.224 19.5 5.5V12.5Z" />
                         </svg>
                         Ads System
                     </a>
                     <!-- Frame.io Button -->
-                    <a href="https://next.frame.io/" target="_blank" style="display: flex; align-items: center; gap: 8px; background: #0f172a; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='translateY(0)'" title="الذهاب إلى Frame.io">
+                    <a href="https://next.frame.io/" target="_blank" class="sm-hero-link sm-hero-link--frameio" style="display: flex; align-items: center; gap: 8px; background: #0f172a; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 14px; border: 1px solid #334155; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='translateY(0)'" title="الذهاب إلى Frame.io">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="2" y="2" width="20" height="20" rx="2.5" ry="2.5"></rect>
                             <polygon points="10 8 16 12 10 16 10 8"></polygon>
@@ -6921,12 +6922,12 @@ function renderSocialSchedulerApp(activeBoard) {
             </div>
             
             <!-- Bottom Row: Right Column (Tabs + Buttons) and Left Column (Notes) -->
-            <div style="display: flex; justify-content: flex-start; gap: 24px; align-items: stretch;">
+            <div class="sm-toolbar-row" style="display: flex; justify-content: flex-start; gap: 24px; align-items: stretch;">
                 
                 <!-- Right Column (Tabs & Buttons) -->
                 <div style="display: flex; flex-direction: column; gap: 12px; min-width: 0;">
                     ${tabsHtml}
-                    <div style="display: flex; gap: 8px; width: 100%;">
+                    <div class="sm-share-row" style="display: flex; gap: 8px; width: 100%;">
                         <button class="sm-action-btn" title="مشاركة خطة المحتوى" style="display:flex; align-items:center; justify-content:center; gap:6px; padding: 8px 12px; font-weight: 700; color: #475569; background: white; border: 1px solid #e2e8f0; border-radius: 9px; white-space: nowrap; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-family: inherit; font-size: 13px; flex: 1;" onmouseover="this.style.background='#f8fafc'; this.style.color='#0f172a'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.background='white'; this.style.color='#475569'; this.style.borderColor='#e2e8f0';" onclick="window.generateDirectShareLink('${activeBoard.id}', this, event, 'content_plan')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
                             1. مشاركة خطة المحتوى
@@ -6945,7 +6946,7 @@ function renderSocialSchedulerApp(activeBoard) {
                 <!-- Left Column (Notes) -->
                 <div style="flex: 1; display: flex;">
                     <!-- Client Notes Textarea -->
-                    <textarea placeholder="اكتب ملاحظاتك الخاصة بهذا العميل هنا" style="flex: 1; min-height: 86px; padding: 10px 16px; border: 1px solid #e2e8f0; border-radius: 9px; outline: none; font-size: 14px; background: #f8fafc; color: #334155; font-family: inherit; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: all 0.2s; resize: vertical; line-height: 1.6;" onfocus="this.style.background='white'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 0 0 2px rgba(14,165,233,0.1)';" onblur="this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='inset 0 1px 2px rgba(0,0,0,0.02)';" onchange="const b = typeof boards !== 'undefined' ? boards.find(b=>b.id==='${activeBoard.id}') : null; if(b){ b.clientNotes = this.value; if(typeof saveState === 'function') saveState(); }">${(activeBoard.clientNotes || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                    <textarea class="sm-notes-input" placeholder="اكتب ملاحظاتك الخاصة بهذا العميل هنا" style="flex: 1; min-height: 86px; padding: 10px 16px; border: 1px solid #e2e8f0; border-radius: 9px; outline: none; font-size: 14px; background: #f8fafc; color: #334155; font-family: inherit; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); transition: all 0.2s; resize: vertical; line-height: 1.6;" onfocus="this.style.background='white'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 0 0 2px rgba(14,165,233,0.1)';" onblur="this.style.background='#f8fafc'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='inset 0 1px 2px rgba(0,0,0,0.02)';" onchange="const b = typeof boards !== 'undefined' ? boards.find(b=>b.id==='${activeBoard.id}') : null; if(b){ b.clientNotes = this.value; if(typeof saveState === 'function') saveState(); }">${(activeBoard.clientNotes || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
                 </div>
             </div>
         </div>

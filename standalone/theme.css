@@ -1,0 +1,880 @@
+/* ==========================================================================
+   Theme layer: soft, airy, modern look for the agency dashboard.
+   Loaded after style.css. Most markup is styled inline from app_v140.js,
+   so overrides on those elements need !important. Behaviour is untouched.
+   ========================================================================== */
+
+:root {
+    --ink: #0d1324;
+    --ink-2: #334155;
+    --ink-3: #64748b;
+    --ink-4: #94a3b8;
+    --line: rgba(15, 23, 42, 0.07);
+    --line-2: rgba(15, 23, 42, 0.12);
+    --canvas: #f4f5fb;
+    --surface: rgba(255, 255, 255, 0.82);
+    --surface-solid: #ffffff;
+    --surface-sunk: #f1f3f9;
+
+    --accent: #6c5cff;
+    --accent-ink: #4f3fe0;
+    --accent-2: #20c4e8;
+    --accent-grad: linear-gradient(120deg, #6c5cff 0%, #8b5cf6 45%, #20c4e8 100%);
+    --accent-soft: rgba(108, 92, 255, 0.09);
+    --accent-ring: rgba(108, 92, 255, 0.28);
+
+    --warm: #ff8a3d;
+    --warm-soft: rgba(255, 138, 61, 0.12);
+    --gold: #e8a400;
+    --gold-soft: rgba(232, 164, 0, 0.12);
+    --ok: #10b981;
+    --ok-soft: rgba(16, 185, 129, 0.12);
+    --bad: #f43f5e;
+
+    --r-xl: 26px;
+    --r-lg: 20px;
+    --r-md: 14px;
+    --r-sm: 10px;
+
+    --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.04), 0 10px 28px -14px rgba(16, 24, 40, 0.14);
+    --shadow-2: 0 2px 6px rgba(16, 24, 40, 0.05), 0 22px 44px -22px rgba(76, 61, 220, 0.30);
+    --shadow-glow: 0 8px 24px -8px rgba(108, 92, 255, 0.55);
+    --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --font: 'Readex Pro', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ---------- Base & canvas ---------- */
+
+html {
+    background: var(--canvas) !important;
+}
+
+body,
+#appContainer,
+.sm-app-wrapper {
+    background: transparent !important;
+}
+
+body {
+    font-family: var(--font);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Soft aurora glow behind everything */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(55vw 45vw at 100% -5%, rgba(108, 92, 255, 0.13), transparent 62%),
+        radial-gradient(45vw 40vw at -5% 105%, rgba(32, 196, 232, 0.12), transparent 60%),
+        radial-gradient(35vw 30vw at 45% 35%, rgba(236, 72, 153, 0.045), transparent 65%);
+}
+
+button,
+input,
+textarea,
+select,
+.sm-tab,
+.sm-cal-month-title,
+h1, h2, h3, h4, h5 {
+    font-family: var(--font) !important;
+}
+
+::selection {
+    background: rgba(108, 92, 255, 0.18);
+}
+
+/* Slim, quiet scrollbars */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 23, 42, 0.16) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.14);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(15, 23, 42, 0.26);
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* ---------- Header ---------- */
+
+.sm-header-banner {
+    gap: 20px !important;
+}
+
+.sm-app-title {
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.2px;
+    color: var(--ink) !important;
+    background: linear-gradient(120deg, var(--ink) 30%, #4b3fd6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sm-title-icon {
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    border-radius: 14px !important;
+    background: var(--accent-grad) !important;
+    box-shadow: var(--shadow-glow);
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease) !important;
+}
+
+.sm-title-icon svg {
+    stroke: #ffffff !important;
+    width: 20px;
+    height: 20px;
+}
+
+.sm-title-icon:hover {
+    transform: translateY(-1px) rotate(-6deg);
+    box-shadow: 0 12px 28px -8px rgba(108, 92, 255, 0.65);
+}
+
+.sm-hero-link {
+    background: var(--surface) !important;
+    color: var(--ink-2) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 999px !important;
+    padding: 8px 16px !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    box-shadow: var(--shadow-1) !important;
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    transform: none !important;
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), color 0.2s, border-color 0.2s !important;
+}
+
+.sm-hero-link svg {
+    width: 15px;
+    height: 15px;
+}
+
+.sm-hero-link--description svg { color: #8b5cf6; }
+.sm-hero-link--ads svg { color: #2563eb; }
+.sm-hero-link--frameio svg { color: var(--ink); }
+
+.sm-hero-link:hover {
+    color: var(--ink) !important;
+    border-color: var(--accent-ring) !important;
+    box-shadow: var(--shadow-2) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* ---------- Client pills ---------- */
+
+#socialClientTabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.sm-client-pill {
+    --mood: #cbd5e1;
+    --mood-soft: rgba(148, 163, 184, 0.10);
+    margin: 0 !important;
+    padding-right: 10px !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.2s, background 0.2s !important;
+}
+
+.sm-client-pill.mood-happy  { --mood: #10b981; --mood-soft: rgba(16, 185, 129, 0.10); }
+.sm-client-pill.mood-normal { --mood: #f5b400; --mood-soft: rgba(245, 180, 0, 0.11); }
+.sm-client-pill.mood-sad    { --mood: #ff8a3d; --mood-soft: rgba(255, 138, 61, 0.11); }
+.sm-client-pill.mood-angry  { --mood: #f43f5e; --mood-soft: rgba(244, 63, 94, 0.10); }
+
+/* The mood shows as a soft tint, so the row stays calm */
+.sm-client-pill:not(.mood-grey) {
+    background: linear-gradient(var(--mood-soft), var(--mood-soft)), var(--surface-solid) !important;
+}
+
+.sm-client-pill:hover {
+    transform: translateY(-2px);
+    border-color: var(--line-2) !important;
+    box-shadow: var(--shadow-1) !important;
+}
+
+.sm-client-pill.is-active {
+    background: var(--ink) !important;
+    border-color: var(--ink) !important;
+    box-shadow: 0 10px 24px -10px rgba(13, 19, 36, 0.55), 0 0 0 4px var(--mood-soft) !important;
+}
+
+.sm-client-pill.is-active .sm-client-pill-btn {
+    color: #ffffff !important;
+}
+
+.sm-client-pill.is-inactive {
+    background: transparent !important;
+    border-style: dashed !important;
+    box-shadow: none !important;
+}
+
+.sm-client-pill-btn {
+    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    color: var(--ink-2) !important;
+    padding-left: 14px !important;
+}
+
+.sm-client-pill-emoji svg {
+    transition: transform 0.3s var(--ease);
+}
+
+.sm-client-pill:hover .sm-client-pill-emoji svg {
+    transform: scale(1.12) rotate(-8deg);
+}
+
+.sm-add-client-btn {
+    margin: 0 !important;
+    border: 1px dashed var(--accent-ring) !important;
+    color: var(--accent-ink) !important;
+    background: var(--accent-soft) !important;
+    font-weight: 600 !important;
+    transition: transform 0.25s var(--ease), background 0.2s !important;
+}
+
+.sm-add-client-btn:hover {
+    background: rgba(108, 92, 255, 0.15) !important;
+    transform: translateY(-2px);
+}
+
+/* ---------- Tabs, share buttons, notes ---------- */
+
+.sm-toolbar-row {
+    gap: 16px !important;
+}
+
+.sm-tabs-container {
+    gap: 4px;
+    padding: 5px !important;
+    background: var(--surface-sunk) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 18px !important;
+    box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.04) !important;
+}
+
+.sm-tab {
+    white-space: nowrap;
+    border: none !important;
+    border-radius: 13px !important;
+    background: transparent !important;
+    color: var(--ink-3) !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
+    transition: background 0.25s var(--ease), color 0.2s, box-shadow 0.25s var(--ease) !important;
+}
+
+.sm-tab:hover {
+    color: var(--ink) !important;
+    background: rgba(255, 255, 255, 0.6) !important;
+}
+
+.sm-tab.active {
+    background: var(--surface-solid) !important;
+    color: var(--accent-ink) !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 6px 16px -8px rgba(76, 61, 220, 0.35) !important;
+}
+
+.sm-share-row {
+    gap: 8px !important;
+}
+
+.sm-action-btn {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 14px !important;
+    color: var(--ink-2) !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03) !important;
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), color 0.2s, border-color 0.2s !important;
+}
+
+.sm-action-btn svg {
+    color: var(--accent);
+}
+
+.sm-action-btn:hover {
+    color: var(--ink) !important;
+    border-color: var(--accent-ring) !important;
+    box-shadow: var(--shadow-1) !important;
+    transform: translateY(-1px);
+}
+
+.sm-notes-input {
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: var(--r-lg) !important;
+    padding: 14px 18px !important;
+    color: var(--ink) !important;
+    line-height: 1.7;
+    box-shadow: var(--shadow-1) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transition: border-color 0.2s, box-shadow 0.25s var(--ease) !important;
+}
+
+.sm-notes-input::placeholder {
+    color: var(--ink-4);
+}
+
+.sm-notes-input:focus {
+    border-color: var(--accent-ring) !important;
+    box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-1) !important;
+}
+
+/* ---------- Contract card: date, pipeline, months ---------- */
+
+.sm-pipeline-wrapper,
+.sm-calendar-wrap {
+    background: var(--surface) !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line) !important;
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.sm-pipeline-wrapper {
+    padding: 22px 26px !important;
+    gap: 14px;
+}
+
+.sm-contract-date-pill {
+    gap: 12px !important;
+    padding: 7px 8px 7px 18px !important;
+    background: var(--surface-solid) !important;
+    border: 1px solid var(--line) !important;
+    color: var(--ink-3) !important;
+    font-weight: 500 !important;
+    box-shadow: var(--shadow-1) !important;
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease) !important;
+}
+
+.sm-contract-date-pill:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: var(--shadow-2) !important;
+}
+
+.sm-contract-date-pill > div:first-child {
+    width: 30px !important;
+    height: 30px !important;
+    background: var(--accent-soft) !important;
+    border: none !important;
+}
+
+.sm-contract-date-pill > div:first-child svg {
+    stroke: var(--accent) !important;
+}
+
+.sm-contract-date-value {
+    background: var(--accent-grad) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.6px !important;
+    font-variant-numeric: tabular-nums;
+}
+
+.sm-pipeline-edit-btn {
+    border: 1px solid var(--line) !important;
+    border-radius: 12px !important;
+    background: var(--surface-solid) !important;
+    color: var(--ink-3) !important;
+    transition: color 0.2s, box-shadow 0.25s var(--ease), transform 0.25s var(--ease) !important;
+}
+
+.sm-pipeline-edit-btn:hover {
+    color: var(--accent) !important;
+    box-shadow: var(--shadow-1);
+    transform: translateY(-1px);
+}
+
+/* Pipeline: soft rounded steps instead of dark chevrons */
+.sm-pipeline-container {
+    gap: 8px !important;
+}
+
+.sm-pipeline-stage {
+    clip-path: none !important;
+    -webkit-clip-path: none !important;
+    height: 38px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+    background: var(--surface-sunk) !important;
+    color: var(--ink-3) !important;
+    border: 1px solid transparent;
+    font-weight: 500 !important;
+    font-size: 12.5px !important;
+    box-shadow: none !important;
+    opacity: 1 !important;
+    animation: none !important;
+    transition: background 0.25s var(--ease), color 0.2s, transform 0.25s var(--ease), box-shadow 0.25s var(--ease) !important;
+}
+
+.sm-pipeline-stage::before,
+.sm-pipeline-stage::after {
+    display: none !important;
+}
+
+.sm-pipeline-stage:hover {
+    background: #e7eaf4 !important;
+    color: var(--ink) !important;
+    transform: translateY(-1px);
+}
+
+.sm-pipeline-stage.past {
+    background: var(--ok-soft) !important;
+    color: #047857 !important;
+}
+
+.sm-pipeline-stage.past::before {
+    display: inline-block !important;
+    content: '✓';
+    margin-left: 6px;
+    font-weight: 700;
+}
+
+.sm-pipeline-stage.past:hover {
+    background: rgba(16, 185, 129, 0.18) !important;
+}
+
+.sm-pipeline-stage.active {
+    background: var(--accent-grad) !important;
+    background-size: 160% 100% !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: var(--shadow-glow) !important;
+    animation: smStageFlow 6s ease-in-out infinite alternate !important;
+}
+
+@keyframes smStageFlow {
+    from { background-position: 0% 50%; }
+    to { background-position: 100% 50%; }
+}
+
+.sm-tooltip {
+    background: rgba(13, 19, 36, 0.92) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 12px 30px -10px rgba(13, 19, 36, 0.5) !important;
+    font-family: var(--font) !important;
+}
+
+/* Months strip */
+.sm-months-row {
+    border-top: 1px solid var(--line) !important;
+    gap: 8px !important;
+    padding-top: 20px !important;
+    padding-bottom: 12px !important;
+    padding-inline: 6px !important;
+    margin-top: 18px !important;
+}
+
+.sm-contract-req {
+    padding-left: 6px;
+}
+
+.sm-contract-req-label {
+    color: var(--ink-3) !important;
+    font-weight: 500 !important;
+    font-size: 12px !important;
+}
+
+.sm-contract-req-value {
+    background: var(--accent-soft) !important;
+    border: 1px solid rgba(108, 92, 255, 0.16) !important;
+    color: var(--ink-2) !important;
+    border-radius: 999px !important;
+}
+
+.sm-contract-req-value strong {
+    color: var(--accent-ink) !important;
+}
+
+.sm-month-circle {
+    background: var(--surface-solid) !important;
+    border: 1px solid var(--line-2) !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04) !important;
+    transform: none;
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.2s, background 0.2s !important;
+}
+
+.sm-month-circle .sm-month-name {
+    color: var(--ink-3) !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+}
+
+.sm-month-circle:hover {
+    transform: translateY(-3px) !important;
+    border-color: var(--accent-ring) !important;
+    box-shadow: var(--shadow-1) !important;
+}
+
+/* Today's month: glowing gradient ring */
+.sm-month-circle.is-current {
+    border: 2px solid transparent !important;
+    background:
+        linear-gradient(var(--surface-solid), var(--surface-solid)) padding-box,
+        var(--accent-grad) border-box !important;
+    box-shadow: 0 10px 24px -12px rgba(108, 92, 255, 0.6) !important;
+}
+
+.sm-month-circle.is-current .sm-month-name {
+    color: var(--accent-ink) !important;
+    font-weight: 600 !important;
+}
+
+/* Contract start month: warm gold */
+.sm-month-circle.is-start {
+    border: 2px solid var(--gold) !important;
+    background: linear-gradient(160deg, #fffaf0, #fff4d6) !important;
+    box-shadow: 0 10px 24px -14px rgba(232, 164, 0, 0.7) !important;
+}
+
+.sm-month-circle.is-start .sm-month-name,
+.sm-month-circle.is-start .sm-month-day {
+    color: #8a5a00 !important;
+}
+
+.sm-month-circle.is-start .sm-month-day {
+    font-weight: 700 !important;
+}
+
+/* The month you're looking at */
+.sm-month-circle.is-selected:not(.is-current):not(.is-start) {
+    background: var(--ink) !important;
+    border-color: var(--ink) !important;
+}
+
+.sm-month-circle.is-selected:not(.is-current):not(.is-start) .sm-month-name {
+    color: #ffffff !important;
+}
+
+.sm-month-circle.is-selected.is-current {
+    background:
+        linear-gradient(var(--accent-soft), var(--accent-soft)) padding-box,
+        linear-gradient(var(--surface-solid), var(--surface-solid)) padding-box,
+        var(--accent-grad) border-box !important;
+    box-shadow: 0 0 0 5px var(--accent-soft), 0 10px 24px -12px rgba(108, 92, 255, 0.6) !important;
+}
+
+.sm-month-circle.is-selected.is-start {
+    box-shadow: 0 0 0 5px var(--gold-soft), 0 10px 24px -14px rgba(232, 164, 0, 0.7) !important;
+}
+
+.month-qty-badge,
+.month-qty-badge-2,
+.month-qty-badge-3 {
+    border: 2px solid var(--surface-solid) !important;
+    border-radius: 999px !important;
+    font-family: var(--font);
+    font-weight: 600 !important;
+    min-width: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px -4px rgba(16, 24, 40, 0.35) !important;
+}
+
+.month-qty-badge   { background: var(--ok) !important; }
+.month-qty-badge-2 { background: var(--gold) !important; }
+.month-qty-badge-3 { background: var(--bad) !important; }
+
+/* ---------- Calendar ---------- */
+
+.sm-calendar-wrap {
+    padding: 22px 24px !important;
+}
+
+.sm-calendar-header {
+    padding-bottom: 6px;
+}
+
+.sm-cal-month-title {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: var(--ink) !important;
+    letter-spacing: -0.2px;
+}
+
+.sm-icon-btn {
+    border-radius: 12px !important;
+    transition: background 0.2s, transform 0.25s var(--ease), box-shadow 0.25s var(--ease) !important;
+}
+
+.sm-icon-btn:hover {
+    transform: translateY(-1px);
+}
+
+.sm-cal-nav > .sm-icon-btn:last-child,
+.sm-cal-nav > .sm-icon-btn:nth-last-child(2) {
+    background: var(--surface-solid) !important;
+    border: 1px solid var(--line) !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+.sm-cal-days-header {
+    border-bottom: 1px solid var(--line) !important;
+}
+
+.sm-cal-days-header span {
+    color: var(--ink-4) !important;
+    font-weight: 500 !important;
+    font-size: 12.5px !important;
+    letter-spacing: 0.2px;
+}
+
+.sm-cal-cell {
+    border-radius: 16px !important;
+    transition: background 0.25s var(--ease), box-shadow 0.25s var(--ease), border-color 0.2s !important;
+}
+
+.sm-cal-cell:not(.empty):hover {
+    background: rgba(108, 92, 255, 0.04) !important;
+    border-color: rgba(108, 92, 255, 0.12) !important;
+}
+
+.sm-cal-cell.selected {
+    background: var(--surface-solid) !important;
+    border: 1px solid var(--accent-ring) !important;
+    box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-1) !important;
+}
+
+.sm-cal-date {
+    color: var(--ink-3) !important;
+    font-weight: 500 !important;
+    border-radius: 10px !important;
+    font-variant-numeric: tabular-nums;
+}
+
+.sm-cal-cell.selected .sm-cal-date {
+    background: var(--accent-grad) !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 14px -6px rgba(108, 92, 255, 0.7);
+}
+
+.sm-cal-draggable-post {
+    background: var(--surface-solid) !important;
+    background: color-mix(in srgb, var(--dot-color, var(--accent)) 9%, #ffffff) !important;
+    border: 1px solid var(--line) !important;
+    border-color: color-mix(in srgb, var(--dot-color, var(--accent)) 28%, transparent) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04) !important;
+    color: var(--ink-2) !important;
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease) !important;
+}
+
+.sm-cal-draggable-post:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-1) !important;
+}
+
+/* ---------- Day sidebar ---------- */
+
+.sm-sidebar {
+    background: var(--surface) !important;
+    border: 1px solid rgba(255, 255, 255, 0.7) !important;
+    border-radius: var(--r-xl) !important;
+    box-shadow: var(--shadow-1), inset 0 0 0 1px var(--line) !important;
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    overflow: hidden;
+}
+
+.sm-sidebar-header {
+    background: linear-gradient(160deg, rgba(108, 92, 255, 0.08), rgba(32, 196, 232, 0.05)) !important;
+    border-bottom: 1px solid var(--line) !important;
+}
+
+.sm-selected-date-text h3 {
+    font-weight: 700 !important;
+    color: var(--ink) !important;
+    letter-spacing: -0.3px;
+}
+
+.sm-selected-date-text p {
+    color: var(--ink-3) !important;
+    font-weight: 500 !important;
+}
+
+/* ---------- Modals ---------- */
+
+.modal-overlay {
+    background: rgba(13, 19, 36, 0.32) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    border-radius: var(--r-xl) !important;
+    border: 1px solid var(--line);
+    box-shadow: 0 30px 80px -24px rgba(13, 19, 36, 0.45) !important;
+}
+
+.modal-input:focus {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+/* Main action button in the post window */
+.sm-primary-btn {
+    background: var(--accent-grad);
+    background-size: 160% 100%;
+    border-radius: 14px;
+    font-weight: 600;
+    box-shadow: var(--shadow-glow);
+    transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease), background-position 0.5s var(--ease);
+}
+
+.sm-primary-btn:hover {
+    background: var(--accent-grad);
+    background-size: 160% 100%;
+    background-position: 100% 50%;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px -10px rgba(108, 92, 255, 0.65);
+}
+
+/* Draft / schedule switch: segmented control */
+.sm-publish-toggle {
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface-sunk);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+}
+
+.sm-toggle-btn {
+    border-radius: 10px;
+    background: transparent;
+    color: var(--ink-3);
+    font-family: var(--font);
+}
+
+.sm-toggle-btn.active {
+    background: var(--surface-solid);
+    color: var(--accent-ink);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 6px 14px -8px rgba(76, 61, 220, 0.4);
+}
+
+/* ---------- Phones ---------- */
+
+@media (max-width: 768px) {
+    .sm-app-title {
+        font-size: 18px !important;
+    }
+
+    .sm-header-banner > div:first-child {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .sm-header-banner > div:first-child > div:last-child {
+        flex-wrap: wrap;
+    }
+
+    .sm-toolbar-row {
+        flex-direction: column !important;
+    }
+
+    .sm-toolbar-row > div {
+        width: 100%;
+    }
+
+    .sm-tabs-container {
+        max-width: 100% !important;
+        overflow-x: auto;
+    }
+
+    .sm-share-row {
+        flex-wrap: wrap;
+    }
+
+    .sm-share-row .sm-action-btn {
+        flex: 1 1 auto;
+    }
+
+    .sm-notes-input {
+        min-height: 72px !important;
+    }
+
+    .sm-pipeline-stage {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 34px;
+        white-space: normal !important;
+        line-height: 1.4;
+        padding-top: 6px !important;
+        padding-bottom: 6px !important;
+        text-align: center;
+    }
+
+    .sm-title-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px !important;
+    }
+
+    .sm-hero-link {
+        padding: 7px 12px !important;
+        font-size: 12px !important;
+    }
+
+    .sm-pipeline-wrapper,
+    .sm-calendar-wrap {
+        border-radius: var(--r-lg) !important;
+        padding: 16px !important;
+    }
+
+    .sm-sidebar {
+        border-radius: var(--r-lg) 0 0 var(--r-lg) !important;
+    }
+
+    .sm-pipeline-stage {
+        padding-inline: 12px !important;
+        font-size: 12px !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sm-pipeline-stage.active {
+        animation: none !important;
+    }
+
+    * {
+        transition-duration: 0.01ms !important;
+    }
+}
