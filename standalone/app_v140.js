@@ -6004,10 +6004,6 @@ function renderSocialSchedulerApp(activeBoard) {
                             <input type="text" id="renameClientInput" class="modal-input" placeholder="اسم العميل..." style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">مستوى الأهمية (ترتيب)</label>
-                            <input type="number" id="renameClientImportance" class="modal-input" placeholder="رقم الأهمية (مثال: 1, 2...)" min="1" step="1" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s; margin-bottom: 16px;" dir="rtl">
-                        </div>
-                        <div>
                             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px;">حالة العميل</label>
                             <select id="renameClientStatus" class="modal-input" style="width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e0; border-radius: 6px; padding: 10px; font-size: 15px; outline: none; transition: border-color 0.2s;" dir="rtl">
                                 <option value="active">نشط</option>
@@ -6038,34 +6034,21 @@ function renderSocialSchedulerApp(activeBoard) {
         }
         
         const input = document.getElementById('renameClientInput');
-        const importanceInput = document.getElementById('renameClientImportance');
         const statusInput = document.getElementById('renameClientStatus');
         input.value = board.title;
-        if(importanceInput) importanceInput.value = board.importanceLevel || '';
         if(statusInput) statusInput.value = board.isInactive ? 'inactive' : 'active';
-        
+
         document.getElementById('renameClientConfirmBtn').onclick = () => {
             const newName = input.value.trim();
-            const newImportance = parseInt(importanceInput.value, 10);
             input.blur();
             rnModal.classList.remove('active');
-            
+
             let changed = false;
             if (newName && newName !== board.title) {
                 board.title = newName;
                 changed = true;
             }
-            
-            if (!isNaN(newImportance)) {
-                if (board.importanceLevel !== newImportance) {
-                    board.importanceLevel = newImportance;
-                    changed = true;
-                }
-            } else if (board.importanceLevel !== undefined) {
-                delete board.importanceLevel;
-                changed = true;
-            }
-            
+
             const newStatus = statusInput ? statusInput.value : 'active';
             const newInactive = (newStatus === 'inactive');
             if (!!board.isInactive !== newInactive) {
@@ -6139,7 +6122,9 @@ function renderSocialSchedulerApp(activeBoard) {
                 clients.sort((a, b) => {
                     if (a.isInactive && !b.isInactive) return 1;
                     if (!a.isInactive && b.isInactive) return -1;
-                    
+
+                    // Legacy importance numbers keep the old order until the first drag clears them;
+                    // after that the (stable) sort keeps the dragged array order
                     let aVal = a.importanceLevel;
                     let bVal = b.importanceLevel;
                     if (aVal === undefined && bVal === undefined) return 0;
@@ -6280,7 +6265,6 @@ function renderSocialSchedulerApp(activeBoard) {
                         outline: none;
                     "
                     onmousedown="this.parentElement.style.cursor='grabbing'; this.style.cursor='grabbing';" onmouseup="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';" onmouseleave="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';">
-                        ${b.importanceLevel ? `<span style="background: rgba(0,0,0,0.06); color: inherit; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: 800;">${b.importanceLevel}</span>` : ''}
                         ${b.title || 'Client '}
                     </button>
                 </div>
@@ -7719,7 +7703,47 @@ function renderSocialSchedulerApp(activeBoard) {
 
     const socialClientTabsEl = document.getElementById('socialClientTabs');
     if (socialClientTabsEl && window.Sortable && !window.isClientView) {
-        // Dragging disabled completely.
+        if (!document.getElementById('sortableGhostStyles')) {
+            const style = document.createElement('style');
+            style.id = 'sortableGhostStyles';
+            style.innerHTML = `
+                .sortable-ghost { opacity: 0.4; }
+                .sortable-fallback { cursor: grabbing !important; z-index: 99999 !important; }
+            `;
+            document.head.appendChild(style);
+        }
+
+        new window.Sortable(socialClientTabsEl, {
+            animation: 150,
+            filter: '.sm-non-draggable',
+            preventOnFilter: false, // keep the "add client" button clickable
+            delay: 150,
+            delayOnTouchOnly: true, // on phones a quick tap still switches client instead of dragging
+            onMove: function (evt) {
+                if (evt.related.classList.contains('sm-non-draggable')) return false;
+            },
+            onEnd: function () {
+                // The client order is the order of the boards array (agency boards stay first)
+                const orderedIds = Array.from(socialClientTabsEl.querySelectorAll(':scope > [data-id]')).map(el => el.getAttribute('data-id'));
+                const allSocials = boards.filter(b => b.type === 'social_scheduler');
+                const agencySocials = allSocials.slice(0, 2);
+                const clientSocials = allSocials.slice(2);
+                const reordered = orderedIds.map(id => clientSocials.find(b => b.id === id)).filter(Boolean);
+                clientSocials.forEach(b => { if (!reordered.includes(b)) reordered.push(b); });
+
+                const unchanged = reordered.every((b, i) => b === clientSocials[i]);
+                const hadImportance = reordered.some(b => b.importanceLevel !== undefined);
+                if (unchanged && !hadImportance) return;
+
+                // The old importance numbers would override the dragged order, so drop them
+                reordered.forEach(b => { delete b.importanceLevel; });
+
+                const otherBoards = boards.filter(b => b.type !== 'social_scheduler');
+                boards = [...otherBoards, ...agencySocials, ...reordered];
+                if (typeof saveState === 'function') saveState();
+                if (typeof render === 'function') render();
+            }
+        });
     }
 
     const tabs = appContainer.querySelectorAll('.sm-tab');
