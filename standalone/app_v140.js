@@ -5832,18 +5832,22 @@ window.savePipelineStages = function(boardId) {
     renderSocialSchedulerApp(board);
 };
 
-// Videos done this month (posts of type video, same rule as "تم تسوية") vs the contract's required videos,
-// for the month the calendar is showing
-window.getClientVideoStats = function(board) {
+// This month's posts split into videos (postType "video") and images (everything else), same split as
+// "تم تسوية", against the contract's required counts, for the month the calendar is showing
+window.getClientMonthStats = function(board) {
     const now = new Date();
     const year = window.activeSocialMonthView ? window.activeSocialMonthView.year : now.getFullYear();
     const month = window.activeSocialMonthView ? window.activeSocialMonthView.month : now.getMonth();
     const prefix = `${year}-${month}-`;
-    const done = (board.cards || []).filter(c => c && c.dateStr && c.dateStr.startsWith(prefix) && c.postType === 'video').length;
+    const posts = (board.cards || []).filter(c => c && !c.isClientDayNote && c.dateStr && c.dateStr.startsWith(prefix));
     const contract = (board.monthlyContract && board.monthlyContract[`${year}-${month}`]) || {};
-    const required = parseInt(contract.videos, 10) || 0;
-    const state = required > 0 ? (done >= required ? 'is-done' : (done > 0 ? 'is-partial' : 'is-none')) : (done > 0 ? 'is-partial' : 'is-none');
-    return { done, required, state, year, month };
+    const videos = { done: posts.filter(c => c.postType === 'video').length, required: parseInt(contract.videos, 10) || 0 };
+    const images = { done: posts.length - videos.done, required: parseInt(contract.images, 10) || 0 };
+    const total = videos.done + images.done;
+    const hasRequirement = videos.required > 0 || images.required > 0;
+    const allMet = videos.done >= videos.required && images.done >= images.required;
+    const state = hasRequirement && allMet ? 'is-done' : (total > 0 ? 'is-partial' : 'is-none');
+    return { videos, images, total, state, year, month };
 };
 
 // Saves the client pill order shown in #socialClientTabs as the boards array order (agency boards stay first)
@@ -6506,20 +6510,31 @@ function renderSocialSchedulerApp(activeBoard) {
                     // This month's videos: done vs required
                     const statsBoard = (typeof boards !== 'undefined' ? boards : []).find(b => String(b.id) === String(boardId));
                     if (statsBoard) {
-                        const st = window.getClientVideoStats(statsBoard);
+                        const st = window.getClientMonthStats(statsBoard);
                         const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-                        const pct = st.required ? Math.min(100, Math.round(st.done / st.required * 100)) : 0;
-                        const left = Math.max(0, st.required - st.done);
+                        const row = (icon, label, part) => {
+                            const rowState = part.required ? (part.done >= part.required ? 'is-done' : (part.done > 0 ? 'is-partial' : 'is-none')) : (part.done > 0 ? 'is-partial' : 'is-none');
+                            const pct = part.required ? Math.min(100, Math.round(part.done / part.required * 100)) : 0;
+                            const left = Math.max(0, part.required - part.done);
+                            return `
+                                <div class="sm-client-popup-row">
+                                    <div class="sm-client-popup-row-head">
+                                        <span class="sm-client-popup-label">${icon} ${label}</span>
+                                        <span class="sm-client-popup-numbers"><strong class="${rowState}">${part.done}</strong>${part.required ? ` / ${part.required}` : ''}</span>
+                                    </div>
+                                    ${part.required ? `<div class="sm-client-popup-bar"><span class="${rowState}" style="width:${pct}%"></span></div>
+                                    <div class="sm-client-popup-left">${left > 0 ? `باقي ${left}` : 'اكتمل ✓'}</div>` : '<div class="sm-client-popup-left">المطلوب غير محدد</div>'}
+                                </div>`;
+                        };
                         const stats = document.createElement('div');
                         stats.className = 'sm-client-popup-stats';
                         stats.innerHTML = `
-                            <div class="sm-client-popup-month">فيديوهات ${monthNames[st.month]} ${st.year}</div>
-                            <div class="sm-client-popup-numbers"><strong class="${st.state}">${st.done}</strong> ${st.required ? `من <strong>${st.required}</strong> مطلوب` : 'فيديو'}</div>
-                            ${st.required ? `<div class="sm-client-popup-bar"><span class="${st.state}" style="width:${pct}%"></span></div>` : ''}
-                            <div class="sm-client-popup-left-row">
-                                <span class="sm-client-popup-left">${st.required ? (left > 0 ? `باقي ${left}` : 'اكتمل المطلوب ✓') : 'ما في عدد مطلوب بالعقد لهالشهر'}</span>
-                                ${window.isClientView ? '' : '<button type="button" class="sm-client-popup-edit">تعديل</button>'}
+                            <div class="sm-client-popup-head">
+                                <span class="sm-client-popup-month">${monthNames[st.month]} ${st.year}</span>
+                                ${window.isClientView ? '' : '<button type="button" class="sm-client-popup-edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg> تعديل</button>'}
                             </div>
+                            ${row('🎬', 'فيديوهات', st.videos)}
+                            ${row('🖼️', 'صور', st.images)}
                         `;
                         popup.appendChild(stats);
                         const editBtn = stats.querySelector('.sm-client-popup-edit');
@@ -6598,9 +6613,9 @@ function renderSocialSchedulerApp(activeBoard) {
                     setTimeout(() => document.addEventListener('click', closeHandler), 10);
                 };
 
-                const videoStats = window.getClientVideoStats(b);
-                const videoTitle = `فيديوهات هذا الشهر: ${videoStats.done}${videoStats.required ? ' من ' + videoStats.required : ''} (اضغط مرتين للتفاصيل)`;
-                let emojiOrLabelHtml = `<span class="sm-client-pill-count ${videoStats.state}" title="${videoTitle}">${videoStats.done}</span>`;
+                const monthStats = window.getClientMonthStats(b);
+                const statsTitle = `هذا الشهر: ${monthStats.videos.done}${monthStats.videos.required ? ' من ' + monthStats.videos.required : ''} فيديو، ${monthStats.images.done}${monthStats.images.required ? ' من ' + monthStats.images.required : ''} صورة (اضغط مرتين للتفاصيل)`;
+                let emojiOrLabelHtml = `<span class="sm-client-pill-count ${monthStats.state}" title="${statsTitle}">${monthStats.total}</span>`;
                 if (b.isInactive) {
                     emojiOrLabelHtml = `<span style="font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 12px; margin-right: 2px;">غير نشط</span>`;
                 }
@@ -7248,7 +7263,8 @@ function renderSocialSchedulerApp(activeBoard) {
         
         if (activeBoard.cards) {
             activeBoard.cards.forEach(c => {
-                if (c.dateStr && c.dateStr.startsWith(`${currentYear}-${currentMonth}-`)) {
+                // Client day notes aren't posts, so they don't count as images
+                if (c.dateStr && !c.isClientDayNote && c.dateStr.startsWith(`${currentYear}-${currentMonth}-`)) {
                     currentMonthPosts++;
                     if (c.postType === 'video') currentMonthVideos++;
                     else currentMonthImages++;

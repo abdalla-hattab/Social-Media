@@ -1407,3 +1407,77 @@ h1, h2, h3, h4, h5 {
     transform: translateY(-1px);
     background-position: 100% 50%;
 }
+
+/* Videos + images window: header with a small Edit chip, then one row per type */
+.sm-client-popup {
+    min-width: 230px;
+    gap: 12px;
+}
+
+.sm-client-popup-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.sm-client-popup-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.sm-client-popup-month {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-2);
+}
+
+.sm-client-popup-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 11px;
+    background: var(--accent-soft) !important;
+    color: var(--accent-ink) !important;
+    border: 1px solid rgba(108, 92, 255, 0.22) !important;
+    box-shadow: none !important;
+    font-size: 12px;
+}
+
+.sm-client-popup-edit:hover {
+    background: rgba(108, 92, 255, 0.16) !important;
+}
+
+.sm-client-popup-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sm-client-popup-row-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.sm-client-popup-label {
+    font-size: 13px;
+    color: var(--ink-3);
+    font-weight: 500;
+}
+
+.sm-client-popup-row .sm-client-popup-numbers {
+    font-size: 13px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.sm-client-popup-row .sm-client-popup-numbers strong {
+    font-size: 17px;
+}
+
+.sm-client-popup-row .sm-client-popup-left {
+    font-size: 11.5px;
+}
