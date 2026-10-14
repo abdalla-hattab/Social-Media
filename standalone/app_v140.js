@@ -5704,6 +5704,182 @@ window.savePipelineStages = function(boardId) {
     renderSocialSchedulerApp(board);
 };
 
+// Saves the client pill order shown in #socialClientTabs as the boards array order (agency boards stay first)
+function saveClientTabsOrder(container) {
+    const orderedIds = Array.from(container.children).filter(el => el.hasAttribute('data-id')).map(el => el.getAttribute('data-id'));
+    const allSocials = boards.filter(b => b.type === 'social_scheduler');
+    const agencySocials = allSocials.slice(0, 2);
+    const clientSocials = allSocials.slice(2);
+    const reordered = orderedIds.map(id => clientSocials.find(b => b.id === id)).filter(Boolean);
+    clientSocials.forEach(b => { if (!reordered.includes(b)) reordered.push(b); });
+
+    const unchanged = reordered.every((b, i) => b === clientSocials[i]);
+    const hadImportance = reordered.some(b => b.importanceLevel !== undefined);
+    if (unchanged && !hadImportance) return;
+
+    // The old importance numbers would override the dragged order, so drop them
+    reordered.forEach(b => { delete b.importanceLevel; });
+
+    const otherBoards = boards.filter(b => b.type !== 'social_scheduler');
+    boards = [...otherBoards, ...agencySocials, ...reordered];
+    if (typeof saveState === 'function') saveState();
+}
+
+// Drag-to-reorder for the client pills. SortableJS assumes a left-to-right layout: in this RTL row its
+// "insert at start" shortcut fires almost anywhere on the first row, so every dragged client jumped to the
+// first slot. This version works from where the pills actually are on screen.
+function enableClientTabsDrag(container) {
+    const isRtl = getComputedStyle(container).direction === 'rtl';
+    let drag = null;
+
+    const pillOf = target => {
+        let el = target;
+        while (el && el.parentElement !== container) el = el.parentElement;
+        return el && el.hasAttribute('data-id') && !el.classList.contains('sm-non-draggable') ? el : null;
+    };
+
+    const animateReorder = mutate => {
+        // FLIP: let the other pills slide into their new places instead of jumping
+        const items = Array.from(container.children);
+        const before = new Map(items.map(el => [el, el.getBoundingClientRect()]));
+        mutate();
+        items.forEach(el => {
+            if (el === drag.pill) return;
+            const a = before.get(el);
+            const b = el.getBoundingClientRect();
+            const dx = a.left - b.left, dy = a.top - b.top;
+            if (!dx && !dy) return;
+            const origTransition = el.style.transition;
+            el.style.transition = 'none';
+            el.style.transform = `translate(${dx}px, ${dy}px)`;
+            void el.offsetWidth;
+            el.style.transition = 'transform 160ms ease';
+            el.style.transform = '';
+            setTimeout(() => { el.style.transition = origTransition; }, 170);
+        });
+        drag.lockUntil = performance.now() + 170;
+    };
+
+    const moveToPointer = (x, y) => {
+        if (performance.now() < drag.lockUntil) return;
+        const target = Array.from(container.children).find(el => {
+            if (el === drag.pill || !el.hasAttribute('data-id')) return false;
+            const r = el.getBoundingClientRect();
+            return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+        });
+        if (!target) return;
+        const r = target.getBoundingClientRect();
+        // The half of the pill nearest the start of the row (the right half in RTL) means "drop before it"
+        const dropBefore = isRtl ? x > r.left + r.width / 2 : x < r.left + r.width / 2;
+        if (dropBefore ? target.previousElementSibling === drag.pill : target.nextElementSibling === drag.pill) return;
+        animateReorder(() => container.insertBefore(drag.pill, dropBefore ? target : target.nextSibling));
+    };
+
+    const startDrag = (x, y) => {
+        const pill = drag.pill;
+        const rect = pill.getBoundingClientRect();
+        drag.active = true;
+        drag.offsetX = x - rect.left;
+        drag.offsetY = y - rect.top;
+
+        const ghost = pill.cloneNode(true);
+        ghost.querySelectorAll('[data-id]').forEach(el => el.removeAttribute('data-id'));
+        ghost.removeAttribute('data-id');
+        Object.assign(ghost.style, {
+            position: 'fixed', left: rect.left + 'px', top: rect.top + 'px', width: rect.width + 'px', height: rect.height + 'px',
+            margin: '0', zIndex: '100000', pointerEvents: 'none', transition: 'none', transform: 'scale(1.05)',
+            boxShadow: '0 10px 25px rgba(15, 23, 42, 0.2)', cursor: 'grabbing'
+        });
+        document.body.appendChild(ghost);
+        drag.ghost = ghost;
+
+        // The pill itself stays in the row as the drop placeholder
+        drag.origOpacity = pill.style.opacity;
+        pill.style.opacity = '0.3';
+        isGlobalDragging = true; // keeps a Firebase sync from re-rendering the row mid-drag
+        document.body.style.cursor = 'grabbing';
+        document.body.style.userSelect = 'none';
+    };
+
+    const finish = () => {
+        clearTimeout(drag.longPressTimer);
+        if (drag.ghost) drag.ghost.remove();
+        if (drag.active) {
+            drag.pill.style.opacity = drag.origOpacity;
+            isGlobalDragging = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+        document.removeEventListener('pointermove', onMove);
+        document.removeEventListener('pointerup', onUp);
+        document.removeEventListener('pointercancel', onCancel);
+        const wasActive = drag.active;
+        drag = null;
+        window._clientTabsDragActive = false;
+        return wasActive;
+    };
+
+    const onMove = e => {
+        if (!drag || e.pointerId !== drag.pointerId) return;
+        if (!container.isConnected) { finish(); return; }
+        if (!drag.active) {
+            const moved = Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY);
+            if (drag.isTouch) {
+                if (moved > 10) finish(); // finger moved before the long-press: it's a scroll
+                return;
+            }
+            if (moved < 5) return;
+            startDrag(e.clientX, e.clientY);
+        }
+        e.preventDefault();
+        drag.ghost.style.left = (e.clientX - drag.offsetX) + 'px';
+        drag.ghost.style.top = (e.clientY - drag.offsetY) + 'px';
+        moveToPointer(e.clientX, e.clientY);
+    };
+
+    const onUp = e => {
+        if (!drag || e.pointerId !== drag.pointerId) return;
+        if (!finish()) return; // a plain click: onclick / ondblclick handle it as before
+        // Swallow the click the browser fires after the drop, so it doesn't also switch client
+        const swallow = ev => { ev.stopPropagation(); ev.preventDefault(); };
+        window.addEventListener('click', swallow, true);
+        setTimeout(() => window.removeEventListener('click', swallow, true), 0);
+        saveClientTabsOrder(container);
+        if (typeof render === 'function') render();
+    };
+
+    const onCancel = e => {
+        if (!drag || e.pointerId !== drag.pointerId) return;
+        if (finish() && typeof render === 'function') render();
+    };
+
+    container.addEventListener('pointerdown', e => {
+        if (drag || e.button !== 0) return;
+        const pill = pillOf(e.target);
+        if (!pill) return;
+        drag = { pill, pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, active: false, lockUntil: 0, isTouch: e.pointerType !== 'mouse' };
+        if (drag.isTouch) {
+            // On phones a short press-and-hold starts the drag, so taps and scrolling still work
+            drag.longPressTimer = setTimeout(() => {
+                if (drag && !drag.active) { startDrag(drag.startX, drag.startY); window._clientTabsDragActive = true; }
+            }, 250);
+        }
+        document.addEventListener('pointermove', onMove);
+        document.addEventListener('pointerup', onUp);
+        document.addEventListener('pointercancel', onCancel);
+    });
+
+    if (!window._clientTabsTouchGuard) {
+        window._clientTabsTouchGuard = true;
+        // Once a touch drag has started, stop the page from scrolling under the finger
+        document.addEventListener('touchmove', e => { if (window._clientTabsDragActive) e.preventDefault(); }, { passive: false });
+        document.addEventListener('contextmenu', e => { if (window._clientTabsDragActive) e.preventDefault(); });
+        const style = document.createElement('style');
+        style.innerHTML = '#socialClientTabs > [data-id] { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }';
+        document.head.appendChild(style);
+    }
+}
+
 function renderSocialSchedulerApp(activeBoard) {
     document.body.style.background = '#f4f5f7';
     appContainer.style.padding = '0';
@@ -7702,48 +7878,8 @@ function renderSocialSchedulerApp(activeBoard) {
     appContainer.style.display = '';
 
     const socialClientTabsEl = document.getElementById('socialClientTabs');
-    if (socialClientTabsEl && window.Sortable && !window.isClientView) {
-        if (!document.getElementById('sortableGhostStyles')) {
-            const style = document.createElement('style');
-            style.id = 'sortableGhostStyles';
-            style.innerHTML = `
-                .sortable-ghost { opacity: 0.4; }
-                .sortable-fallback { cursor: grabbing !important; z-index: 99999 !important; }
-            `;
-            document.head.appendChild(style);
-        }
-
-        new window.Sortable(socialClientTabsEl, {
-            animation: 150,
-            filter: '.sm-non-draggable',
-            preventOnFilter: false, // keep the "add client" button clickable
-            delay: 150,
-            delayOnTouchOnly: true, // on phones a quick tap still switches client instead of dragging
-            onMove: function (evt) {
-                if (evt.related.classList.contains('sm-non-draggable')) return false;
-            },
-            onEnd: function () {
-                // The client order is the order of the boards array (agency boards stay first)
-                const orderedIds = Array.from(socialClientTabsEl.querySelectorAll(':scope > [data-id]')).map(el => el.getAttribute('data-id'));
-                const allSocials = boards.filter(b => b.type === 'social_scheduler');
-                const agencySocials = allSocials.slice(0, 2);
-                const clientSocials = allSocials.slice(2);
-                const reordered = orderedIds.map(id => clientSocials.find(b => b.id === id)).filter(Boolean);
-                clientSocials.forEach(b => { if (!reordered.includes(b)) reordered.push(b); });
-
-                const unchanged = reordered.every((b, i) => b === clientSocials[i]);
-                const hadImportance = reordered.some(b => b.importanceLevel !== undefined);
-                if (unchanged && !hadImportance) return;
-
-                // The old importance numbers would override the dragged order, so drop them
-                reordered.forEach(b => { delete b.importanceLevel; });
-
-                const otherBoards = boards.filter(b => b.type !== 'social_scheduler');
-                boards = [...otherBoards, ...agencySocials, ...reordered];
-                if (typeof saveState === 'function') saveState();
-                if (typeof render === 'function') render();
-            }
-        });
+    if (socialClientTabsEl && !window.isClientView) {
+        enableClientTabsDrag(socialClientTabsEl);
     }
 
     const tabs = appContainer.querySelectorAll('.sm-tab');
