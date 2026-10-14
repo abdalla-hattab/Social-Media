@@ -1132,3 +1132,65 @@ h1, h2, h3, h4, h5 {
     background: rgba(108, 92, 255, 0.15);
     transform: translateY(-1px);
 }
+
+/* ---------- Phones: steps one per line, numbered in order ---------- */
+@media (max-width: 768px) {
+    /* Must come after the general toolbar rule: stacked, a 300px basis would become the notes height */
+    .sm-toolbar-row > div:last-child {
+        flex: 0 0 auto !important;
+    }
+
+    .sm-notes-input {
+        min-height: 80px !important;
+        max-height: 160px;
+    }
+
+    .sm-pipeline-container {
+        flex-direction: column !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        counter-reset: smstage;
+    }
+
+    .sm-pipeline-stage {
+        counter-increment: smstage;
+        flex: 0 0 auto !important;
+        width: 100% !important;
+        justify-content: flex-start !important;
+        text-align: right;
+        gap: 10px;
+        padding-inline: 12px !important;
+        box-sizing: border-box;
+    }
+
+    /* Step number; finished steps keep their ✓ */
+    .sm-pipeline-stage:not(.past)::before {
+        display: inline-flex !important;
+        content: counter(smstage);
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(15, 23, 42, 0.07);
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .sm-pipeline-stage.active::before {
+        background: rgba(255, 255, 255, 0.28);
+    }
+
+    .sm-pipeline-stage.past::before {
+        width: 22px;
+        height: 22px;
+        margin-left: 0 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.15);
+    }
+}

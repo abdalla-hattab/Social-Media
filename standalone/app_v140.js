@@ -6478,7 +6478,7 @@ function renderSocialSchedulerApp(activeBoard) {
                     e.stopPropagation();
                     let existing = document.getElementById('clientEmojiPopup');
                     if (existing) {
-                        existing.remove();
+                        if (existing._close) existing._close(); else existing.remove();
                         if (existing.dataset.boardId === boardId) return;
                     }
 
@@ -6512,27 +6512,51 @@ function renderSocialSchedulerApp(activeBoard) {
                             if (board) {
                                 board.clientSentiment = type;
                                 if (typeof saveState !== 'undefined') saveState();
-                                if (typeof renderSocialSchedulerApp !== 'undefined') renderSocialSchedulerApp(typeof activeBoard !== 'undefined' ? activeBoard : board);
+                                // render() redraws the current client; this function is created once, so its activeBoard is stale
+                                if (typeof render === 'function') render();
                             }
-                            popup.remove();
+                            closePopup();
                         };
                         popup.appendChild(btn);
                     });
 
                     document.body.appendChild(popup);
-                    // The element might be detached due to re-render, so we use mouse coordinates
-                    popup.style.top = (e.clientY + 15) + 'px';
-                    popup.style.left = (e.clientX - popup.offsetWidth/2) + 'px';
-                    
-                    setTimeout(() => {
-                        const closeHandler = (ev) => {
-                            if (!popup.contains(ev.target)) {
-                                popup.remove();
-                                document.removeEventListener('click', closeHandler);
-                            }
-                        };
-                        document.addEventListener('click', closeHandler);
-                    }, 10);
+
+                    // Sit just under the client's pill and stay there while the page scrolls, kept inside
+                    // the screen. The pill is looked up each time because a re-render replaces it.
+                    const placePopup = () => {
+                        const pill = document.querySelector(`#socialClientTabs > [data-id="${CSS.escape(String(boardId))}"]`);
+                        const viewportWidth = document.documentElement.clientWidth;
+                        const width = popup.offsetWidth;
+                        let left, top;
+                        if (pill) {
+                            const r = pill.getBoundingClientRect();
+                            left = r.left + r.width / 2 - width / 2;
+                            top = r.bottom + 8;
+                        } else {
+                            left = e.clientX - width / 2;
+                            top = e.clientY + 15;
+                        }
+                        popup.style.left = Math.max(8, Math.min(left, viewportWidth - width - 8)) + 'px';
+                        popup.style.top = top + 'px';
+                    };
+                    placePopup();
+
+                    const scroller = document.querySelector('.sm-app-wrapper');
+                    const onViewportChange = () => { if (popup.isConnected) placePopup(); else closePopup(); };
+                    const closeHandler = (ev) => { if (!popup.contains(ev.target)) closePopup(); };
+                    function closePopup() {
+                        popup.remove();
+                        if (scroller) scroller.removeEventListener('scroll', onViewportChange);
+                        window.removeEventListener('scroll', onViewportChange);
+                        window.removeEventListener('resize', onViewportChange);
+                        document.removeEventListener('click', closeHandler);
+                    }
+                    popup._close = closePopup;
+                    if (scroller) scroller.addEventListener('scroll', onViewportChange, { passive: true });
+                    window.addEventListener('scroll', onViewportChange, { passive: true });
+                    window.addEventListener('resize', onViewportChange);
+                    setTimeout(() => document.addEventListener('click', closeHandler), 10);
                 };
 
                 let emojiOrLabelHtml = window.getClientEmojiSvg(b.clientSentiment || 'grey', 18);
