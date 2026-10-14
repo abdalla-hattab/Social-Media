@@ -5832,6 +5832,20 @@ window.savePipelineStages = function(boardId) {
     renderSocialSchedulerApp(board);
 };
 
+// Videos done this month (posts of type video, same rule as "تم تسوية") vs the contract's required videos,
+// for the month the calendar is showing
+window.getClientVideoStats = function(board) {
+    const now = new Date();
+    const year = window.activeSocialMonthView ? window.activeSocialMonthView.year : now.getFullYear();
+    const month = window.activeSocialMonthView ? window.activeSocialMonthView.month : now.getMonth();
+    const prefix = `${year}-${month}-`;
+    const done = (board.cards || []).filter(c => c && c.dateStr && c.dateStr.startsWith(prefix) && c.postType === 'video').length;
+    const contract = (board.monthlyContract && board.monthlyContract[`${year}-${month}`]) || {};
+    const required = parseInt(contract.videos, 10) || 0;
+    const state = required > 0 ? (done >= required ? 'is-done' : (done > 0 ? 'is-partial' : 'is-none')) : (done > 0 ? 'is-partial' : 'is-none');
+    return { done, required, state, year, month };
+};
+
 // Saves the client pill order shown in #socialClientTabs as the boards array order (agency boards stay first)
 function saveClientTabsOrder(container) {
     const orderedIds = Array.from(container.children).filter(el => el.hasAttribute('data-id')).map(el => el.getAttribute('data-id'));
@@ -6484,16 +6498,31 @@ function renderSocialSchedulerApp(activeBoard) {
 
                     const popup = document.createElement('div');
                     popup.id = 'clientEmojiPopup';
+                    popup.className = 'sm-client-popup';
                     popup.dataset.boardId = boardId;
                     popup.style.position = 'fixed';
-                    popup.style.background = 'white';
-                    popup.style.padding = '8px 12px';
-                    popup.style.borderRadius = '24px';
-                    popup.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.05)';
-                    popup.style.display = 'flex';
-                    popup.style.gap = '10px';
                     popup.style.zIndex = '100000';
-                    popup.style.border = '1px solid #e2e8f0';
+
+                    // This month's videos: done vs required
+                    const statsBoard = (typeof boards !== 'undefined' ? boards : []).find(b => String(b.id) === String(boardId));
+                    if (statsBoard) {
+                        const st = window.getClientVideoStats(statsBoard);
+                        const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+                        const pct = st.required ? Math.min(100, Math.round(st.done / st.required * 100)) : 0;
+                        const left = Math.max(0, st.required - st.done);
+                        const stats = document.createElement('div');
+                        stats.className = 'sm-client-popup-stats';
+                        stats.innerHTML = `
+                            <div class="sm-client-popup-month">فيديوهات ${monthNames[st.month]} ${st.year}</div>
+                            <div class="sm-client-popup-numbers"><strong class="${st.state}">${st.done}</strong> ${st.required ? `من <strong>${st.required}</strong> مطلوب` : 'فيديو'}</div>
+                            ${st.required ? `<div class="sm-client-popup-bar"><span class="${st.state}" style="width:${pct}%"></span></div>
+                            <div class="sm-client-popup-left">${left > 0 ? `باقي ${left}` : 'اكتمل المطلوب ✓'}</div>` : '<div class="sm-client-popup-left">ما في عدد مطلوب بالعقد لهالشهر</div>'}
+                        `;
+                        popup.appendChild(stats);
+                    }
+                    const moodRow = document.createElement('div');
+                    moodRow.className = 'sm-client-popup-moods';
+                    popup.appendChild(moodRow);
 
                     const emojis = ['grey', 'happy', 'normal', 'sad', 'angry'];
                     emojis.forEach(type => {
@@ -6517,7 +6546,7 @@ function renderSocialSchedulerApp(activeBoard) {
                             }
                             closePopup();
                         };
-                        popup.appendChild(btn);
+                        moodRow.appendChild(btn);
                     });
 
                     document.body.appendChild(popup);
@@ -6559,7 +6588,9 @@ function renderSocialSchedulerApp(activeBoard) {
                     setTimeout(() => document.addEventListener('click', closeHandler), 10);
                 };
 
-                let emojiOrLabelHtml = window.getClientEmojiSvg(b.clientSentiment || 'grey', 18);
+                const videoStats = window.getClientVideoStats(b);
+                const videoTitle = `فيديوهات هذا الشهر: ${videoStats.done}${videoStats.required ? ' من ' + videoStats.required : ''} (اضغط مرتين للتفاصيل)`;
+                let emojiOrLabelHtml = `<span class="sm-client-pill-count ${videoStats.state}" title="${videoTitle}">${videoStats.done}</span>`;
                 if (b.isInactive) {
                     emojiOrLabelHtml = `<span style="font-size: 11px; font-weight: 700; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 12px; margin-right: 2px;">غير نشط</span>`;
                 }
@@ -6594,7 +6625,7 @@ function renderSocialSchedulerApp(activeBoard) {
                         outline: none;
                     "
                     onmousedown="this.parentElement.style.cursor='grabbing'; this.style.cursor='grabbing';" onmouseup="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';" onmouseleave="this.parentElement.style.cursor='pointer'; this.style.cursor='pointer';">
-                        ${b.title || 'Client '}
+                        <span class="sm-client-pill-name">${window.smEscapeHTML(b.title || 'Client ')}</span>
                     </button>
                 </div>
                 `;
