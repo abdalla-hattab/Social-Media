@@ -20,6 +20,8 @@ let cloudBoards = [];
 const smUrlParams = new URLSearchParams(window.location.search);
 
 window.isClientView = smUrlParams.get('client_view') === 'true';
+// Kept in sync below once short links are resolved; CSS uses it to give phones the right view
+const syncClientModeClass = () => document.documentElement.classList.toggle('sm-client-mode', !!window.isClientView);
 if (window.isClientView) {
     const clientStyle = document.createElement('style');
     clientStyle.innerHTML = '.sm-gallery-badge { display: none !important; }';
@@ -45,6 +47,7 @@ window.clientLinkError = false;
 const superShortId = smUrlParams.get('id');
 if (superShortId) {
     window.isClientView = true;
+    syncClientModeClass();
     window.isResolvingShortLink = true;
     
     // Fallback timeout bumped to 10 seconds to accommodate slower client connections
@@ -146,6 +149,7 @@ if (superShortId) {
 const shortC = smUrlParams.get('c');
 if (shortC) {
     window.isClientView = true;
+    syncClientModeClass();
     let parts = shortC.split('-');
     if (parts.length >= 3) {
         window.shortClientYear = parts.pop();
@@ -159,6 +163,7 @@ if (shortC) {
     // Old link format without a secret: no longer opens
     window.clientLinkError = true;
 }
+syncClientModeClass();
 // ?client_view=true without a secure short link can't open a client
 if (window.isClientView && !superShortId && !shortC) window.clientLinkError = true;
 // Nothing else will trigger a render for a refused link, so show its message once the file has loaded
@@ -8005,7 +8010,7 @@ function renderSocialSchedulerApp(activeBoard) {
         const sidebarDateFull = appContainer.querySelector('.sm-selected-date-text p');
         
         cells.forEach(cell => {
-            if(cell) cell.onclick = () => {
+            if(cell) cell.onclick = (e) => {
                 cells.forEach(c => c.classList.remove('selected'));
                 cell.classList.add('selected');
                 
@@ -8277,7 +8282,27 @@ function renderSocialSchedulerApp(activeBoard) {
                 } else if (window.activePreviewPlatform) {
                     sidebarBody.innerHTML = `<div style="padding:40px 20px; text-align:center; color:#64748b; background:white; border-radius:12px; border:1px solid #e2e8f0; font-weight:600;">معاينة ${window.activePreviewPlatform} قيد التطوير...</div>`;
                 } else {
-                    sidebarBody.innerHTML = ``;
+                    // The day's posts plus an add button (on phones this is the way in; double-click needs a mouse)
+                    const dayItems = todayPosts.map(p => {
+                        const isScheduled = p.status === 'جدولة' || p.status === 'فوري';
+                        const label = window.smEscapeHTML((p.title || p.fullText || p.idea || 'منشور').toString().slice(0, 80));
+                        return `<button type="button" class="sm-day-post" onclick="window.openCreatePostModal('${p.id}')">
+                            <span class="sm-day-post-dot${isScheduled ? ' is-scheduled' : ''}"></span>
+                            <span class="sm-day-post-title">${label}</span>
+                            <span class="sm-day-post-status">${window.smEscapeHTML(p.status || '')}</span>
+                        </button>`;
+                    }).join('');
+                    sidebarBody.innerHTML = `<div class="sm-day-panel">
+                        ${dayItems || '<div class="sm-day-empty">لا يوجد منشورات بهذا اليوم</div>'}
+                        ${window.isClientView ? '' : '<button type="button" class="sm-day-add-post" onclick="window.openCreatePostModal()">＋ إضافة منشور لهذا اليوم</button>'}
+                    </div>`;
+                }
+
+                // On phones/tablets the day panel is a slide-in drawer; a real tap on a day opens it
+                // (not the programmatic click that initialises the panel on load)
+                const sidebarEl = appContainer.querySelector('.sm-sidebar');
+                if (e && e.isTrusted && !window.isClientView && sidebarEl && getComputedStyle(sidebarEl).position === 'fixed') {
+                    sidebarEl.classList.add('active');
                 }
             };
             
