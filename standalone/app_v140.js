@@ -8474,6 +8474,9 @@ function renderSocialSchedulerApp(activeBoard) {
     
     if (createBtn) if(createBtn) createBtn.onclick = openModal;
     if (addEmptyBtn) if(addEmptyBtn) addEmptyBtn.onclick = openModal;
+
+    // "اليوم" / "المراحل" / "العملاء" switch from workspace.js
+    if (typeof window.smMountWorkspace === 'function') window.smMountWorkspace();
 }
 
 window.showConfirmModal = function(callback, titleText, descText) {
@@ -9107,7 +9110,13 @@ window.saveSocialDraft = async function(isAutoSave = false) {
         if (existingPost && existingPost.componentEdits) {
             newDraft.componentEdits = existingPost.componentEdits;
         }
-        
+
+        // Keep the workflow stage set on the "المراحل" board
+        if (existingPost && existingPost.stage) {
+            newDraft.stage = existingPost.stage;
+            if (existingPost.stageChangedAt) newDraft.stageChangedAt = existingPost.stageChangedAt;
+        }
+
         // Anchor the UI explicitly to this new post ID so further auto-saves 
         // properly update this exact post record and it's visible upon reload
         window.currentEditingSocialPostId = newDraft.id;
