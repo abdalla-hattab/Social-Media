@@ -19,6 +19,9 @@
     const MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
     const DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
     const COLUMN_LIMIT = 40;
+    // Screens shown in the top switch. "today" and "stages" are on hold until the team asks for them;
+    // with a single screen the switch is hidden.
+    const ENABLED_VIEWS = ['clients'];
 
     const ICONS = {
         video: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/></svg>',
@@ -57,7 +60,7 @@
     function getView() {
         let v = null;
         try { v = localStorage.getItem(VIEW_KEY); } catch (e) { /* private mode */ }
-        return v === 'today' || v === 'stages' ? v : 'clients';
+        return ENABLED_VIEWS.includes(v) ? v : 'clients';
     }
 
     // Active client boards, in the same order as the client pills (the first two social boards are the agency's own)
@@ -245,7 +248,8 @@
 
     function barHtml(view) {
         const lateCount = allPosts().filter(p => p.late).length;
-        const tabs = [['today', 'اليوم'], ['stages', 'المراحل'], ['clients', 'العملاء']];
+        const tabs = [['today', 'اليوم'], ['stages', 'المراحل'], ['clients', 'العملاء']].filter(([k]) => ENABLED_VIEWS.includes(k));
+        if (tabs.length < 2) return '';
         return `<div class="sm-ws-bar"><div class="sm-ws-bar-inner" role="tablist">
             ${tabs.map(([k, l]) => `<button type="button" role="tab" aria-selected="${view === k}" data-view="${k}" class="${view === k ? 'is-active' : ''}">${l}${k === 'today' && lateCount ? `<span class="sm-ws-bar-dot" title="منشورات متأخرة">${lateCount}</span>` : ''}</button>`).join('')}
         </div></div>`;
