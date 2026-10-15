@@ -49,12 +49,13 @@
             // Note: In reality Zernio might pass a connection id/status in query params,
             // but for now we just tell the parent it's done.
             window.opener.postMessage({ type: 'ZERNIO_OAUTH_SUCCESS' }, window.location.origin);
+            // The "النشر" tab (Post for Me) listens for this one
+            window.opener.postMessage({ type: 'SOCIAL_ACCOUNT_CONNECTED' }, window.location.origin);
+            setTimeout(() => { window.close(); }, 1500);
+        } else {
+            // Opened by the client from a copied link: there's no dashboard window to go back to
+            document.querySelector('p').textContent = 'تقدر تسكّر هالصفحة هلّق.';
         }
-        
-        // Close the popup after a brief moment
-        setTimeout(() => {
-            window.close();
-        }, 1500);
     </script>
 </body>
 </html>

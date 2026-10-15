@@ -20,8 +20,8 @@
     const DAYS = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
     const COLUMN_LIMIT = 40;
     // Screens shown in the top switch. "today" and "stages" are on hold until the team asks for them;
-    // with a single screen the switch is hidden.
-    const ENABLED_VIEWS = ['clients'];
+    // with a single screen the switch is hidden. "publish" is drawn by publish.js.
+    const ENABLED_VIEWS = ['clients', 'publish'];
 
     const ICONS = {
         video: '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9.5v5l4.5-2.5z"/></svg>',
@@ -248,7 +248,7 @@
 
     function barHtml(view) {
         const lateCount = allPosts().filter(p => p.late).length;
-        const tabs = [['today', 'اليوم'], ['stages', 'المراحل'], ['clients', 'العملاء']].filter(([k]) => ENABLED_VIEWS.includes(k));
+        const tabs = [['today', 'اليوم'], ['stages', 'المراحل'], ['clients', 'العملاء'], ['publish', 'النشر']].filter(([k]) => ENABLED_VIEWS.includes(k));
         if (tabs.length < 2) return '';
         return `<div class="sm-ws-bar"><div class="sm-ws-bar-inner" role="tablist">
             ${tabs.map(([k, l]) => `<button type="button" role="tab" aria-selected="${view === k}" data-view="${k}" class="${view === k ? 'is-active' : ''}">${l}${k === 'today' && lateCount ? `<span class="sm-ws-bar-dot" title="منشورات متأخرة">${lateCount}</span>` : ''}</button>`).join('')}
@@ -435,8 +435,11 @@
 
         const view = getView();
         document.documentElement.setAttribute('data-sm-ws', view);
-        const body = view === 'today' ? todayHtml() : (view === 'stages' ? stagesHtml() : '');
+        const body = view === 'today' ? todayHtml() : (view === 'stages' ? stagesHtml() : (view === 'publish' ? '<div class="smp-root"></div>' : ''));
         wrapper.insertAdjacentHTML('afterbegin', barHtml(view) + (body ? `<div id="smWorkspaceView" class="sm-ws-view is-${view}">${body}</div>` : ''));
+
+        const publishRoot = wrapper.querySelector(':scope > #smWorkspaceView .smp-root');
+        if (publishRoot && window.smPublish) window.smPublish.mount(publishRoot);
 
         const newBoard = wrapper.querySelector(':scope > #smWorkspaceView .sm-ws-board');
         if (newBoard && boardScroll !== null) newBoard.scrollLeft = boardScroll;

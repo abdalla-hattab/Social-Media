@@ -8599,6 +8599,14 @@ window.handleCalDrop = function(event, dropzone) {
         if (postId && newDateStrRaw && targetBoard && targetBoard.cards) {
             const cardIndex = targetBoard.cards.findIndex(c => c.id === postId);
             if (cardIndex === -1) return;
+
+            // A post scheduled from the "النشر" tab is already queued at the platforms for its date
+            const queued = targetBoard.cards[cardIndex].pfm;
+            if (queued && (queued.state === 'scheduled' || queued.state === 'processing') && targetBoard.cards[cardIndex].dateStr !== newDateStrRaw) {
+                if (typeof showToast === 'function') showToast('هالمنشور مجدول. غيّر موعده من خانة النشر.');
+                document.querySelectorAll('.sm-cal-draggable-post').forEach(el => { el.style.opacity = ''; });
+                return;
+            }
             
             // Remove the card from its current position
             if (typeof window.pushUndoState === 'function') window.pushUndoState();
@@ -9111,10 +9119,11 @@ window.saveSocialDraft = async function(isAutoSave = false) {
             newDraft.componentEdits = existingPost.componentEdits;
         }
 
-        // Keep the workflow stage set on the "المراحل" board
-        if (existingPost && existingPost.stage) {
-            newDraft.stage = existingPost.stage;
-            if (existingPost.stageChangedAt) newDraft.stageChangedAt = existingPost.stageChangedAt;
+        // Keep the workflow stage set on the "المراحل" board and the publishing details from the "النشر" tab
+        if (existingPost) {
+            ['stage', 'stageChangedAt', 'pfm', 'publishSource', 'captions', 'accountIds', 'publishOptions'].forEach(key => {
+                if (existingPost[key] !== undefined) newDraft[key] = existingPost[key];
+            });
         }
 
         // Anchor the UI explicitly to this new post ID so further auto-saves 

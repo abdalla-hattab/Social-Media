@@ -3,8 +3,7 @@
    Uses the tokens from theme.css.
    ========================================================================== */
 
-html[data-sm-ws="today"] .sm-app-wrapper > :not(.sm-ws-bar):not(#smWorkspaceView),
-html[data-sm-ws="stages"] .sm-app-wrapper > :not(.sm-ws-bar):not(#smWorkspaceView) {
+html[data-sm-ws]:not([data-sm-ws="clients"]) .sm-app-wrapper > :not(.sm-ws-bar):not(#smWorkspaceView) {
     display: none !important;
 }
 
@@ -78,6 +77,7 @@ html[data-sm-ws="stages"] .sm-app-wrapper > :not(.sm-ws-bar):not(#smWorkspaceVie
     direction: rtl;
 }
 .sm-ws-view.is-today { max-width: 980px; }
+.sm-ws-view.is-publish { max-width: 1720px; padding-top: 6px; }
 
 .sm-ws-head {
     display: flex;
