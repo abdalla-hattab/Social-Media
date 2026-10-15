@@ -3,9 +3,16 @@
     ".read": false,
     ".write": false,
     "agency_users": {
+      ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
       "$uid": {
-        ".read": "auth != null && auth.uid === $uid"
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true && $uid !== auth.uid",
+        ".validate": "newData.val() === true"
       }
+    },
+    "agency_members": {
+      ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
+      ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true"
     },
     "agency_settings": {
       ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true",

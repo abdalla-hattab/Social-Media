@@ -228,7 +228,7 @@ function setAgencyLoginVisible(visible, errorText) {
     }
 }
 
-// Only accounts listed in agency_users (added by the owner in the Firebase console) may use the dashboard
+// Only accounts listed in agency_users (added from the «الفريق» window or the Firebase console) may use the dashboard
 function isAgencyAccount(user) {
     return db.ref('agency_users/' + user.uid).once('value').then(snap => snap.val() === true).catch(() => false);
 }
@@ -244,7 +244,7 @@ if (!window.isClientView) {
             if (!allowed) {
                 window.agencyAuthPassed = false;
                 auth.signOut();
-                setAgencyLoginVisible(true, 'هذا الحساب غير مصرّح له بالدخول إلى لوحة التحكم.');
+                setAgencyLoginVisible(true, 'هذا الحساب غير مصرّح له بالدخول إلى لوحة التحكم. اطلب من مسؤول الوكالة يضيفك من زر «الفريق».');
                 return;
             }
             window.agencyAuthPassed = true;
@@ -6844,6 +6844,11 @@ function renderSocialSchedulerApp(activeBoard) {
                     </div>
                 </div>
                 <div style="display: flex; gap: 8px;">
+                    <!-- Team members (team.js) -->
+                    ${window.isClientView ? '' : `<button type="button" onclick="window.openTeamModal && window.openTeamModal()" class="sm-hero-link sm-hero-link--team" title="أضف أو شيل أعضاء الفريق" style="display: flex; align-items: center; gap: 8px; background: white; color: #475569; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 14px; border: 1px solid #e2e8f0; cursor: pointer; font-family: inherit;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14a6 6 0 0 1 3.5 6"></path></svg>
+                        الفريق
+                    </button>`}
                     <!-- Sign out -->
                     <button type="button" onclick="window.agencySignOut()" class="sm-hero-link sm-hero-link--logout" title="تسجيل الخروج" style="display: flex; align-items: center; gap: 8px; background: white; color: #475569; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 14px; border: 1px solid #e2e8f0; cursor: pointer; font-family: inherit;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
