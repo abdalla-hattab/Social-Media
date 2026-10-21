@@ -72,7 +72,7 @@
                 <b>${esc(v.name)}</b>
                 <span>${v.vote === 'approve' ? 'موافق' : 'مو موافق'}</span>
                 <span class="vv-time">${esc(fmtTime(v.ts))}</span>
-            </div>`).join('');
+            </div>${v.vote === 'reject' && v.note ? `<div class="vv-note">سبب التعديل: ${esc(v.note)}</div>` : ''}`).join('');
         return `<div class="vv-video">
             <div class="vv-video-head">
                 <div class="vv-thumb" ${item.thumbnail ? `style="background-image:url('${esc(item.thumbnail)}')"` : ''}>${item.thumbnail ? '' : '▶'}</div>
@@ -253,6 +253,7 @@
         .vv-voter { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; }
         .vv-voter b { color: #0f172a; }
         .vv-time { margin-inline-start: auto; color: #94a3b8; font-size: 12px; }
+        .vv-note { margin: 0 16px 4px 0; font-size: 13px; color: #991b1b; background: #fef2f2; border-radius: 8px; padding: 6px 10px; white-space: pre-wrap; }
         .vv-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .vv-dot.is-yes { background: #16a34a; } .vv-dot.is-no { background: #dc2626; }
         @media (max-width: 600px) { .vv-share { flex-direction: column; align-items: stretch; } }

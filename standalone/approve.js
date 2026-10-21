@@ -172,6 +172,14 @@
                     <button class="vote-btn no" type="button" data-vote="reject">مو موافق ❌</button>
                 </div>
                 <div class="my-vote"></div>
+                <div class="note" hidden>
+                    <label>سبب التعديل (اختياري)</label>
+                    <textarea maxlength="500" placeholder="مثلاً: الصوت عالي، غيّروا البداية..."></textarea>
+                    <div class="note-row">
+                        <span class="note-saved"></span>
+                        <button class="note-btn" type="button">إرسال</button>
+                    </div>
+                </div>
             </div>`;
         }).join('');
 
@@ -182,6 +190,7 @@
             el.querySelectorAll('.vote-btn').forEach(btn => {
                 btn.onclick = () => vote(cardId, btn.getAttribute('data-vote'), el);
             });
+            el.querySelector('.note-btn').onclick = () => saveNote(cardId, el);
             const mine = board.video_votes && board.video_votes[cardId] && board.video_votes[cardId][uid];
             if (mine) { myVotes[cardId] = mine; paint(el, mine); }
         });
@@ -197,6 +206,38 @@
         } else {
             info.textContent = '';
         }
+        // The reason box only shows after "مو موافق"
+        const note = el.querySelector('.note');
+        const rejected = !!(v && v.vote === 'reject');
+        note.hidden = !rejected;
+        if (!rejected) note.querySelector('textarea').value = '';
+        if (rejected) {
+            const ta = note.querySelector('textarea');
+            if (document.activeElement !== ta) ta.value = v.note || '';
+            note.querySelector('.note-saved').textContent = v.note ? 'وصلتنا ملاحظتك ✓' : '';
+        }
+    }
+
+    async function saveNote(cardId, el) {
+        const mine = myVotes[cardId];
+        if (!mine || mine.vote !== 'reject') return;
+        const text = el.querySelector('.note textarea').value.trim().slice(0, 500);
+        const btn = el.querySelector('.note-btn');
+        btn.disabled = true;
+        try {
+            await db.ref(`ai_social_lists/${boardKey}/video_votes/${cardId}/${uid}/note`).set(text || null);
+            db.ref(`ai_social_lists/${boardKey}/video_votes_log/${cardId}`).push({ uid, name: mine.name, note: text, ts: firebase.database.ServerValue.TIMESTAMP })
+                .catch(e => console.warn('note history not saved', e));
+            const saved = Object.assign({}, mine, { note: text || null });
+            myVotes[cardId] = saved;
+            paint(el, saved);
+            toast(text ? 'وصلتنا ملاحظتك، شكراً' : 'انمسحت الملاحظة');
+        } catch (err) {
+            console.error(err);
+            toast('ما انحفظت، جرّب مرة ثانية');
+        } finally {
+            btn.disabled = false;
+        }
     }
 
     async function vote(cardId, choice, el) {
@@ -204,16 +245,20 @@
         if (!name) name = await askName();
         const btns = el.querySelectorAll('.vote-btn');
         btns.forEach(b => { b.disabled = true; });
+        // Pressing "مو موافق" again keeps the reason already sent; "موافق" drops it
+        const keptNote = choice === 'reject' && myVotes[cardId] && myVotes[cardId].note ? myVotes[cardId].note : null;
         const entry = { name, vote: choice, ts: firebase.database.ServerValue.TIMESTAMP };
+        if (keptNote) entry.note = keptNote;
         try {
             await db.ref(`ai_social_lists/${boardKey}/video_votes/${cardId}/${uid}`).set(entry);
             // The history line is a nice-to-have; the vote itself is already saved
             db.ref(`ai_social_lists/${boardKey}/video_votes_log/${cardId}`).push({ uid, name, vote: choice, ts: firebase.database.ServerValue.TIMESTAMP })
                 .catch(e => console.warn('vote history not saved', e));
-            const saved = { name, vote: choice, ts: Date.now() };
+            const saved = { name, vote: choice, ts: Date.now(), note: keptNote };
             myVotes[cardId] = saved;
             paint(el, saved);
-            toast('تم حفظ رأيك، شكراً');
+            toast(choice === 'reject' ? 'تم حفظ رأيك، اكتب سبب التعديل لو حاب' : 'تم حفظ رأيك، شكراً');
+            if (choice === 'reject' && !keptNote) el.querySelector('.note textarea').focus();
         } catch (err) {
             console.error(err);
             toast('ما انحفظ، جرّب مرة ثانية');
