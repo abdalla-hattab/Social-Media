@@ -124,31 +124,47 @@
         return fio || null;
     }
 
-    function render(board, month, year) {
+    // Calendar posts of the month with a Frame.io link, then Frame.io links the agency pasted in (vote_videos)
+    function videoItems(board, month, year) {
         const prefix = `${year}-${month}-`;
-        const cards = (board.cards || [])
+        const fromCalendar = (board.cards || [])
             .filter(c => c && c.id && c.dateStr && c.dateStr.startsWith(prefix) && !c.isClientDayNote && videoLink(c))
-            .sort((a, b) => parseInt(a.dateStr.split('-')[2], 10) - parseInt(b.dateStr.split('-')[2], 10));
+            .sort((a, b) => parseInt(a.dateStr.split('-')[2], 10) - parseInt(b.dateStr.split('-')[2], 10))
+            .map(c => {
+                const link = videoLink(c);
+                const day = parseInt(c.dateStr.split('-')[2], 10);
+                return {
+                    id: c.id,
+                    url: link.url,
+                    thumbnail: link.thumbnail || '',
+                    label: (c.title || c.fullText || c.idea || c.description || 'فيديو').toString().trim().slice(0, 120),
+                    sub: `${day} ${MONTHS[month] || ''} · ${DAYS[new Date(year, month, day).getDay()]}`
+                };
+            });
+        const pasted = (Array.isArray(board.vote_videos) ? board.vote_videos : Object.values(board.vote_videos || {}))
+            .filter(v => v && v.id && v.url)
+            .map(v => ({ id: v.id, url: v.url, thumbnail: v.thumbnail || '', label: v.title || 'فيديو', sub: '' }));
+        return fromCalendar.concat(pasted);
+    }
 
-        if (!cards.length) {
+    function render(board, month, year) {
+        const items = videoItems(board, month, year);
+
+        if (!items.length) {
             showState('ما فيه فيديوهات لهذا الشهر لسا.');
             return;
         }
 
-        listEl.innerHTML = cards.map(c => {
-            const link = videoLink(c);
-            const day = parseInt(c.dateStr.split('-')[2], 10);
-            const dayName = DAYS[new Date(year, month, day).getDay()];
-            const label = (c.title || c.fullText || c.idea || c.description || 'فيديو').toString().trim().slice(0, 120);
-            const thumb = link.thumbnail ? `style="background-image:url('${esc(link.thumbnail)}')"` : '';
+        listEl.innerHTML = items.map(c => {
+            const thumb = c.thumbnail ? `style="background-image:url('${esc(c.thumbnail)}')"` : '';
             return `
             <div class="video" data-card="${esc(c.id)}">
                 <div class="video-top">
-                    <div class="thumb" ${thumb}>${link.thumbnail ? '' : '▶'}</div>
+                    <div class="thumb" ${thumb}>${c.thumbnail ? '' : '▶'}</div>
                     <div class="video-info">
-                        <div class="video-date">${day} ${MONTHS[month] || ''} · ${dayName}</div>
-                        <div class="video-title">${esc(label)}</div>
-                        <a class="watch" href="${esc(link.url)}" target="_blank" rel="noopener">▶ شاهد الفيديو</a>
+                        ${c.sub ? `<div class="video-date">${esc(c.sub)}</div>` : ''}
+                        <div class="video-title">${esc(c.label)}</div>
+                        <a class="watch" href="${esc(c.url)}" target="_blank" rel="noopener">▶ شاهد الفيديو</a>
                     </div>
                 </div>
                 <div class="votes">

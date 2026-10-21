@@ -1,6 +1,7 @@
 // "موافقة الفيديوهات" window: makes the client's voting link (approve.html) and shows, for every
-// video of the month, who voted approve or reject and when. Votes live inside the board
-// (ai_social_lists/<key>/video_votes/<cardId>/<uid>), written by the client page approve.js.
+// video, who voted approve or reject and when. Videos come from the month's calendar posts that
+// have a Frame.io link, plus any Frame.io links pasted straight into this window (vote_videos).
+// Votes live inside the board (ai_social_lists/<key>/video_votes/<videoId>/<uid>), written by approve.js.
 (function () {
     const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     const toast = msg => { if (typeof showToast === 'function') showToast(msg); else alert(msg); };
@@ -11,51 +12,74 @@
     };
 
     let overlay = null;
-    let votesRef = null;
-    let votes = {};
+    let liveRef = null;
+    let liveBoard = null;
+    let boardKey = null;
     let ctx = null;
     let lastLink = '';
+    let editingLinks = false;
 
-    const videoLink = card => {
+    const frameLink = card => {
         const items = card.mediaItems || (card.mediaObj ? [card.mediaObj] : []);
         return items.find(m => m && m.type === 'frame-io' && m.url) || null;
     };
 
     const fmtTime = ts => ts ? new Date(ts).toLocaleString('ar-SA-u-ca-gregory-nu-latn', { timeZone: 'Asia/Riyadh', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' }) : '';
 
-    function monthCards() {
-        const board = (typeof boards !== 'undefined' ? boards : []).find(b => b.id === ctx.boardId);
-        if (!board) return [];
-        const prefix = `${ctx.year}-${ctx.month}-`;
-        return (board.cards || [])
-            .filter(c => c && c.id && c.dateStr && c.dateStr.startsWith(prefix) && !c.isClientDayNote && videoLink(c))
-            .sort((a, b) => parseInt(a.dateStr.split('-')[2], 10) - parseInt(b.dateStr.split('-')[2], 10));
+    // Same id for the same link every time, so saved votes stay attached when the list is edited
+    const idForUrl = url => {
+        let h = 0;
+        for (let i = 0; i < url.length; i++) h = (h * 31 + url.charCodeAt(i)) | 0;
+        return 'vv_' + (h >>> 0).toString(36);
+    };
+
+    function currentBoard() {
+        if (liveBoard) return liveBoard;
+        return (typeof boards !== 'undefined' ? boards : []).find(b => b.id === ctx.boardId) || {};
     }
 
-    function videoRow(c) {
-        const link = videoLink(c);
-        const day = parseInt(c.dateStr.split('-')[2], 10);
-        const label = (c.title || c.fullText || c.idea || c.description || 'فيديو').toString().trim().slice(0, 90);
-        const list = Object.values(votes[c.id] || {}).filter(v => v && v.vote).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+    // Every video the client votes on: calendar posts of the month with a Frame.io link, then pasted links
+    function videoItems() {
+        const board = currentBoard();
+        const prefix = `${ctx.year}-${ctx.month}-`;
+        const fromCalendar = (board.cards || [])
+            .filter(c => c && c.id && c.dateStr && c.dateStr.startsWith(prefix) && !c.isClientDayNote && frameLink(c))
+            .sort((a, b) => parseInt(a.dateStr.split('-')[2], 10) - parseInt(b.dateStr.split('-')[2], 10))
+            .map(c => ({
+                id: c.id,
+                url: frameLink(c).url,
+                thumbnail: frameLink(c).thumbnail || '',
+                label: (c.title || c.fullText || c.idea || c.description || 'فيديو').toString().trim().slice(0, 90),
+                sub: `${parseInt(c.dateStr.split('-')[2], 10)} ${MONTHS[ctx.month]}`
+            }));
+        const pasted = (Array.isArray(board.vote_videos) ? board.vote_videos : Object.values(board.vote_videos || {}))
+            .filter(v => v && v.id && v.url)
+            .map(v => ({ id: v.id, url: v.url, thumbnail: v.thumbnail || '', label: v.title || 'فيديو', sub: '' }));
+        return fromCalendar.concat(pasted);
+    }
+
+    function videoRow(item) {
+        const votes = (currentBoard().video_votes || {})[item.id] || {};
+        const list = Object.values(votes).filter(v => v && v.vote).sort((a, b) => (a.ts || 0) - (b.ts || 0));
         const yes = list.filter(v => v.vote === 'approve').length;
         const no = list.filter(v => v.vote === 'reject').length;
         let verdict = '<span class="vv-badge">ما فيه أصوات لسا</span>';
         if (yes > no) verdict = '<span class="vv-badge is-yes">الأغلبية موافقين</span>';
         else if (no > yes) verdict = '<span class="vv-badge is-no">الأغلبية مو موافقين</span>';
         else if (yes) verdict = '<span class="vv-badge is-tie">متعادل</span>';
-        const voters = list.length ? list.map(v => `<div class="vv-voter">
+        const voters = list.map(v => `<div class="vv-voter">
                 <span class="vv-dot ${v.vote === 'approve' ? 'is-yes' : 'is-no'}"></span>
                 <b>${esc(v.name)}</b>
                 <span>${v.vote === 'approve' ? 'موافق' : 'مو موافق'}</span>
                 <span class="vv-time">${esc(fmtTime(v.ts))}</span>
-            </div>`).join('') : '';
+            </div>`).join('');
         return `<div class="vv-video">
             <div class="vv-video-head">
-                <div class="vv-thumb" ${link.thumbnail ? `style="background-image:url('${esc(link.thumbnail)}')"` : ''}>${link.thumbnail ? '' : '▶'}</div>
+                <div class="vv-thumb" ${item.thumbnail ? `style="background-image:url('${esc(item.thumbnail)}')"` : ''}>${item.thumbnail ? '' : '▶'}</div>
                 <div class="vv-video-info">
-                    <div class="vv-date">${day} ${MONTHS[ctx.month]}</div>
-                    <div class="vv-title">${esc(label)}</div>
-                    <a href="${esc(link.url)}" target="_blank" rel="noopener" class="smp-link-btn">شاهد الفيديو</a>
+                    ${item.sub ? `<div class="vv-date">${esc(item.sub)}</div>` : ''}
+                    <div class="vv-title">${esc(item.label)}</div>
+                    <a href="${esc(item.url)}" target="_blank" rel="noopener" class="smp-link-btn">شاهد الفيديو</a>
                 </div>
                 <div class="vv-counts"><span class="is-yes">✅ ${yes}</span><span class="is-no">❌ ${no}</span></div>
             </div>
@@ -64,12 +88,19 @@
         </div>`;
     }
 
+    function pastedAsText() {
+        const board = currentBoard();
+        const list = Array.isArray(board.vote_videos) ? board.vote_videos : Object.values(board.vote_videos || {});
+        return list.filter(v => v && v.url).map(v => `${v.title || 'فيديو'} | ${v.url}`).join('\n');
+    }
+
     function render() {
         if (!overlay) return;
-        const cards = monthCards();
-        const body = cards.length
-            ? cards.map(videoRow).join('')
-            : '<div class="smp-muted">ما فيه فيديوهات بهالشهر. الفيديو لازم يكون فيه رابط Frame.io عشان يطلع هنا.</div>';
+        // Don't wipe what the user is typing when new votes arrive
+        if (editingLinks) {
+            const list = overlay.querySelector('.vv-list');
+            if (list) { list.innerHTML = listHtml(); return; }
+        }
         overlay.innerHTML = `<div class="smp-modal" role="dialog" aria-modal="true" aria-label="موافقة الفيديوهات">
             <div class="smp-modal-head"><div><div class="smp-modal-eyebrow">موافقة الفيديوهات · ${MONTHS[ctx.month]} ${ctx.year}</div><h3 class="smp-modal-title">${esc(ctx.title)}: مين وافق على إيش</h3></div><button type="button" class="smp-icon-btn" data-close aria-label="سكّر">${ICON.close}</button></div>
             <div class="smp-modal-body is-single">
@@ -78,17 +109,58 @@
                     <button type="button" class="smp-btn is-primary" data-make-link>${ICON.copy} ${lastLink ? 'انسخ الرابط مرة ثانية' : 'انسخ رابط التصويت'}</button>
                 </div>
                 ${lastLink ? `<input class="smp-input vv-link" dir="ltr" readonly value="${esc(lastLink)}">` : ''}
-                <div class="vv-list">${body}</div>
+                <details class="vv-paste" ${videoItems().length ? '' : 'open'}>
+                    <summary>حط روابط فيديوهات من Frame.io</summary>
+                    <p>كل فيديو بسطر: الاسم، بعدين | ، بعدين الرابط. مثال: <span dir="ltr">قريباً | https://next.frame.io/share/…</span></p>
+                    <textarea class="smp-input vv-textarea" dir="auto" rows="5" placeholder="قريباً | https://next.frame.io/share/...">${esc(pastedAsText())}</textarea>
+                    <button type="button" class="smp-btn" data-save-links>حفظ الفيديوهات</button>
+                </details>
+                <div class="vv-list">${listHtml()}</div>
             </div>
         </div>`;
+        const ta = overlay.querySelector('.vv-textarea');
+        if (ta) {
+            ta.addEventListener('focus', () => { editingLinks = true; });
+            ta.addEventListener('blur', () => { editingLinks = false; });
+        }
+    }
+
+    function listHtml() {
+        const items = videoItems();
+        return items.length
+            ? items.map(videoRow).join('')
+            : '<div class="smp-muted">ما فيه فيديوهات لسا. حط روابط Frame.io فوق، أو حط رابط Frame.io في منشورات التقويم لهالشهر.</div>';
+    }
+
+    function saveLinks(btn) {
+        const ta = overlay.querySelector('.vv-textarea');
+        const lines = (ta ? ta.value : '').split('\n').map(l => l.trim()).filter(Boolean);
+        const out = [];
+        const seen = new Set();
+        for (let i = 0; i < lines.length; i++) {
+            const m = lines[i].match(/https?:\/\/\S+/);
+            if (!m) { toast(`السطر ${i + 1} ما فيه رابط`); return; }
+            const url = m[0];
+            if (seen.has(url)) continue;
+            seen.add(url);
+            const title = lines[i].replace(url, '').replace(/[|:\-–]+\s*$/, '').replace(/^\s*[|:\-–]+/, '').trim() || `فيديو ${out.length + 1}`;
+            out.push({ id: idForUrl(url), url, title: title.slice(0, 80) });
+        }
+        if (boardKey === null) { toast('لحظة، الصفحة لسا ما حمّلت'); return; }
+        btn.disabled = true;
+        db.ref(`ai_social_lists/${boardKey}/vote_videos`).set(out.length ? out : null)
+            .then(() => { editingLinks = false; toast(`انحفظ ✓ ${out.length} فيديو`); render(); })
+            .catch(err => { console.error(err); btn.disabled = false; toast('ما انحفظ، جرّب مرة ثانية'); });
     }
 
     function close() {
-        if (votesRef) votesRef.off();
-        votesRef = null;
+        if (liveRef) liveRef.off();
+        liveRef = null;
+        liveBoard = null;
+        boardKey = null;
+        editingLinks = false;
         if (overlay) overlay.remove();
         overlay = null;
-        votes = {};
     }
 
     function makeLink(btn) {
@@ -102,6 +174,7 @@
                 lastLink = `${location.origin}/approve.html?id=${code}`;
                 if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(lastLink).catch(() => {});
                 toast('انسخ الرابط ✓ ابعته للعميل');
+                editingLinks = false;
                 render();
             })
             .catch(err => {
@@ -134,12 +207,14 @@
             if (!t) return;
             if (t.hasAttribute('data-close')) return close();
             if (t.hasAttribute('data-make-link')) return makeLink(t);
+            if (t.hasAttribute('data-save-links')) return saveLinks(t);
         });
-        votesRef = db.ref('ai_social_lists').orderByChild('id').equalTo(boardId);
-        votesRef.on('value', snap => {
-            let found = {};
-            snap.forEach(child => { const v = child.val(); if (v && v.id === boardId) found = v.video_votes || {}; });
-            votes = found;
+        liveRef = db.ref('ai_social_lists').orderByChild('id').equalTo(boardId);
+        liveRef.on('value', snap => {
+            snap.forEach(child => {
+                const v = child.val();
+                if (v && v.id === boardId) { liveBoard = v; boardKey = child.key; }
+            });
             render();
         }, err => {
             console.error(err);
@@ -156,6 +231,10 @@
         .vv-share span { font-size: 13px; color: #64748b; }
         .vv-share .smp-btn { white-space: nowrap; flex-shrink: 0; }
         .vv-link { width: 100%; margin-bottom: 12px; font-size: 13px; }
+        .vv-paste { border: 1px dashed #cbd5e1; border-radius: 14px; padding: 10px 14px; margin-bottom: 12px; }
+        .vv-paste summary { cursor: pointer; font-weight: 700; font-size: 14px; color: #0f172a; }
+        .vv-paste p { font-size: 13px; color: #64748b; margin: 8px 0; }
+        .vv-textarea { width: 100%; min-height: 110px; margin-bottom: 8px; font-size: 13px; line-height: 1.7; }
         .vv-list { display: flex; flex-direction: column; gap: 10px; }
         .vv-video { border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; background: #fff; }
         .vv-video-head { display: flex; gap: 12px; align-items: center; }
