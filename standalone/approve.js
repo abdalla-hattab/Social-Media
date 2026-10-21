@@ -95,9 +95,37 @@
     let boardId = null;
     let boardKey = null;
     let uid = null;
-    const myVotes = {};
+    let myVotes = {};
 
-    fetch(`${DB_URL}/sm_short_links/${id}.json`)
+    // What the person saw last time (videos + their own votes), so a second visit shows the list
+    // at once while the fresh copy loads. Votes are always written using the fresh copy only.
+    const CACHE_KEY = `sm_vote_cache_${id}`;
+    const readCache = () => { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch (e) { return null; } };
+    let cache = readCache();
+    const saveCache = () => {
+        if (!cache) return;
+        cache.mine = myVotes;
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) { /* private mode */ }
+    };
+
+    function setHeader(title, month, year) {
+        if (title) {
+            $('pageTitle').textContent = `فيديوهات ${title}`;
+            document.title = `فيديوهات ${title}`;
+        }
+        $('pageSub').textContent = `${MONTHS[month] || ''} ${year} · شوف كل فيديو واضغط موافق أو مو موافق`;
+    }
+
+    if (cache && Array.isArray(cache.items)) {
+        setHeader(cache.title, cache.month, cache.year);
+        render(cache.items, cache.mine || {});
+    }
+
+    // Sign-in starts right away, next to reading the link, instead of after it
+    const signedIn = auth.signInAnonymously().then(cred => cred.user);
+
+    // Resolves once the fresh board is loaded; voting waits for it
+    const ready = fetch(`${DB_URL}/sm_short_links/${id}.json`)
         .then(r => r.json())
         .then(data => {
             const parts = typeof data === 'string' ? data.split('|') : [];
@@ -107,19 +135,18 @@
             const year = parseInt(parts[2], 10);
             const title = decodeURIComponent(parts[4] || '');
             const secret = parts[6];
-            if (title) {
-                $('pageTitle').textContent = `فيديوهات ${title}`;
-                document.title = `فيديوهات ${title}`;
-            }
-            $('pageSub').textContent = `${MONTHS[month] || ''} ${year} · شوف كل فيديو واضغط موافق أو مو موافق`;
+            setHeader(title, month, year);
 
-            const signIn = auth.currentUser ? Promise.resolve({ user: auth.currentUser }) : auth.signInAnonymously();
-            return signIn
-                .then(cred => {
-                    uid = cred.user.uid;
-                    return db.ref(`share_grants/${uid}/${boardId}`).set(secret);
+            return signedIn
+                .then(user => {
+                    uid = user.uid;
+                    const grant = db.ref(`share_grants/${uid}/${boardId}`).set(secret);
+                    grant.catch(e => console.warn('grant not saved', e));
+                    const load = () => db.ref('ai_social_lists').orderByChild('id').equalTo(boardId).once('value');
+                    // The grant normally reaches the database before the read; if the read still comes
+                    // back refused, wait for the grant and read again
+                    return load().catch(() => grant.then(load));
                 })
-                .then(() => db.ref('ai_social_lists').orderByChild('id').equalTo(boardId).once('value'))
                 .then(snap => {
                     let board = null;
                     snap.forEach(child => {
@@ -127,13 +154,23 @@
                         if (!board && v && v.id === boardId) { board = v; boardKey = child.key; }
                     });
                     if (!board) throw new Error('board not found');
-                    return render(board, month, year);
+                    const items = videoItems(board, month, year);
+                    const mine = {};
+                    items.forEach(it => {
+                        const v = board.video_votes && board.video_votes[it.id] && board.video_votes[it.id][uid];
+                        if (v) mine[it.id] = v;
+                    });
+                    cache = { title, month, year, items };
+                    render(items, mine);
+                    saveCache();
                 });
-        })
-        .catch(err => {
-            console.error(err);
-            showState('ما قدرنا نفتح الرابط. تأكد إنه الرابط كامل، أو اطلب رابط جديد.');
         });
+
+    ready.catch(err => {
+        console.error(err);
+        if (cache && listEl.querySelector('.video')) toast('ما قدرنا نحدّث الصفحة، تأكد من النت');
+        else showState('ما قدرنا نفتح الرابط. تأكد إنه الرابط كامل، أو اطلب رابط جديد.');
+    });
 
     // A card counts as a video for voting when it has a Frame.io link
     function videoLink(card) {
@@ -167,8 +204,8 @@
         return fromCalendar.concat(pasted).filter(v => !hidden[v.id]);
     }
 
-    function render(board, month, year) {
-        const items = videoItems(board, month, year);
+    function render(items, mine) {
+        myVotes = Object.assign({}, mine);
 
         if (!items.length) {
             showState('ما فيه فيديوهات لهذا الشهر لسا.');
@@ -216,8 +253,7 @@
                 e.preventDefault();
                 openPlayer(watch.href, el.querySelector('.video-title').textContent);
             };
-            const mine = board.video_votes && board.video_votes[cardId] && board.video_votes[cardId][uid];
-            if (mine) { myVotes[cardId] = mine; paint(el, mine); }
+            if (myVotes[cardId]) paint(el, myVotes[cardId]);
         });
     }
 
@@ -250,11 +286,13 @@
         const btn = el.querySelector('.note-btn');
         btn.disabled = true;
         try {
+            await ready;
             await db.ref(`ai_social_lists/${boardKey}/video_votes/${cardId}/${uid}/note`).set(text || null);
             db.ref(`ai_social_lists/${boardKey}/video_votes_log/${cardId}`).push({ uid, name: mine.name, note: text, ts: firebase.database.ServerValue.TIMESTAMP })
                 .catch(e => console.warn('note history not saved', e));
             const saved = Object.assign({}, mine, { note: text || null });
             myVotes[cardId] = saved;
+            saveCache();
             paint(el, saved);
             toast(text ? 'وصلتنا ملاحظتك، شكراً' : 'انمسحت الملاحظة');
         } catch (err) {
@@ -268,19 +306,26 @@
     async function vote(cardId, choice, el) {
         let name = getName();
         if (!name) name = await askName();
-        const btns = el.querySelectorAll('.vote-btn');
+        let btns = el.querySelectorAll('.vote-btn');
         btns.forEach(b => { b.disabled = true; });
-        // Pressing "مو موافق" again keeps the reason already sent; "موافق" drops it
-        const keptNote = choice === 'reject' && myVotes[cardId] && myVotes[cardId].note ? myVotes[cardId].note : null;
-        const entry = { name, vote: choice, ts: firebase.database.ServerValue.TIMESTAMP };
-        if (keptNote) entry.note = keptNote;
         try {
+            // Tapped while the saved copy was showing: wait for the fresh list, then use its card
+            await ready;
+            el = listEl.querySelector(`.video[data-card="${CSS.escape(cardId)}"]`);
+            if (!el) { toast('هذا الفيديو انشال من التصويت'); return; }
+            btns = el.querySelectorAll('.vote-btn');
+            btns.forEach(b => { b.disabled = true; });
+            // Pressing "مو موافق" again keeps the reason already sent; "موافق" drops it
+            const keptNote = choice === 'reject' && myVotes[cardId] && myVotes[cardId].note ? myVotes[cardId].note : null;
+            const entry = { name, vote: choice, ts: firebase.database.ServerValue.TIMESTAMP };
+            if (keptNote) entry.note = keptNote;
             await db.ref(`ai_social_lists/${boardKey}/video_votes/${cardId}/${uid}`).set(entry);
             // The history line is a nice-to-have; the vote itself is already saved
             db.ref(`ai_social_lists/${boardKey}/video_votes_log/${cardId}`).push({ uid, name, vote: choice, ts: firebase.database.ServerValue.TIMESTAMP })
                 .catch(e => console.warn('vote history not saved', e));
             const saved = { name, vote: choice, ts: Date.now(), note: keptNote };
             myVotes[cardId] = saved;
+            saveCache();
             paint(el, saved);
             toast(choice === 'reject' ? 'تم حفظ رأيك، اكتب سبب التعديل لو حاب' : 'تم حفظ رأيك، شكراً');
             if (choice === 'reject' && !keptNote) el.querySelector('.note textarea').focus();
