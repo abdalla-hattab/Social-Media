@@ -62,28 +62,32 @@
 
     function videoRow(item) {
         const votes = (currentBoard().video_votes || {})[item.id] || {};
-        // One vote per name: someone who voted again from another phone counts once, with their
-        // latest choice. Older votes stay saved, they just aren't counted.
-        const byName = {};
+        // Every saved vote is shown, but each name counts once, with its latest choice. Someone who
+        // voted again (another phone, or to add a reason) shows all their lines; the older ones are
+        // greyed out and marked as not counted.
+        const groups = {};
         Object.values(votes).filter(v => v && v.vote).sort((a, b) => (a.ts || 0) - (b.ts || 0)).forEach(v => {
             const key = nameKey(v.name);
-            const prev = byName[key];
-            const note = v.note || (v.vote === 'reject' && prev && prev.vote === 'reject' ? prev.note : null);
-            byName[key] = Object.assign({}, v, { note });
+            (groups[key] = groups[key] || []).push(v);
         });
-        const list = Object.values(byName).sort((a, b) => (a.ts || 0) - (b.ts || 0));
-        const yes = list.filter(v => v.vote === 'approve').length;
-        const no = list.filter(v => v.vote === 'reject').length;
+        const people = Object.values(groups).sort((a, b) => (a[0].ts || 0) - (b[0].ts || 0));
+        const counted = people.map(g => g[g.length - 1]);
+        const yes = counted.filter(v => v.vote === 'approve').length;
+        const no = counted.filter(v => v.vote === 'reject').length;
         let verdict = '<span class="vv-badge">ما فيه أصوات لسا</span>';
         if (yes > no) verdict = '<span class="vv-badge is-yes">الأغلبية موافقين</span>';
         else if (no > yes) verdict = '<span class="vv-badge is-no">الأغلبية مو موافقين</span>';
         else if (yes) verdict = '<span class="vv-badge is-tie">متعادل</span>';
-        const voters = list.map(v => `<div class="vv-voter">
+        const voters = people.map(g => g.map((v, i) => {
+            const old = i < g.length - 1;
+            return `<div class="vv-voter${old ? ' is-old' : ''}">
                 <span class="vv-dot ${v.vote === 'approve' ? 'is-yes' : 'is-no'}"></span>
                 <b>${esc(v.name)}</b>
                 <span>${v.vote === 'approve' ? 'موافق' : 'مو موافق'}</span>
+                ${old ? '<span class="vv-old-tag">قديم، ما انحسب</span>' : ''}
                 <span class="vv-time">${esc(fmtTime(v.ts))}</span>
-            </div>${v.vote === 'reject' && v.note ? `<div class="vv-note">سبب التعديل: ${esc(v.note)}</div>` : ''}`).join('');
+            </div>${v.vote === 'reject' && v.note ? `<div class="vv-note${old ? ' is-old' : ''}">سبب التعديل: ${esc(v.note)}</div>` : ''}`;
+        }).join('')).join('');
         const hidden = !!(currentBoard().vote_hidden || {})[item.id];
         return `<div class="vv-video${hidden ? ' is-hidden' : ''}">
             <div class="vv-video-head">
@@ -319,6 +323,8 @@
         .vv-voter b { color: #0f172a; }
         .vv-time { margin-inline-start: auto; color: #94a3b8; font-size: 12px; }
         .vv-note { margin: 0 16px 4px 0; font-size: 13px; color: #991b1b; background: #fef2f2; border-radius: 8px; padding: 6px 10px; white-space: pre-wrap; }
+        .vv-voter.is-old, .vv-note.is-old { opacity: .55; }
+        .vv-old-tag { font-size: 11px; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 1px 8px; }
         .vv-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .vv-dot.is-yes { background: #16a34a; } .vv-dot.is-no { background: #dc2626; }
         .vv-player { position: fixed; inset: 0; z-index: 10060; background: rgba(15,23,42,.92); display: none; flex-direction: column; padding: 12px; }
