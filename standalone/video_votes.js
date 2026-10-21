@@ -80,7 +80,7 @@
                 <div class="vv-video-info">
                     ${item.sub ? `<div class="vv-date">${esc(item.sub)}</div>` : ''}
                     <div class="vv-title">${esc(item.label)}</div>
-                    <a href="${esc(item.url)}" target="_blank" rel="noopener" class="smp-link-btn">شاهد الفيديو</a>
+                    <a href="${esc(item.url)}" target="_blank" rel="noopener" class="smp-link-btn" data-play data-title="${esc(item.label)}">شاهد الفيديو</a>
                 </div>
                 <div class="vv-counts"><span class="is-yes">✅ ${yes}</span><span class="is-no">❌ ${no}</span></div>
             </div>
@@ -168,7 +168,35 @@
             .catch(err => { console.error(err); btn.disabled = false; toast('ما انحفظ، جرّب مرة ثانية'); });
     }
 
+    // Plays the Frame.io video in a window over the votes instead of a new tab
+    let player = null;
+    function openPlayer(url, title) {
+        if (!player) {
+            player = document.createElement('div');
+            player.className = 'vv-player';
+            player.innerHTML = `<div class="vv-player-bar">
+                    <button type="button" class="smp-btn" data-player-close>✕ رجوع</button>
+                    <b></b>
+                    <a target="_blank" rel="noopener">ما اشتغل؟ افتحه هنا</a>
+                </div>
+                <iframe title="الفيديو" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+            player.querySelector('[data-player-close]').addEventListener('click', closePlayer);
+            document.body.appendChild(player);
+            document.addEventListener('keydown', e => { if (e.key === 'Escape' && player.classList.contains('is-open')) closePlayer(); });
+        }
+        player.querySelector('b').textContent = title || '';
+        player.querySelector('a').href = url;
+        player.querySelector('iframe').src = url;
+        player.classList.add('is-open');
+    }
+    function closePlayer() {
+        if (!player) return;
+        player.classList.remove('is-open');
+        player.querySelector('iframe').src = 'about:blank';
+    }
+
     function close() {
+        closePlayer();
         if (liveRef) liveRef.off();
         liveRef = null;
         liveBoard = null;
@@ -218,6 +246,11 @@
         render();
         overlay.addEventListener('click', e => {
             if (e.target === overlay) return close();
+            const play = e.target.closest('a[data-play]');
+            if (play) {
+                e.preventDefault();
+                return openPlayer(play.href, play.getAttribute('data-title'));
+            }
             const t = e.target.closest('button');
             if (!t) return;
             if (t.hasAttribute('data-close')) return close();
@@ -277,6 +310,12 @@
         .vv-note { margin: 0 16px 4px 0; font-size: 13px; color: #991b1b; background: #fef2f2; border-radius: 8px; padding: 6px 10px; white-space: pre-wrap; }
         .vv-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .vv-dot.is-yes { background: #16a34a; } .vv-dot.is-no { background: #dc2626; }
+        .vv-player { position: fixed; inset: 0; z-index: 10060; background: rgba(15,23,42,.92); display: none; flex-direction: column; padding: 12px; }
+        .vv-player.is-open { display: flex; }
+        .vv-player-bar { display: flex; align-items: center; gap: 10px; color: #fff; padding-bottom: 10px; }
+        .vv-player-bar b { flex: 1; min-width: 0; font-size: 15px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .vv-player-bar a { color: #cbd5e1; font-size: 13px; }
+        .vv-player iframe { flex: 1; width: 100%; border: 0; border-radius: 12px; background: #000; }
         @media (max-width: 600px) { .vv-share { flex-direction: column; align-items: stretch; } }
     `;
     document.head.appendChild(style);

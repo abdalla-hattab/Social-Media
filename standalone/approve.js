@@ -64,6 +64,24 @@
     }
     $('changeName').onclick = () => askName();
 
+    // Videos play in a window over the page instead of a new tab
+    function openPlayer(url, title) {
+        $('playerTitle').textContent = title || '';
+        $('playerOpen').href = url;
+        $('playerWait').style.display = 'flex';
+        $('playerFrame').onload = () => { $('playerWait').style.display = 'none'; };
+        $('playerFrame').src = url;
+        $('player').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    function closePlayer() {
+        $('player').classList.remove('show');
+        $('playerFrame').src = 'about:blank';
+        document.body.style.overflow = '';
+    }
+    $('playerClose').onclick = closePlayer;
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('player').classList.contains('show')) closePlayer(); });
+
     const id = new URLSearchParams(location.search).get('id');
     if (!id || !/^[A-Za-z0-9_-]{4,64}$/.test(id)) {
         showState('الرابط غير صحيح.');
@@ -193,6 +211,11 @@
                 btn.onclick = () => vote(cardId, btn.getAttribute('data-vote'), el);
             });
             el.querySelector('.note-btn').onclick = () => saveNote(cardId, el);
+            const watch = el.querySelector('.watch');
+            watch.onclick = e => {
+                e.preventDefault();
+                openPlayer(watch.href, el.querySelector('.video-title').textContent);
+            };
             const mine = board.video_votes && board.video_votes[cardId] && board.video_votes[cardId][uid];
             if (mine) { myVotes[cardId] = mine; paint(el, mine); }
         });
