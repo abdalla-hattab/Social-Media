@@ -35,6 +35,7 @@
         toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
     };
 
+    const nameKey = n => String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
     const getName = () => { try { return localStorage.getItem(NAME_KEY) || ''; } catch (e) { return ''; } };
     const setName = n => { try { localStorage.setItem(NAME_KEY, n); } catch (e) { /* private mode */ } };
 
@@ -155,9 +156,18 @@
                     });
                     if (!board) throw new Error('board not found');
                     const items = videoItems(board, month, year);
+                    // Your vote on each video: from this phone, or your latest one under the same name
+                    // from another phone (the agency counts one vote per name)
+                    const myName = nameKey(getName());
                     const mine = {};
                     items.forEach(it => {
-                        const v = board.video_votes && board.video_votes[it.id] && board.video_votes[it.id][uid];
+                        const all = (board.video_votes && board.video_votes[it.id]) || {};
+                        let v = all[uid] || null;
+                        if (!v && myName) {
+                            Object.values(all).forEach(o => {
+                                if (o && o.vote && nameKey(o.name) === myName && (!v || (o.ts || 0) > (v.ts || 0))) v = o;
+                            });
+                        }
                         if (v) mine[it.id] = v;
                     });
                     cache = { title, month, year, items };

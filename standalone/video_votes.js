@@ -24,6 +24,8 @@
         return items.find(m => m && m.type === 'frame-io' && m.url) || null;
     };
 
+    const nameKey = n => String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
+
     const fmtTime = ts => ts ? new Date(ts).toLocaleString('ar-SA-u-ca-gregory-nu-latn', { timeZone: 'Asia/Riyadh', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit' }) : '';
 
     // Same id for the same link every time, so saved votes stay attached when the list is edited
@@ -60,7 +62,16 @@
 
     function videoRow(item) {
         const votes = (currentBoard().video_votes || {})[item.id] || {};
-        const list = Object.values(votes).filter(v => v && v.vote).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+        // One vote per name: someone who voted again from another phone counts once, with their
+        // latest choice. Older votes stay saved, they just aren't counted.
+        const byName = {};
+        Object.values(votes).filter(v => v && v.vote).sort((a, b) => (a.ts || 0) - (b.ts || 0)).forEach(v => {
+            const key = nameKey(v.name);
+            const prev = byName[key];
+            const note = v.note || (v.vote === 'reject' && prev && prev.vote === 'reject' ? prev.note : null);
+            byName[key] = Object.assign({}, v, { note });
+        });
+        const list = Object.values(byName).sort((a, b) => (a.ts || 0) - (b.ts || 0));
         const yes = list.filter(v => v.vote === 'approve').length;
         const no = list.filter(v => v.vote === 'reject').length;
         let verdict = '<span class="vv-badge">ما فيه أصوات لسا</span>';
