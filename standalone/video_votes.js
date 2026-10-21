@@ -73,7 +73,8 @@
                 <span>${v.vote === 'approve' ? 'موافق' : 'مو موافق'}</span>
                 <span class="vv-time">${esc(fmtTime(v.ts))}</span>
             </div>${v.vote === 'reject' && v.note ? `<div class="vv-note">سبب التعديل: ${esc(v.note)}</div>` : ''}`).join('');
-        return `<div class="vv-video">
+        const hidden = !!(currentBoard().vote_hidden || {})[item.id];
+        return `<div class="vv-video${hidden ? ' is-hidden' : ''}">
             <div class="vv-video-head">
                 <div class="vv-thumb" ${item.thumbnail ? `style="background-image:url('${esc(item.thumbnail)}')"` : ''}>${item.thumbnail ? '' : '▶'}</div>
                 <div class="vv-video-info">
@@ -83,7 +84,10 @@
                 </div>
                 <div class="vv-counts"><span class="is-yes">✅ ${yes}</span><span class="is-no">❌ ${no}</span></div>
             </div>
-            <div class="vv-verdict">${verdict}</div>
+            <div class="vv-verdict">
+                ${hidden ? '<span class="vv-badge is-off">مخفي عن العميل</span>' : verdict}
+                <button type="button" class="vv-hide" data-toggle-hide="${esc(item.id)}">${hidden ? 'إظهار للعميل' : 'إخفاء من التصويت'}</button>
+            </div>
             ${voters ? `<div class="vv-voters">${voters}</div>` : ''}
         </div>`;
     }
@@ -153,6 +157,17 @@
             .catch(err => { console.error(err); btn.disabled = false; toast('ما انحفظ، جرّب مرة ثانية'); });
     }
 
+    // Hidden videos stay here with their votes, but the client's page stops showing them
+    function toggleHidden(btn) {
+        if (boardKey === null) { toast('لحظة، الصفحة لسا ما حمّلت'); return; }
+        const id = btn.getAttribute('data-toggle-hide');
+        const hide = !(currentBoard().vote_hidden || {})[id];
+        btn.disabled = true;
+        db.ref(`ai_social_lists/${boardKey}/vote_hidden/${id}`).set(hide ? true : null)
+            .then(() => toast(hide ? 'انخفى عن العميل' : 'رجع يظهر للعميل'))
+            .catch(err => { console.error(err); btn.disabled = false; toast('ما انحفظ، جرّب مرة ثانية'); });
+    }
+
     function close() {
         if (liveRef) liveRef.off();
         liveRef = null;
@@ -208,6 +223,7 @@
             if (t.hasAttribute('data-close')) return close();
             if (t.hasAttribute('data-make-link')) return makeLink(t);
             if (t.hasAttribute('data-save-links')) return saveLinks(t);
+            if (t.hasAttribute('data-toggle-hide')) return toggleHidden(t);
         });
         liveRef = db.ref('ai_social_lists').orderByChild('id').equalTo(boardId);
         liveRef.on('value', snap => {
@@ -244,7 +260,12 @@
         .vv-title { font-size: 14px; font-weight: 600; color: #0f172a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         .vv-counts { display: flex; flex-direction: column; gap: 2px; font-weight: 700; font-size: 14px; text-align: left; }
         .vv-counts .is-yes { color: #16a34a; } .vv-counts .is-no { color: #dc2626; }
-        .vv-verdict { margin-top: 8px; }
+        .vv-verdict { margin-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .vv-hide { border: 1px solid #e2e8f0; background: #fff; color: #475569; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 600; padding: 3px 12px; cursor: pointer; }
+        .vv-hide:hover { border-color: #94a3b8; color: #0f172a; }
+        .vv-video.is-hidden { background: #f8fafc; }
+        .vv-video.is-hidden .vv-video-head { opacity: .5; }
+        .vv-badge.is-off { background: #e2e8f0; color: #475569; }
         .vv-badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #f1f5f9; color: #64748b; }
         .vv-badge.is-yes { background: #dcfce7; color: #166534; }
         .vv-badge.is-no { background: #fee2e2; color: #991b1b; }

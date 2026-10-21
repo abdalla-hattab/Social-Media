@@ -144,7 +144,9 @@
         const pasted = (Array.isArray(board.vote_videos) ? board.vote_videos : Object.values(board.vote_videos || {}))
             .filter(v => v && v.id && v.url)
             .map(v => ({ id: v.id, url: v.url, thumbnail: v.thumbnail || '', label: v.title || 'فيديو', sub: '' }));
-        return fromCalendar.concat(pasted);
+        // Videos the agency hid from voting are left out
+        const hidden = board.vote_hidden || {};
+        return fromCalendar.concat(pasted).filter(v => !hidden[v.id]);
     }
 
     function render(board, month, year) {
