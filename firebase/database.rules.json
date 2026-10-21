@@ -49,31 +49,6 @@
       "$code": {
         ".read": true
       }
-    },
-    "video_votes": {
-      ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
-      ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
-      "$boardId": {
-        "$cardId": {
-          "$uid": {
-            ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && root.child('share_grants').child(auth.uid).child($boardId).isString() && root.child('share_grants').child(auth.uid).child($boardId).val() === root.child('board_secrets').child($boardId).val() && auth.uid === $uid",
-            ".validate": "newData.hasChildren(['name', 'vote', 'ts']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 60 && (newData.child('vote').val() === 'approve' || newData.child('vote').val() === 'reject') && newData.child('ts').isNumber() && newData.child('ts').val() <= now"
-          }
-        }
-      }
-    },
-    "video_votes_log": {
-      ".read": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
-      ".write": "auth != null && root.child('agency_users').child(auth.uid).val() === true",
-      "$boardId": {
-        "$cardId": {
-          "$entry": {
-            ".write": "!data.exists() && auth != null && root.child('share_grants').child(auth.uid).child($boardId).isString() && root.child('share_grants').child(auth.uid).child($boardId).val() === root.child('board_secrets').child($boardId).val()",
-            ".validate": "newData.hasChildren(['uid', 'name', 'vote', 'ts']) && newData.child('uid').val() === auth.uid && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('name').val().length <= 60 && (newData.child('vote').val() === 'approve' || newData.child('vote').val() === 'reject') && newData.child('ts').isNumber() && newData.child('ts').val() <= now"
-          }
-        }
-      }
     }
   }
 }

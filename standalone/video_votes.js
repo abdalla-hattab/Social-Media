@@ -1,6 +1,6 @@
 // "موافقة الفيديوهات" window: makes the client's voting link (approve.html) and shows, for every
-// video of the month, who voted approve or reject and when. Votes live in video_votes/<boardId>,
-// one entry per voter per video, written by the client page approve.js.
+// video of the month, who voted approve or reject and when. Votes live inside the board
+// (ai_social_lists/<key>/video_votes/<cardId>/<uid>), written by the client page approve.js.
 (function () {
     const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
     const toast = msg => { if (typeof showToast === 'function') showToast(msg); else alert(msg); };
@@ -135,11 +135,16 @@
             if (t.hasAttribute('data-close')) return close();
             if (t.hasAttribute('data-make-link')) return makeLink(t);
         });
-        votesRef = db.ref('video_votes/' + boardId);
-        votesRef.on('value', snap => { votes = snap.val() || {}; render(); }, err => {
+        votesRef = db.ref('ai_social_lists').orderByChild('id').equalTo(boardId);
+        votesRef.on('value', snap => {
+            let found = {};
+            snap.forEach(child => { const v = child.val(); if (v && v.id === boardId) found = v.video_votes || {}; });
+            votes = found;
+            render();
+        }, err => {
             console.error(err);
             const list = overlay && overlay.querySelector('.vv-list');
-            if (list) list.insertAdjacentHTML('afterbegin', '<div class="smp-muted">ما قدرنا نقرأ الأصوات. تأكد إن قواعد Firebase الجديدة انحطت.</div>');
+            if (list) list.insertAdjacentHTML('afterbegin', '<div class="smp-muted">ما قدرنا نقرأ الأصوات. سكّر النافذة وافتحها مرة ثانية.</div>');
         });
     };
 

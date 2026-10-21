@@ -1,6 +1,7 @@
 // Video voting page for clients: each person opens the shared link, watches every video
 // of the month on Frame.io, and taps approve or reject. Votes are saved per person under
-// video_votes/<boardId>/<cardId>/<uid>, and every tap is also kept in video_votes_log.
+// inside the client's own board (ai_social_lists/<key>/video_votes/<cardId>/<uid>), where the
+// share link already lets the client write, and every tap is also kept in video_votes_log.
 (function () {
     const firebaseConfig = {
         apiKey: "AIzaSyCBC6_DRCiMwoGPIM1uexpfvXQIaeF-DOc",
@@ -74,6 +75,7 @@
     const auth = firebase.auth();
 
     let boardId = null;
+    let boardKey = null;
     let uid = null;
     const myVotes = {};
 
@@ -104,7 +106,7 @@
                     let board = null;
                     snap.forEach(child => {
                         const v = child.val();
-                        if (!board && v && v.id === boardId) board = v;
+                        if (!board && v && v.id === boardId) { board = v; boardKey = child.key; }
                     });
                     if (!board) throw new Error('board not found');
                     return render(board, month, year);
@@ -164,9 +166,8 @@
             el.querySelectorAll('.vote-btn').forEach(btn => {
                 btn.onclick = () => vote(cardId, btn.getAttribute('data-vote'), el);
             });
-            db.ref(`video_votes/${boardId}/${cardId}/${uid}`).once('value')
-                .then(s => { if (s.val()) { myVotes[cardId] = s.val(); paint(el, s.val()); } })
-                .catch(() => { /* nothing saved yet */ });
+            const mine = board.video_votes && board.video_votes[cardId] && board.video_votes[cardId][uid];
+            if (mine) { myVotes[cardId] = mine; paint(el, mine); }
         });
     }
 
@@ -189,13 +190,13 @@
         btns.forEach(b => { b.disabled = true; });
         const entry = { name, vote: choice, ts: firebase.database.ServerValue.TIMESTAMP };
         try {
-            await db.ref(`video_votes/${boardId}/${cardId}/${uid}`).set(entry);
+            await db.ref(`ai_social_lists/${boardKey}/video_votes/${cardId}/${uid}`).set(entry);
             // The history line is a nice-to-have; the vote itself is already saved
-            db.ref(`video_votes_log/${boardId}/${cardId}`).push({ uid, name, vote: choice, ts: firebase.database.ServerValue.TIMESTAMP })
+            db.ref(`ai_social_lists/${boardKey}/video_votes_log/${cardId}`).push({ uid, name, vote: choice, ts: firebase.database.ServerValue.TIMESTAMP })
                 .catch(e => console.warn('vote history not saved', e));
-            const saved = await db.ref(`video_votes/${boardId}/${cardId}/${uid}`).once('value');
-            myVotes[cardId] = saved.val();
-            paint(el, saved.val());
+            const saved = { name, vote: choice, ts: Date.now() };
+            myVotes[cardId] = saved;
+            paint(el, saved);
             toast('تم حفظ رأيك، شكراً');
         } catch (err) {
             console.error(err);
