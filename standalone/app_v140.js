@@ -6849,6 +6849,11 @@ function renderSocialSchedulerApp(activeBoard) {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20a6.5 6.5 0 0 1 13 0"></path><path d="M16 4.5a3.5 3.5 0 0 1 0 7"></path><path d="M18 14a6 6 0 0 1 3.5 6"></path></svg>
                         الفريق
                     </button>`}
+                    <!-- Video reviews, owner only (video_reviews.js shows it through body.sm-video-admin) -->
+                    ${window.isClientView ? '' : `<button type="button" onclick="window.openVideoReviews && window.openVideoReviews()" class="sm-hero-link sm-hero-link--videos" title="راجع فيديوهات العملاء واكتب رأيك" style="display: none; align-items: center; gap: 8px; background: white; color: #475569; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 14px; border: 1px solid #e2e8f0; cursor: pointer; font-family: inherit;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="13" height="14" rx="2"></rect><path d="M16 10l5-3v10l-5-3"></path><path d="M7.5 12l2 2 3.5-4"></path></svg>
+                        مراجعة الفيديوهات
+                    </button>`}
                     <!-- Sign out -->
                     <button type="button" onclick="window.agencySignOut()" class="sm-hero-link sm-hero-link--logout" title="تسجيل الخروج" style="display: flex; align-items: center; gap: 8px; background: white; color: #475569; padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 14px; border: 1px solid #e2e8f0; cursor: pointer; font-family: inherit;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
