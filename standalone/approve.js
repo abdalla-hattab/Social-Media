@@ -254,6 +254,10 @@
                         <label class="att-btn">📷 أضف صورة<input type="file" accept="image/*" multiple hidden></label>
                         <button class="att-btn att-rec" type="button">🎙️ سجّل صوت</button>
                     </div>
+                    <div class="att-help" hidden>
+                        <p class="att-help-text"></p>
+                        <label class="att-btn att-alt">📎 سجّل بتطبيق الجوال<input type="file" accept="audio/*" hidden></label>
+                    </div>
                     <div class="att-list"></div>
                 </div>
             </div>`;
@@ -268,6 +272,7 @@
             });
             el.querySelector('.note-btn').onclick = () => saveNote(cardId, el);
             el.querySelector('.att-tools input').onchange = e => { addImages(cardId, [...e.target.files]); e.target.value = ''; };
+            el.querySelector('.att-alt input').onchange = e => { addAudioFile(cardId, e.target.files[0]); e.target.value = ''; };
             el.querySelector('.att-rec').onclick = () => toggleRecording(cardId);
             const watch = el.querySelector('.watch');
             watch.onclick = e => {
@@ -394,17 +399,101 @@
         toast(ok ? `انرفعت ${ok === 1 ? 'الصورة' : ok + ' صور'} ✓` : 'ما انرفعت الصورة، جرّب صورة ثانية');
     }
 
+    // When the phone doesn't let the page use the mic, say why and offer the phone's own recorder app
+    function showMicHelp(id, err) {
+        const el = cardEl(id);
+        if (!el) return;
+        const box = el.querySelector('.att-help');
+        box.hidden = !err;
+        if (!err) return;
+        const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+        let msg;
+        if (err.name === 'Unsupported') msg = 'هذا المتصفح ما يقدر يسجّل من الصفحة.';
+        else if (/NotReadable|Abort|TrackStart/.test(err.name || '')) msg = 'المايك مشغول بتطبيق ثاني (مكالمة أو واتساب). سكّره واضغط «سجّل صوت» مرة ثانية.';
+        else if (err.name === 'NotFoundError') msg = 'ما لقينا مايك في الجهاز.';
+        else if (/dismiss/i.test(err.message || '')) msg = 'طلع لك سؤال المايك وتسكّر. اضغط «سجّل صوت» مرة ثانية واختر «سماح».';
+        else if (ios) msg = 'الجوال ما سمح للصفحة تستخدم المايك. اضغط «aA» جنب الرابط فوق ← إعدادات موقع الويب ← الميكروفون ← سماح، وبعدين اضغط «سجّل صوت» مرة ثانية.';
+        else msg = 'الجوال ما سمح للصفحة تستخدم المايك. اضغط العلامة اللي جنب الرابط فوق ← الأذونات ← شغّل الميكروفون، وبعدين اضغط «سجّل صوت» مرة ثانية.';
+        box.querySelector('.att-help-text').textContent = msg + ' أو سجّل بتطبيق التسجيل حق جوالك من الزر هذا:';
+    }
+
+    // A voice note from the phone's recorder app (or a saved file). Big or odd files become a
+    // small mono WAV, enough for a voice, so they fit like the ones recorded on the page.
+    async function addAudioFile(id, file) {
+        if (!file) return;
+        toast('جاري رفع التسجيل...');
+        try {
+            const { data, secs } = await audioFileData(file);
+            await addMedia(id, 'audio', data, { secs });
+            toast('انحفظ التسجيل ✓');
+        } catch (err) {
+            console.error(err);
+            toast(err.message === 'too long' ? 'التسجيل طويل، قسّمه على أكثر من تسجيل' : 'ما انرفع التسجيل، جرّب مرة ثانية');
+        }
+    }
+
+    function readData(blob) {
+        return new Promise((resolve, reject) => { const fr = new FileReader(); fr.onload = () => resolve(fr.result); fr.onerror = () => reject(fr.error); fr.readAsDataURL(blob); });
+    }
+
+    async function audioFileData(file) {
+        let buffer = null;
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            buffer = await ctx.decodeAudioData(await file.arrayBuffer());
+            if (ctx.close) ctx.close();
+        } catch (err) { console.warn('audio not decoded', err); }
+        const secs = buffer ? Math.round(buffer.duration) : 0;
+        const playable = /^audio\//.test(file.type) && document.createElement('audio').canPlayType(file.type) !== '';
+        if (playable && file.size * 4 / 3 + 100 < MAX_DATA) return { data: await readData(file), secs };
+        if (!buffer) throw new Error('bad audio');
+        return { data: await readData(await smallWav(buffer)), secs };
+    }
+
+    async function smallWav(buffer) {
+        const room = Math.floor((MAX_DATA - 100) * 3 / 4) - 44;
+        let rate = 8000, bits = 16;
+        if (buffer.duration * rate * 2 > room) bits = 8;
+        if (buffer.duration * rate > room) rate = Math.floor(room / buffer.duration);
+        if (rate < 5000) throw new Error('too long');
+        const Off = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        const off = new Off(1, Math.max(1, Math.floor(buffer.duration * rate)), rate);
+        const src = off.createBufferSource();
+        src.buffer = buffer;
+        src.connect(off.destination);
+        src.start();
+        const pcm = (await off.startRendering()).getChannelData(0);
+        let peak = 0;
+        for (let i = 0; i < pcm.length; i++) peak = Math.max(peak, Math.abs(pcm[i]));
+        const gain = peak ? Math.min(4, 0.95 / peak) : 1;
+        const size = bits / 8;
+        const view = new DataView(new ArrayBuffer(44 + pcm.length * size));
+        const str = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+        str(0, 'RIFF'); view.setUint32(4, 36 + pcm.length * size, true); str(8, 'WAVE');
+        str(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+        view.setUint32(24, rate, true); view.setUint32(28, rate * size, true); view.setUint16(32, size, true); view.setUint16(34, bits, true);
+        str(36, 'data'); view.setUint32(40, pcm.length * size, true);
+        for (let i = 0; i < pcm.length; i++) {
+            const s = Math.max(-1, Math.min(1, pcm[i] * gain));
+            if (bits === 16) view.setInt16(44 + i * 2, Math.round(s * 32767), true);
+            else view.setUint8(44 + i, Math.round(s * 127 + 128));
+        }
+        return new Blob([view], { type: 'audio/wav' });
+    }
+
     // Voice notes: up to one minute, recorded in the browser
     async function toggleRecording(id) {
         if (recorder) { recorder.stop(); return; }
-        if (!navigator.mediaDevices || !window.MediaRecorder) { toast('جوالك ما يدعم التسجيل من الصفحة'); return; }
+        if (!navigator.mediaDevices || !window.MediaRecorder) { showMicHelp(id, { name: 'Unsupported' }); return; }
         let stream;
         try {
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         } catch (err) {
-            toast('اسمح للصفحة تستخدم المايك وجرّب مرة ثانية');
+            console.warn('mic', err && err.name, err && err.message);
+            showMicHelp(id, err);
             return;
         }
+        showMicHelp(id, null);
         const type = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
         const rec = new MediaRecorder(stream, type ? { mimeType: type, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
         const chunks = [];

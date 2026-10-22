@@ -86,6 +86,10 @@
             border-radius: 10px; padding: 7px 12px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
         }
         .att-btn.on { background: var(--no); border-color: var(--no); color: #fff; }
+        .att-help { margin-top: 10px; background: #fff; border: 1px solid #fecaca; border-radius: 10px; padding: 10px; }
+        .att-help[hidden] { display: none; }
+        .att-help-text { margin: 0 0 8px; font-size: 14px; line-height: 1.7; color: #7f1d1d; }
+        .note label.att-btn { display: inline-flex; margin-bottom: 0; }
         .att-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
         .att-list:empty { display: none; }
         .att-item { position: relative; }
@@ -170,6 +174,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
-    <script src="approve.js?v=8"></script>
+    <script src="approve.js?v=9"></script>
 </body>
 </html>
