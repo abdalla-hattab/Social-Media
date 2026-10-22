@@ -256,7 +256,7 @@
                     </div>
                     <div class="att-help" hidden>
                         <p class="att-help-text"></p>
-                        <label class="att-btn att-alt">📎 سجّل بتطبيق الجوال<input type="file" accept="audio/*" hidden></label>
+                        <label class="att-btn att-alt">🎙️ سجّل بتطبيق الجوال<input type="file" accept="audio/*" capture hidden></label>
                     </div>
                     <div class="att-list"></div>
                 </div>
@@ -412,9 +412,32 @@
         else if (/NotReadable|Abort|TrackStart/.test(err.name || '')) msg = 'المايك مشغول بتطبيق ثاني (مكالمة أو واتساب). سكّره واضغط «سجّل صوت» مرة ثانية.';
         else if (err.name === 'NotFoundError') msg = 'ما لقينا مايك في الجهاز.';
         else if (/dismiss/i.test(err.message || '')) msg = 'طلع لك سؤال المايك وتسكّر. اضغط «سجّل صوت» مرة ثانية واختر «سماح».';
-        else if (ios) msg = 'الجوال ما سمح للصفحة تستخدم المايك. اضغط «aA» جنب الرابط فوق ← إعدادات موقع الويب ← الميكروفون ← سماح، وبعدين اضغط «سجّل صوت» مرة ثانية.';
-        else msg = 'الجوال ما سمح للصفحة تستخدم المايك. اضغط العلامة اللي جنب الرابط فوق ← الأذونات ← شغّل الميكروفون، وبعدين اضغط «سجّل صوت» مرة ثانية.';
-        box.querySelector('.att-help-text').textContent = msg + ' أو سجّل بتطبيق التسجيل حق جوالك من الزر هذا:';
+        else if (ios) msg = 'المايك مقفول على هذي الصفحة. لفتحه: «aA» جنب الرابط فوق ← إعدادات موقع الويب ← الميكروفون ← سماح.';
+        else msg = 'المايك مقفول على هذي الصفحة. لفتحه: العلامة اللي جنب الرابط فوق ← الأذونات ← الميكروفون.';
+        box.querySelector('.att-help-text').textContent = msg + ' أو سجّل على طول بتطبيق الجوال:';
+    }
+
+    // The phone's own recorder app has its own mic permission, so it works even when the page's mic is blocked
+    function openPhoneRecorder(id) {
+        const el = cardEl(id);
+        if (!el) return;
+        toast('سجّل في تطبيق الجوال، وبعدين ارجع هنا');
+        el.querySelector('.att-alt input').click();
+    }
+
+    async function micState() {
+        try { return (await navigator.permissions.query({ name: 'microphone' })).state; } catch (e) { return ''; }
+    }
+
+    // Every mic failure is kept (what the phone said), so we can see why it failed on a client's phone
+    function logMic(id, err, ms, perm) {
+        try {
+            db.ref(`vote_mic_log/${boardId || 'none'}`).push({
+                uid: uid || '', name: getName() || '', video: id, perm: perm || '', ms: Math.round(ms),
+                err: (err && err.name) || '', msg: String((err && err.message) || '').slice(0, 200),
+                ua: navigator.userAgent.slice(0, 200), ts: firebase.database.ServerValue.TIMESTAMP
+            }).catch(() => {});
+        } catch (e) { /* logging must never break recording */ }
     }
 
     // A voice note from the phone's recorder app (or a saved file). Big or odd files become a
@@ -484,18 +507,39 @@
     // Voice notes: up to one minute, recorded in the browser
     async function toggleRecording(id) {
         if (recorder) { recorder.stop(); return; }
-        if (!navigator.mediaDevices || !window.MediaRecorder) { showMicHelp(id, { name: 'Unsupported' }); return; }
+        if (!navigator.mediaDevices || !window.MediaRecorder) {
+            showMicHelp(id, { name: 'Unsupported' });
+            logMic(id, { name: 'Unsupported' }, 0, '');
+            openPhoneRecorder(id);
+            return;
+        }
+        const perm = await micState();
+        if (perm === 'prompt') toast('لما يسألك الجوال عن المايك اضغط «سماح»');
+        const t0 = performance.now();
         let stream;
         try {
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         } catch (err) {
+            const ms = performance.now() - t0;
             console.warn('mic', err && err.name, err && err.message);
+            logMic(id, err, ms, perm);
             showMicHelp(id, err);
+            // A blocked mic fails at once, while the tap still counts, so the recorder app can open by itself
+            if (ms < 1500 && !/NotReadable|Abort|TrackStart|NotFound/.test((err && err.name) || '')) openPhoneRecorder(id);
             return;
         }
         showMicHelp(id, null);
         const type = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
-        const rec = new MediaRecorder(stream, type ? { mimeType: type, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
+        let rec;
+        try {
+            rec = new MediaRecorder(stream, type ? { mimeType: type, audioBitsPerSecond: 32000 } : undefined);
+        } catch (err) {
+            stream.getTracks().forEach(t => t.stop());
+            logMic(id, err, performance.now() - t0, perm);
+            showMicHelp(id, { name: 'Unsupported' });
+            openPhoneRecorder(id);
+            return;
+        }
         const chunks = [];
         const started = Date.now();
         const btn = () => (cardEl(id) || document).querySelector('.att-rec');
