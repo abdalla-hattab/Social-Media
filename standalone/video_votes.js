@@ -18,6 +18,12 @@
     let ctx = null;
     let lastLink = '';
     let editingLinks = false;
+    let mediaRef = null;
+    let media = {};
+    let renderPending = false;
+
+    // Photos and voice notes the client's team added under «مو موافق» (vote_media/<boardId>/<videoId>)
+    const safeData = d => typeof d === 'string' && /^data:(image|audio)\/[a-z0-9.+-]+(;[a-z0-9=.+-]+)*;base64,[A-Za-z0-9+/=]+$/i.test(d);
 
     const frameLink = card => {
         const items = card.mediaItems || (card.mediaObj ? [card.mediaObj] : []);
@@ -66,10 +72,11 @@
         // voted again (another phone, or to add a reason) shows all their lines; the older ones are
         // greyed out and marked as not counted.
         const groups = {};
-        Object.values(votes).filter(v => v && v.vote).sort((a, b) => (a.ts || 0) - (b.ts || 0)).forEach(v => {
-            const key = nameKey(v.name);
-            (groups[key] = groups[key] || []).push(v);
-        });
+        Object.entries(votes).filter(([, v]) => v && v.vote).map(([id, v]) => Object.assign({ uid: id }, v))
+            .sort((a, b) => (a.ts || 0) - (b.ts || 0)).forEach(v => {
+                const key = nameKey(v.name);
+                (groups[key] = groups[key] || []).push(v);
+            });
         const people = Object.values(groups).sort((a, b) => (a[0].ts || 0) - (b[0].ts || 0));
         const counted = people.map(g => g[g.length - 1]);
         const yes = counted.filter(v => v.vote === 'approve').length;
@@ -78,6 +85,15 @@
         if (yes > no) verdict = '<span class="vv-badge is-yes">الأغلبية موافقين</span>';
         else if (no > yes) verdict = '<span class="vv-badge is-no">الأغلبية مو موافقين</span>';
         else if (yes) verdict = '<span class="vv-badge is-tie">متعادل</span>';
+        const videoMedia = Object.values(media[item.id] || {}).filter(m => m && safeData(m.data)).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+        const mediaOf = g => {
+            const uids = new Set(g.map(v => v.uid));
+            const key = nameKey(g[0].name);
+            const list = videoMedia.filter(m => uids.has(m.uid) || nameKey(m.name) === key);
+            return list.length ? `<div class="vv-media">${list.map(m => m.kind === 'image'
+                ? `<img src="${m.data}" data-zoom alt="صورة من ${esc(m.name)}">`
+                : `<audio controls preload="none" src="${m.data}"></audio>`).join('')}</div>` : '';
+        };
         const voters = people.map(g => g.map((v, i) => {
             const old = i < g.length - 1;
             return `<div class="vv-voter${old ? ' is-old' : ''}">
@@ -87,7 +103,7 @@
                 ${old ? '<span class="vv-old-tag">قديم، ما انحسب</span>' : ''}
                 <span class="vv-time">${esc(fmtTime(v.ts))}</span>
             </div>${v.vote === 'reject' && v.note ? `<div class="vv-note${old ? ' is-old' : ''}">سبب التعديل: ${esc(v.note)}</div>` : ''}`;
-        }).join('')).join('');
+        }).join('') + mediaOf(g)).join('');
         const hidden = !!(currentBoard().vote_hidden || {})[item.id];
         return `<div class="vv-video${hidden ? ' is-hidden' : ''}">
             <div class="vv-video-head">
@@ -115,6 +131,9 @@
 
     function render() {
         if (!overlay) return;
+        // A voice note that is playing would stop if the list were redrawn; redraw when it ends
+        if ([...overlay.querySelectorAll('audio')].some(a => !a.paused)) { renderPending = true; return; }
+        renderPending = false;
         // Don't wipe what the user is typing when new votes arrive
         if (editingLinks) {
             const list = overlay.querySelector('.vv-list');
@@ -210,8 +229,27 @@
         player.querySelector('iframe').src = 'about:blank';
     }
 
+    // Opens a photo big over the votes; a click anywhere closes it
+    let zoom = null;
+    function openImage(src) {
+        if (!zoom) {
+            zoom = document.createElement('div');
+            zoom.className = 'vv-zoom';
+            zoom.innerHTML = '<img alt="">';
+            zoom.addEventListener('click', () => zoom.classList.remove('is-open'));
+            document.body.appendChild(zoom);
+        }
+        zoom.querySelector('img').src = src;
+        zoom.classList.add('is-open');
+    }
+
     function close() {
         closePlayer();
+        if (zoom) zoom.classList.remove('is-open');
+        if (mediaRef) mediaRef.off();
+        mediaRef = null;
+        media = {};
+        renderPending = false;
         if (liveRef) liveRef.off();
         liveRef = null;
         liveBoard = null;
@@ -261,6 +299,8 @@
         render();
         overlay.addEventListener('click', e => {
             if (e.target === overlay) return close();
+            const pic = e.target.closest('img[data-zoom]');
+            if (pic) return openImage(pic.src);
             const play = e.target.closest('a[data-play]');
             if (play) {
                 e.preventDefault();
@@ -273,6 +313,10 @@
             if (t.hasAttribute('data-save-links')) return saveLinks(t);
             if (t.hasAttribute('data-toggle-hide')) return toggleHidden(t);
         });
+        overlay.addEventListener('pause', () => { if (renderPending) render(); }, true);
+        overlay.addEventListener('ended', () => { if (renderPending) render(); }, true);
+        mediaRef = db.ref(`vote_media/${boardId}`);
+        mediaRef.on('value', snap => { media = snap.val() || {}; render(); }, err => console.warn('vote media not loaded', err));
         liveRef = db.ref('ai_social_lists').orderByChild('id').equalTo(boardId);
         liveRef.on('value', snap => {
             snap.forEach(child => {
@@ -322,6 +366,12 @@
         .vv-voter { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; }
         .vv-voter b { color: #0f172a; }
         .vv-time { margin-inline-start: auto; color: #94a3b8; font-size: 12px; }
+        .vv-media { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 2px 16px 6px 0; }
+        .vv-media img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; cursor: zoom-in; border: 1px solid #e2e8f0; }
+        .vv-media audio { height: 34px; width: 240px; max-width: 100%; }
+        .vv-zoom { position: fixed; inset: 0; z-index: 10070; background: rgba(15,23,42,.9); display: none; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
+        .vv-zoom.is-open { display: flex; }
+        .vv-zoom img { max-width: 100%; max-height: 100%; border-radius: 12px; }
         .vv-note { margin: 0 16px 4px 0; font-size: 13px; color: #991b1b; background: #fef2f2; border-radius: 8px; padding: 6px 10px; white-space: pre-wrap; }
         .vv-voter.is-old, .vv-note.is-old { opacity: .55; }
         .vv-old-tag { font-size: 11px; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 1px 8px; }

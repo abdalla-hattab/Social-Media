@@ -97,6 +97,10 @@
     let boardKey = null;
     let uid = null;
     let myVotes = {};
+    const MAX_DATA = 650000;
+    const mediaLoaded = new Set();
+    const myMedia = {};
+    let recorder = null;
 
     // What the person saw last time (videos + their own votes), so a second visit shows the list
     // at once while the fresh copy loads. Votes are always written using the fresh copy only.
@@ -240,12 +244,17 @@
                 </div>
                 <div class="my-vote"></div>
                 <div class="note" hidden>
-                    <label>سبب التعديل (اختياري)</label>
+                    <label>سبب التعديل (اختياري): اكتب، أو أضف صورة، أو سجّل صوت</label>
                     <textarea maxlength="500" placeholder="مثلاً: الصوت عالي، غيّروا البداية..."></textarea>
                     <div class="note-row">
                         <span class="note-saved"></span>
                         <button class="note-btn" type="button">إرسال</button>
                     </div>
+                    <div class="att-tools">
+                        <label class="att-btn">📷 أضف صورة<input type="file" accept="image/*" multiple hidden></label>
+                        <button class="att-btn att-rec" type="button">🎙️ سجّل صوت</button>
+                    </div>
+                    <div class="att-list"></div>
                 </div>
             </div>`;
         }).join('');
@@ -258,6 +267,8 @@
                 btn.onclick = () => vote(cardId, btn.getAttribute('data-vote'), el);
             });
             el.querySelector('.note-btn').onclick = () => saveNote(cardId, el);
+            el.querySelector('.att-tools input').onchange = e => { addImages(cardId, [...e.target.files]); e.target.value = ''; };
+            el.querySelector('.att-rec').onclick = () => toggleRecording(cardId);
             const watch = el.querySelector('.watch');
             watch.onclick = e => {
                 e.preventDefault();
@@ -286,7 +297,148 @@
             const ta = note.querySelector('textarea');
             if (document.activeElement !== ta) ta.value = v.note || '';
             note.querySelector('.note-saved').textContent = v.note ? 'وصلتنا ملاحظتك ✓' : '';
+            // Only once the fresh board is in (the saved copy shows before we know who this is)
+            const id = el.getAttribute('data-card');
+            if (boardId && uid) {
+                if (mediaLoaded.has(id)) drawMedia(id);
+                else loadMedia(id);
+            }
         }
+    }
+
+    // Photos and voice notes under «مو موافق» are kept apart from the client's board
+    // (vote_media/<boardId>/<videoId>), so the agency dashboard doesn't load them with everything else
+    function cardEl(id) { return listEl.querySelector(`.video[data-card="${CSS.escape(id)}"]`); }
+    function mediaRef(id) { return db.ref(`vote_media/${boardId}/${id}`); }
+    function safeData(d) { return typeof d === 'string' && /^data:(image|audio)\/[a-z0-9.+-]+(;[a-z0-9=.+-]+)*;base64,[A-Za-z0-9+/=]+$/i.test(d); }
+
+    async function loadMedia(id) {
+        mediaLoaded.add(id);
+        try {
+            await ready;
+            const snap = await mediaRef(id).orderByChild('uid').equalTo(uid).once('value');
+            myMedia[id] = snap.val() || {};
+            drawMedia(id);
+        } catch (err) {
+            console.warn('media not loaded', err);
+            mediaLoaded.delete(id);
+        }
+    }
+
+    function drawMedia(id) {
+        const el = cardEl(id);
+        if (!el) return;
+        const items = Object.entries(myMedia[id] || {}).filter(([, m]) => m && safeData(m.data)).sort((a, b) => (a[1].ts || 0) - (b[1].ts || 0));
+        el.querySelector('.att-list').innerHTML = items.map(([key, m]) => `
+            <div class="att-item" data-key="${esc(key)}">
+                ${m.kind === 'image' ? `<img src="${m.data}" alt="">` : `<audio controls preload="metadata" src="${m.data}"></audio>`}
+                <button class="att-del" type="button" aria-label="احذف">✕</button>
+            </div>`).join('');
+        el.querySelectorAll('.att-del').forEach(b => {
+            b.onclick = () => removeMedia(id, b.closest('.att-item').getAttribute('data-key'));
+        });
+    }
+
+    async function addMedia(id, kind, data, extra) {
+        if (data.length > MAX_DATA) throw new Error('too big');
+        await ready;
+        const name = getName() || (myVotes[id] && myVotes[id].name) || '';
+        const item = Object.assign({ uid, name, kind, data, ts: firebase.database.ServerValue.TIMESTAMP }, extra || {});
+        const ref = mediaRef(id).push();
+        await ref.set(item);
+        (myMedia[id] = myMedia[id] || {})[ref.key] = Object.assign({}, item, { ts: Date.now() });
+        drawMedia(id);
+    }
+
+    async function removeMedia(id, key) {
+        try {
+            await mediaRef(id).child(key).remove();
+            delete (myMedia[id] || {})[key];
+            drawMedia(id);
+        } catch (err) {
+            console.error(err);
+            toast('ما انحذف، جرّب مرة ثانية');
+        }
+    }
+
+    // Photos are made smaller (longest side 1280px, JPEG) before saving
+    function shrinkImage(file) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const scale = Math.min(1, 1280 / Math.max(img.naturalWidth, img.naturalHeight));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.naturalWidth * scale);
+                canvas.height = Math.round(img.naturalHeight * scale);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                let q = 0.82;
+                let out = canvas.toDataURL('image/jpeg', q);
+                while (out.length > MAX_DATA && q > 0.4) { q -= 0.12; out = canvas.toDataURL('image/jpeg', q); }
+                resolve(out);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('bad image')); };
+            img.src = url;
+        });
+    }
+
+    async function addImages(id, files) {
+        const imgs = files.filter(f => /^image\//.test(f.type)).slice(0, 6);
+        if (!imgs.length) return;
+        toast('جاري رفع الصور...');
+        let ok = 0;
+        for (const f of imgs) {
+            try { await addMedia(id, 'image', await shrinkImage(f)); ok++; } catch (err) { console.error(err); }
+        }
+        toast(ok ? `انرفعت ${ok === 1 ? 'الصورة' : ok + ' صور'} ✓` : 'ما انرفعت الصورة، جرّب صورة ثانية');
+    }
+
+    // Voice notes: up to one minute, recorded in the browser
+    async function toggleRecording(id) {
+        if (recorder) { recorder.stop(); return; }
+        if (!navigator.mediaDevices || !window.MediaRecorder) { toast('جوالك ما يدعم التسجيل من الصفحة'); return; }
+        let stream;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+            toast('اسمح للصفحة تستخدم المايك وجرّب مرة ثانية');
+            return;
+        }
+        const type = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/webm'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+        const rec = new MediaRecorder(stream, type ? { mimeType: type, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
+        const chunks = [];
+        const started = Date.now();
+        const btn = () => (cardEl(id) || document).querySelector('.att-rec');
+        rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+        const tick = setInterval(() => {
+            const sec = Math.floor((Date.now() - started) / 1000);
+            const b = btn();
+            if (b) b.textContent = `⏹️ إيقاف ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+            if (sec >= 60 && rec.state === 'recording') rec.stop();
+        }, 250);
+        rec.onstop = async () => {
+            clearInterval(tick);
+            stream.getTracks().forEach(t => t.stop());
+            recorder = null;
+            const b = btn();
+            if (b) { b.classList.remove('on'); b.textContent = '🎙️ سجّل صوت'; }
+            const secs = Math.round((Date.now() - started) / 1000);
+            if (secs < 1 || !chunks.length) return;
+            const blob = new Blob(chunks, { type: rec.mimeType || type || 'audio/webm' });
+            const data = await new Promise(resolve => { const fr = new FileReader(); fr.onload = () => resolve(fr.result); fr.readAsDataURL(blob); });
+            try {
+                await addMedia(id, 'audio', data, { secs });
+                toast('انحفظ التسجيل ✓');
+            } catch (err) {
+                console.error(err);
+                toast('ما انحفظ التسجيل، جرّب مرة ثانية');
+            }
+        };
+        recorder = rec;
+        const b = btn();
+        if (b) { b.classList.add('on'); b.textContent = '⏹️ إيقاف 0:00'; }
+        rec.start(1000);
     }
 
     async function saveNote(cardId, el) {
