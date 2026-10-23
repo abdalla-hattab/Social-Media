@@ -422,7 +422,8 @@ button.smp-connect-main:hover { background: var(--accent-soft); }
 /* Video reviews window (video_reviews.js), owner only */
 body.sm-video-admin .sm-hero-link--videos { display: flex !important; }
 .sm-hero-link--videos svg { color: #f97316; }
-.sm-vr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.sm-vr-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+.sm-vr-chips-label { font-size: 13px; font-weight: 700; color: var(--ink-3); }
 .sm-vr-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--line-2); background: var(--surface-solid); color: var(--ink-2); font: 600 13.5px var(--font); cursor: pointer; }
 .sm-vr-chip.is-active { border-color: var(--accent-ring); background: var(--accent-soft); color: var(--accent-ink); }
 .sm-vr-chip span { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #f97316; color: #fff; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; }

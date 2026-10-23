@@ -49,9 +49,9 @@
 
     const waiting = clientId => videosOf(clientId).filter(v => v.kind !== 'ref' && !(data.reviews || {})[v.id]).length;
 
+    // One button per client, shown even with a single client; the number = videos still waiting for a verdict
     function chipsHtml(clients) {
-        if (clients.length < 2) return '';
-        return `<div class="sm-vr-chips">${clients.map(c => {
+        return `<div class="sm-vr-chips"><span class="sm-vr-chips-label">العملاء:</span>${clients.map(c => {
             const n = waiting(c.id);
             return `<button type="button" class="sm-vr-chip${c.id === activeClient ? ' is-active' : ''}" data-client="${esc(c.id)}">${esc(c.name || c.id)}${n ? `<span>${n}</span>` : ''}</button>`;
         }).join('')}</div>`;
