@@ -1,0 +1,40 @@
+name: SEO sitemaps
+
+# Daily product sitemaps for Salla stores (see seo_sitemaps/build.py).
+# The bot commit only touches standalone/sitemaps, so it doesn't re-run this.
+on:
+  schedule:
+    - cron: "17 1 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "seo_sitemaps/**"
+      - ".github/workflows/seo-sitemaps.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: seo-sitemaps
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python seo_sitemaps/build.py
+      - name: Commit if changed
+        run: |
+          git config user.name "sitemap-bot"
+          git config user.email "sitemap-bot@users.noreply.github.com"
+          git add standalone/sitemaps
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "SEO sitemaps: daily refresh"
+          git pull --rebase origin main
+          git push origin HEAD:main
